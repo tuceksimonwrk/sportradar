@@ -1,0 +1,62 @@
+/* Barvy a písma. Identita „světelná tabule“: inkoust, jantar, křída; sportovní barvy jen na pruhy, ikony a plochy. */
+:root {
+  color-scheme: light;
+  --chalk: #f2f5f1;
+  --card: #ffffff;
+  --ink: #0d1a14;
+  --muted: #56665d;          /* 5.6:1 na kartě, 5.1:1 na křídě */
+  --line: #d9e0da;
+  --soft: #e8ede9;           /* výplně (štítky, kostra) */
+  --board: #0d1a14;          /* tabule, hlavička */
+  --board-2: #15281f;
+  --board-ink: #ffffff;
+  --amber: #ffc21a;
+  --amber-ink: #8a6200;      /* jantar jako ikona na světlém podkladu (≥ 3:1) */
+  --focus: #0a7a45;
+  --live: #0a7c43;           /* 5.1:1 na bílé */
+  --red-live: #d1241c;       /* štítek ŽIVĚ, bílý text 5.1:1 */
+  --warn: #fff1c2;
+  --shadow: 13 26 20;
+
+  --gold: #e3b21c;
+  --silver: #b7c1c9;
+  --bronze: #c98a52;
+
+  --f1: #e10600;
+  --nhl: #1e88e5;
+  --nba: #f57c00;
+  --cz-hockey: #7c4ddb;
+  --cz-basket: #12a150;
+
+  --display: 'Barlow Condensed', 'Arial Narrow', system-ui, sans-serif;
+  --text: 'Barlow', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --ease-out: cubic-bezier(.2, .7, .2, 1);
+  --radius: 12px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --chalk: #0b1210;
+    --card: #131c18;
+    --ink: #eef3ef;
+    --muted: #9aaba1;
+    --line: #26332c;
+    --soft: #1c2822;
+    --board: #0f1a15;
+    --board-2: #182a21;
+    --amber-ink: #ffc21a;
+    --focus: #5fe0a0;
+    --live: #4cd68a;
+    --warn: #3a3010;
+    --shadow: 0 0 0;
+    --nhl: #4aa3f2;
+    --cz-hockey: #a07dff;
+  }
+}
+
+[data-sport='f1'] { --sport: var(--f1); }
+[data-sport='nhl'] { --sport: var(--nhl); }
+[data-sport='nba'] { --sport: var(--nba); }
+[data-sport='cz-hockey'] { --sport: var(--cz-hockey); }
+[data-sport='cz-basket'] { --sport: var(--cz-basket); }

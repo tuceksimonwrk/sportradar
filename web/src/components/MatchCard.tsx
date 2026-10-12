@@ -1,27 +1,42 @@
+import type { CSSProperties } from 'react';
 import type { Match } from '@sportradar/shared';
-import { competitionLine, venueLine } from '../lib/labels';
+import { competitionLine } from '../lib/labels';
+import { matchSides } from '../lib/sides';
 import { formatCountdown, formatTime } from '../lib/time';
+import { TeamCrest } from './TeamCrest';
+import { useTeams } from './TeamsContext';
+import { SportIcon } from './icons/SportIcon';
+import { Broadcasters, VenueLine } from './ui';
 
-export function MatchCard({ match, now, hero = false }: { match: Match; now: Date; hero?: boolean }) {
-  const venue = venueLine(match.venue);
+interface Props { match: Match; now: Date; className?: string; style?: CSSProperties }
+
+export function MatchCard({ match, now, className = '', style }: Props) {
+  const { teams } = useTeams();
   const countdown = formatCountdown(match.startsAt, now);
+  const sides = match.sport === 'f1' ? null : matchSides(match, teams);
   return (
-    <article className={`card${hero ? ' card--hero' : ''}`} data-sport={match.sport}>
-      <div className="card__time">
+    <article className={`match ${className}`.trim()} data-sport={match.sport} style={style}>
+      <div className="match__time">
         <strong>{formatTime(match.startsAt)}</strong>
         <span className={countdown === 'probíhá' ? 'live' : 'muted'}>{countdown}</span>
       </div>
-      <div className="card__body">
-        <div className="card__title">{match.title}</div>
-        <div className="card__meta">{competitionLine(match.sport, match.competition)}</div>
-        {venue && <div className="card__meta">{venue}</div>}
-        <div className="badges">
-          {match.broadcasters.length === 0 && <span className="badge badge--none">kde sledovat: neznámé</span>}
-          {match.broadcasters.map((b) =>
-            b.url
-              ? <a key={b.name} className="badge" href={b.url} target="_blank" rel="noreferrer">{b.name}</a>
-              : <span key={b.name} className="badge">{b.name}</span>)}
-        </div>
+      <div className="match__body">
+        <div className="match__comp"><SportIcon sport={match.sport} size={15} />{competitionLine(match.sport, match.competition)}</div>
+        {sides ? (
+          <h3 className="match__teams">
+            {sides.map((s, i) => (
+              <span key={i} className="match__team">
+                <TeamCrest team={s.teamId ? teams.get(s.teamId) : undefined} name={s.name} size={28} />
+                <span>{s.name}</span>
+                {i === 0 && <span className="sr-only"> – </span>}
+              </span>
+            ))}
+          </h3>
+        ) : (
+          <h3 className="match__title">{match.title}</h3>
+        )}
+        <VenueLine venue={match.venue} />
+        <Broadcasters list={match.broadcasters} />
       </div>
     </article>
   );

@@ -1,0 +1,13 @@
+/* Sportradar – styly podle oblastí. Pořadí je záměrné: tokeny → základ → rozvržení → komponenty → pohyb.
+   Každý soubor má své media queries až pod základními pravidly téhož selektoru (dřívější chyba:
+   media query přebila modifikátor deklarovaný výš). Pohyb a prefers-reduced-motion jsou úplně poslední. */
+@import './tokens.css';
+@import './base.css';
+@import './header.css';
+@import './page.css';
+@import './cards.css';
+@import './hero.css';
+@import './results.css';
+@import './standings.css';
+@import './favorites.css';
+@import './motion.css';

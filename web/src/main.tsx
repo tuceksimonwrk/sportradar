@@ -9,6 +9,6 @@ import '@fontsource/barlow-condensed/latin-700.css';
 import '@fontsource/barlow-condensed/latin-ext-700.css';
 import '@fontsource/barlow-condensed/latin-800.css';
 import '@fontsource/barlow-condensed/latin-ext-800.css';
-import './styles.css';
+import './styles/index.css';
 
 createRoot(document.getElementById('root')!).render(<StrictMode><App /></StrictMode>);

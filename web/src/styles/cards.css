@@ -1,0 +1,74 @@
+/* ---------- Erby ---------- */
+.crest {
+  --crest: 28px;
+  display: inline-grid; place-items: center; flex: none; overflow: hidden;
+  border-radius: 50%; line-height: 1;
+}
+.crest--plate {
+  background: #fff;
+  box-shadow: 0 0 0 1px rgb(13 26 20 / .1), 0 1px 3px rgb(13 26 20 / .14);
+}
+.crest--plate img { display: block; width: 76%; height: 76%; object-fit: contain; }
+.crest--mono {
+  color: #fff; font: 800 calc(var(--crest) * .4)/1 var(--display); letter-spacing: .03em;
+  box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / .22);
+}
+.crest--mono3 { font-size: calc(var(--crest) * .33); letter-spacing: 0; }
+.crest--emblem {
+  background: #fff; color: var(--sport, var(--ink));
+  box-shadow: 0 0 0 1px rgb(13 26 20 / .1), 0 1px 3px rgb(13 26 20 / .14);
+}
+.crest--emblem .sicon { stroke-width: 1.5; }
+@media (prefers-color-scheme: dark) {
+  .crest--plate { background: #f3f6f4; box-shadow: 0 0 0 1px rgb(255 255 255 / .12); }
+}
+
+/* ---------- Karta zápasu ---------- */
+.match, .result {
+  position: relative; overflow: hidden;
+  margin-bottom: 10px; padding: 14px 14px 14px 20px;
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+  transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out);
+}
+.match { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 14px; }
+.match::before, .result::before { /* pruh barvy sportu */
+  content: ''; position: absolute; inset: 0 auto 0 0; width: 5px; background: var(--sport, var(--line));
+}
+.match:hover, .match:focus-within, .result:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--sport) 35%, transparent),
+    0 14px 28px -16px color-mix(in srgb, var(--sport) 70%, transparent);
+}
+
+.match__time { display: flex; flex-direction: column; gap: 3px; }
+.match__time strong { font: 800 2rem/1 var(--display); letter-spacing: .01em; font-variant-numeric: tabular-nums; }
+.live { display: inline-flex; align-items: center; gap: 6px; color: var(--live); font-size: .85rem; font-weight: 700; }
+.live::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: pulse 1.6s ease-in-out infinite; }
+
+.match__comp {
+  display: flex; align-items: center; gap: 6px;
+  color: var(--muted); font-size: .76rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+}
+.match__comp .sicon { color: var(--sport); }
+.match__teams { display: grid; gap: 6px; margin: 8px 0 6px; font-size: 1.04rem; font-weight: 600; line-height: 1.2; }
+.match__team { display: flex; align-items: center; gap: 10px; min-width: 0; overflow-wrap: anywhere; }
+.match__title { margin: 6px 0 4px; font-size: 1.06rem; font-weight: 600; line-height: 1.25; }
+
+.meta { display: flex; align-items: flex-start; gap: 6px; margin-top: 4px; color: var(--muted); font-size: .88rem; line-height: 1.3; }
+.meta svg { flex: none; margin-top: 1px; }
+.tv { display: flex; align-items: flex-start; gap: 6px; margin-top: 10px; }
+.tv__icon { flex: none; margin-top: 5px; color: var(--muted); }
+.tv__list { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
+.badge {
+  display: inline-flex; align-items: center; min-height: 26px; padding: 2px 9px; border-radius: 6px;
+  background: var(--soft); color: var(--ink);
+  font-size: .78rem; font-weight: 600; text-decoration: none;
+}
+a.badge:hover { background: var(--ink); color: var(--chalk); }
+.badge--none { background: transparent; border: 1px dashed var(--line); color: var(--muted); font-weight: 400; }
+
+@media (min-width: 560px) {
+  .match { grid-template-columns: 88px minmax(0, 1fr); padding: 16px 18px 16px 22px; }
+  .match__time strong { font-size: 2.35rem; }
+}
