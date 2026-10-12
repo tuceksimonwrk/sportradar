@@ -17,7 +17,7 @@ export function FavoritesView({ teams, favs, onToggle, onShare, shareMsg }: Prop
       {SPORTS.map((sport) => {
         const list = teams.filter((t) => t.sport === sport && t.name.toLocaleLowerCase('cs').includes(needle));
         return (
-          <fieldset key={sport} className="sport">
+          <fieldset key={sport} className="sport" data-sport={sport}>
             <legend>{SPORT_LABELS[sport]}</legend>
             <label className="row row--all">
               <input type="checkbox" checked={favs.includes(sport)} onChange={() => onToggle(sport)} />

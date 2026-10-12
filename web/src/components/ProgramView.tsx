@@ -28,7 +28,7 @@ export function ProgramView({ matches, now, sport, onSport, hasFavorites, onGoFa
     <>
       <div className="chips" role="tablist">
         {(['all', ...SPORTS] as const).map((s) => (
-          <button key={s} className={`chip${sport === s ? ' chip--on' : ''}`} onClick={() => onSport(s)}>
+          <button key={s} data-sport={s} className={`chip${sport === s ? ' chip--on' : ''}`} onClick={() => onSport(s)}>
             {s === 'all' ? 'Vše' : SPORT_LABELS[s]}
           </button>
         ))}

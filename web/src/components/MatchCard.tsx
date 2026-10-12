@@ -6,15 +6,15 @@ export function MatchCard({ match, now, hero = false }: { match: Match; now: Dat
   const venue = venueLine(match.venue);
   const countdown = formatCountdown(match.startsAt, now);
   return (
-    <article className={`card${hero ? ' card--hero' : ''}`}>
+    <article className={`card${hero ? ' card--hero' : ''}`} data-sport={match.sport}>
       <div className="card__time">
         <strong>{formatTime(match.startsAt)}</strong>
         <span className={countdown === 'probíhá' ? 'live' : 'muted'}>{countdown}</span>
       </div>
       <div className="card__body">
         <div className="card__title">{match.title}</div>
-        <div className="muted">{competitionLine(match.sport, match.competition)}</div>
-        {venue && <div className="muted">{venue}</div>}
+        <div className="card__meta">{competitionLine(match.sport, match.competition)}</div>
+        {venue && <div className="card__meta">{venue}</div>}
         <div className="badges">
           {match.broadcasters.length === 0 && <span className="badge badge--none">kde sledovat: neznámé</span>}
           {match.broadcasters.map((b) =>

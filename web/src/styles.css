@@ -1,44 +1,197 @@
+/* Sportradar – vzhled „světelná tabule“: křídový podklad, tmavá tabule, jantarové číslice,
+   barevný pruh podle sportu. */
 :root {
-  --bg: #f6f7f9; --card: #fff; --text: #14181f; --muted: #667085; --line: #e3e6eb;
-  --accent: #e4002b; --accent-ink: #fff; --live: #0a8f4d; --warn: #fff4d6;
+  --chalk: #f2f5f1;
+  --card: #ffffff;
+  --ink: #0d1a14;
+  --muted: #5b6b62;
+  --line: #d9e0da;
+  --board: #0d1a14;
+  --board-ink: #ffffff;
+  --amber: #ffc21a;
+  --focus: #0a7a45;
+  --live: #0a8f4d;
+  --warn: #fff1c2;
+
+  --f1: #e10600;
+  --nhl: #1e88e5;
+  --nba: #f57c00;
+  --cz-hockey: #7c4ddb;
+  --cz-basket: #12a150;
+
+  --display: 'Barlow Condensed', 'Arial Narrow', system-ui, sans-serif;
+  --text: 'Barlow', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
+
 @media (prefers-color-scheme: dark) {
-  :root { --bg: #0f1216; --card: #181c22; --text: #eef0f3; --muted: #9aa3b0; --line: #262c35; --warn: #3a3010; }
+  :root {
+    --chalk: #0b1210;
+    --card: #131c18;
+    --ink: #eef3ef;
+    --muted: #93a49a;
+    --line: #243029;
+    --board: #1b2a23;
+    --focus: #5fe0a0;
+    --live: #4cd68a;
+    --warn: #3a3010;
+    --nhl: #4aa3f2;
+    --cz-hockey: #a07dff;
+  }
 }
+
+[data-sport='f1'] { --sport: var(--f1); }
+[data-sport='nhl'] { --sport: var(--nhl); }
+[data-sport='nba'] { --sport: var(--nba); }
+[data-sport='cz-hockey'] { --sport: var(--cz-hockey); }
+[data-sport='cz-basket'] { --sport: var(--cz-basket); }
+
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.4 system-ui, -apple-system, 'Segoe UI', sans-serif; }
-.app { max-width: 720px; margin: 0 auto; padding: 0 16px 48px; }
-.top { position: sticky; top: 0; background: var(--bg); padding: 12px 0 8px; z-index: 2; }
-.top h1 { margin: 0 0 8px; font-size: 1.25rem; letter-spacing: .02em; }
-.tabs { display: flex; gap: 8px; }
-.tabs button { flex: 1; padding: 10px; border: 1px solid var(--line); background: var(--card); color: var(--text); border-radius: 10px; font: inherit; }
-.tabs button.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
-.chips { display: flex; gap: 8px; overflow-x: auto; padding: 8px 0; }
-.chip { white-space: nowrap; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--text); font: inherit; }
-.chip--on { background: var(--text); color: var(--bg); }
-.day { margin: 20px 0 8px; font-size: .85rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
-.card { display: flex; gap: 14px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; }
-.card--hero { border-color: var(--accent); border-width: 2px; padding: 16px; }
-.card__time { display: flex; flex-direction: column; min-width: 64px; }
-.card__time strong { font-size: 1.25rem; font-variant-numeric: tabular-nums; }
-.card__title { font-weight: 600; }
+body {
+  margin: 0;
+  background: var(--chalk);
+  color: var(--ink);
+  font: 400 16px/1.45 var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+button, input { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+.app { max-width: 720px; margin: 0 auto; padding: 0 16px 56px; }
+
+/* ---------- Hlavička ---------- */
+.top {
+  position: sticky; top: 0; z-index: 3;
+  padding: 14px 0 12px;
+  background: var(--board); color: var(--board-ink);
+  /* podklad přes celou šířku okna */
+  box-shadow: 0 0 0 100vmax var(--board);
+  clip-path: inset(0 -100vmax);
+}
+.top h1 {
+  display: flex; align-items: center; gap: 10px;
+  margin: 0 0 12px;
+  font: 800 1.6rem/1 var(--display);
+  letter-spacing: .04em;
+}
+.top h1::before { /* kruh se středovou čárou jako hřiště */
+  content: ''; width: 22px; height: 22px; border-radius: 50%;
+  border: 2.5px solid var(--amber);
+  background: linear-gradient(var(--amber), var(--amber)) center / 2.5px 100% no-repeat;
+}
+.tabs { display: flex; gap: 4px; padding: 4px; border-radius: 12px; background: rgba(255, 255, 255, .12); }
+.tabs button {
+  flex: 1; padding: 9px 10px; border: 0; border-radius: 9px; cursor: pointer;
+  background: transparent; color: var(--board-ink); font-weight: 600;
+}
+.tabs button.on { background: var(--amber); color: #0d1a14; }
+
+/* ---------- Filtr sportů ---------- */
+.chips { display: flex; gap: 8px; overflow-x: auto; padding: 14px 0 6px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  display: inline-flex; align-items: center; gap: 8px; white-space: nowrap;
+  padding: 7px 14px; border-radius: 999px; cursor: pointer;
+  border: 1.5px solid var(--line); background: var(--card); font-weight: 600;
+}
+.chip[data-sport]::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: var(--sport); }
+.chip--on { background: var(--ink); border-color: var(--ink); color: var(--chalk); }
+
+/* ---------- Dny ---------- */
+.day {
+  display: flex; align-items: baseline; gap: 12px;
+  margin: 26px 0 10px;
+  font: 700 1.5rem/1 var(--display); letter-spacing: .01em;
+}
+.day::after { content: ''; flex: 1; height: 2px; background: var(--line); }
+
+/* ---------- Karta zápasu ---------- */
+.card {
+  display: grid; grid-template-columns: 76px 1fr; gap: 14px;
+  position: relative; overflow: hidden;
+  margin-bottom: 10px; padding: 14px 14px 14px 20px;
+  background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+}
+.card::before { /* pruh barvy sportu */
+  content: ''; position: absolute; inset: 0 auto 0 0; width: 6px; background: var(--sport, var(--line));
+}
+.card__time { display: flex; flex-direction: column; gap: 2px; }
+.card__time strong {
+  font: 800 2rem/1 var(--display); letter-spacing: .01em; font-variant-numeric: tabular-nums;
+}
+.card__title { font-weight: 600; font-size: 1.06rem; line-height: 1.25; }
+.card__meta { margin-top: 3px; color: var(--muted); font-size: .9rem; }
 .muted { color: var(--muted); font-size: .85rem; }
-.live { color: var(--live); font-size: .85rem; font-weight: 600; }
-.badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-.badge { font-size: .75rem; padding: 3px 8px; border-radius: 6px; background: var(--line); color: var(--text); text-decoration: none; }
-.badge--none { background: transparent; border: 1px dashed var(--line); color: var(--muted); }
-.toolbar { display: flex; gap: 8px; padding: 12px 0; }
-.search { flex: 1; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--text); font: inherit; }
-.btn { padding: 10px 14px; border: 0; border-radius: 10px; background: var(--accent); color: var(--accent-ink); font: inherit; cursor: pointer; }
+.live { display: inline-flex; align-items: center; gap: 6px; color: var(--live); font-size: .85rem; font-weight: 600; }
+.live::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--live); animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .live::before { animation: none; } }
+
+.badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.badge {
+  padding: 3px 9px; border-radius: 5px; background: var(--line); color: var(--ink);
+  font-size: .78rem; font-weight: 600; text-decoration: none;
+}
+a.badge:hover { background: var(--ink); color: var(--chalk); }
+.badge--none { background: transparent; border: 1px dashed var(--line); color: var(--muted); font-weight: 400; }
+
+/* ---------- Nejbližší zápas: tabule ---------- */
+.card--hero {
+  grid-template-columns: 1fr; gap: 6px;
+  padding: 20px 20px 18px 26px;
+  background: var(--board); color: var(--board-ink); border: 0; border-radius: 16px;
+}
+.card--hero::before { width: 8px; }
+.card--hero .card__time { flex-direction: row; align-items: baseline; justify-content: space-between; gap: 12px; }
+.card--hero .card__time strong { font-size: 4.2rem; color: var(--amber); letter-spacing: .02em; }
+.card--hero .card__time .muted, .card--hero .card__time .live {
+  padding: 5px 12px; border-radius: 999px; background: rgba(255, 255, 255, .14);
+  color: var(--board-ink); font-size: .95rem; font-weight: 600;
+}
+.card--hero .card__title { font: 800 1.9rem/1.1 var(--display); letter-spacing: .01em; }
+.card--hero .card__meta { color: rgba(255, 255, 255, .72); }
+.card--hero .badge { background: rgba(255, 255, 255, .16); color: var(--board-ink); }
+.card--hero a.badge:hover { background: var(--amber); color: #0d1a14; }
+.card--hero .badge--none { border-color: rgba(255, 255, 255, .3); color: rgba(255, 255, 255, .7); }
+
+/* ---------- Oblíbené ---------- */
+.toolbar { display: flex; gap: 8px; padding: 16px 0 12px; }
+.search {
+  flex: 1; min-width: 0; padding: 11px 14px; border-radius: 10px;
+  border: 1.5px solid var(--line); background: var(--card);
+}
+.btn {
+  padding: 11px 16px; border: 0; border-radius: 10px; cursor: pointer;
+  background: var(--ink); color: var(--chalk); font-weight: 600;
+}
 .btn:disabled { opacity: .4; cursor: default; }
-.btn--ghost { background: transparent; color: var(--text); border: 1px solid var(--line); }
-.sport { border: 1px solid var(--line); border-radius: 12px; margin: 0 0 12px; padding: 4px 12px 8px; background: var(--card); }
-.sport legend { padding: 0 6px; font-weight: 700; }
-.row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); }
+.btn--ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--line); }
+
+.sport {
+  position: relative; overflow: hidden;
+  margin: 0 0 12px; padding: 4px 14px 8px 22px;
+  background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+}
+.sport::before { content: ''; position: absolute; inset: 0 auto 0 0; width: 6px; background: var(--sport, var(--line)); }
+.sport legend { padding: 0 6px; font: 800 1.3rem/1 var(--display); letter-spacing: .02em; }
+.row { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-top: 1px solid var(--line); cursor: pointer; }
 .row:first-of-type { border-top: 0; }
 .row--all { font-weight: 600; }
-.row input { width: 20px; height: 20px; accent-color: var(--accent); }
-.banner { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px; border-radius: 10px; background: var(--card); border: 1px solid var(--line); margin: 8px 0; }
-.banner--warn { background: var(--warn); }
-.empty { text-align: center; padding: 48px 0; }
-.pad { padding: 12px 0; }
+.row input { width: 20px; height: 20px; accent-color: var(--sport, var(--ink)); }
+
+/* ---------- Hlášky ---------- */
+.banner {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  margin: 14px 0 0; padding: 12px 14px; border-radius: 10px;
+  background: var(--card); border: 1px solid var(--line);
+}
+.banner--warn { background: var(--warn); border-color: transparent; }
+.empty { text-align: center; padding: 56px 0; }
+.empty p { font: 700 1.5rem/1.2 var(--display); }
+.pad { padding: 14px 0; }
+
+@media (min-width: 560px) {
+  .card { grid-template-columns: 92px 1fr; }
+  .card__time strong { font-size: 2.3rem; }
+  .card--hero .card__time strong { font-size: 5rem; }
+  .card--hero .card__title { font-size: 2.3rem; }
+}
