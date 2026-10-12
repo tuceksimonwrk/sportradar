@@ -1,5 +1,5 @@
 import type { Match } from '@sportradar/shared';
-import { SPORT_LABELS } from '@sportradar/shared';
+import { competitionLine } from '../lib/labels';
 import { formatCountdown, formatTime } from '../lib/time';
 
 export function MatchCard({ match, now, hero = false }: { match: Match; now: Date; hero?: boolean }) {
@@ -12,7 +12,7 @@ export function MatchCard({ match, now, hero = false }: { match: Match; now: Dat
       </div>
       <div className="card__body">
         <div className="card__title">{match.title}</div>
-        <div className="muted">{SPORT_LABELS[match.sport]} · {match.competition}</div>
+        <div className="muted">{competitionLine(match.sport, match.competition)}</div>
         <div className="badges">
           {match.broadcasters.length === 0 && <span className="badge badge--none">kde sledovat: neznámé</span>}
           {match.broadcasters.map((b) =>
