@@ -3,6 +3,7 @@ import type { Match } from '@sportradar/shared';
 import { competitionLine } from '../lib/labels';
 import { matchSides } from '../lib/sides';
 import { formatCountdown, formatTime } from '../lib/time';
+import { CalendarButton } from './CalendarButton';
 import { TeamCrest } from './TeamCrest';
 import { useTeams } from './TeamsContext';
 import { SportIcon } from './icons/SportIcon';
@@ -21,7 +22,7 @@ export function MatchCard({ match, now, className = '', style }: Props) {
         <span className={countdown === 'probíhá' ? 'live' : 'muted'}>{countdown}</span>
       </div>
       <div className="match__body">
-        <div className="match__comp"><SportIcon sport={match.sport} size={15} />{competitionLine(match.sport, match.competition)}</div>
+        <div className="match__comp"><SportIcon sport={match.sport} size={15} /><span>{competitionLine(match.sport, match.competition)}</span><CalendarButton match={match} /></div>
         {sides ? (
           <h3 className="match__teams">
             {sides.map((s, i) => (

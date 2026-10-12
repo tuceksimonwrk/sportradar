@@ -72,3 +72,18 @@ a.badge:hover { background: var(--ink); color: var(--chalk); }
   .match { grid-template-columns: 88px minmax(0, 1fr); padding: 16px 18px 16px 22px; }
   .match__time strong { font-size: 2.35rem; }
 }
+
+/* ---------- Tlačítko „Přidat do kalendáře“ ---------- */
+.calbtn {
+  display: inline-grid; place-items: center; flex: none; width: 44px; height: 44px; padding: 0;
+  border: 0; border-radius: 10px; background: transparent; color: var(--muted); cursor: pointer;
+  transition: background-color .15s, color .15s;
+}
+.calbtn:hover { background: var(--soft); color: var(--ink); }
+.calbtn:focus-visible { outline: 3px solid var(--focus); outline-offset: -2px; }
+.match__comp .calbtn { margin: -14px -10px -14px auto; }
+.match__comp > span, .match__comp > .sicon { min-width: 0; }
+.hero__top .calbtn { margin: -8px -8px -8px 0; color: rgb(255 255 255 / .85); }
+.hero__top .calbtn:hover { background: rgb(255 255 255 / .14); color: #fff; }
+.hero__top .calbtn:focus-visible { outline-color: var(--amber); }
+.hero__actions { display: flex; align-items: center; gap: 4px; flex: none; }

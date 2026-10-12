@@ -4,6 +4,7 @@ import { competitionLine } from '../lib/labels';
 import { matchSides, splitSession } from '../lib/sides';
 import { countdownParts, dayKey, dayLabel, formatCountdown, formatTime } from '../lib/time';
 import { SportArt, artFor } from './SportArt';
+import { CalendarButton } from './CalendarButton';
 import { SportEmblem, TeamCrest } from './TeamCrest';
 import { useTeams } from './TeamsContext';
 import { SportIcon } from './icons/SportIcon';
@@ -62,7 +63,10 @@ export function Hero({ match, now }: { match: Match; now: Date }) {
       <SportArt kind={artFor(match.sport)} className="hero__art" />
       <div className="hero__top">
         <span className="hero__comp"><SportIcon sport={match.sport} size={16} />{competitionLine(match.sport, match.competition)}</span>
-        <span className="hero__day">{dayLabel(dayKey(match.startsAt), now)}</span>
+        <span className="hero__actions">
+          <span className="hero__day">{dayLabel(dayKey(match.startsAt), now)}</span>
+          <CalendarButton match={match} />
+        </span>
       </div>
       <h3 className="sr-only">{match.title}, {dayLabel(dayKey(match.startsAt), now)} {time}</h3>
       <div aria-hidden="true">{stage}</div>

@@ -1,14 +1,15 @@
 import { useState } from 'react';
-import type { Team } from '@sportradar/shared';
+import type { Match, Team } from '@sportradar/shared';
 import { SPORTS, SPORT_LABELS } from '@sportradar/shared';
 import { Search, Share2, Star } from 'lucide-react';
+import { CalendarSection } from './CalendarSection';
 import { TeamCrest } from './TeamCrest';
 import { SportIcon } from './icons/SportIcon';
 import { PageHead, enter } from './ui';
 
-interface Props { teams: Team[]; favs: string[]; onToggle: (id: string) => void; onShare: () => void; shareMsg: string }
+interface Props { teams: Team[]; favs: string[]; matches: Match[]; onToggle: (id: string) => void; onShare: () => void; shareMsg: string }
 
-export function FavoritesView({ teams, favs, onToggle, onShare, shareMsg }: Props) {
+export function FavoritesView({ teams, favs, matches, onToggle, onShare, shareMsg }: Props) {
   const [q, setQ] = useState('');
   const needle = q.trim().toLocaleLowerCase('cs');
   return (
@@ -23,6 +24,7 @@ export function FavoritesView({ teams, favs, onToggle, onShare, shareMsg }: Prop
         <button className="btn" onClick={onShare} disabled={favs.length === 0}><Share2 size={18} aria-hidden="true" />Sdílet</button>
       </div>
       {shareMsg && <p className="muted pad share-msg" role="status">{shareMsg}</p>}
+      <CalendarSection teams={teams} favs={favs} matches={matches} />
       {SPORTS.map((sport, i) => {
         const list = teams.filter((t) => t.sport === sport && t.name.toLocaleLowerCase('cs').includes(needle));
         const e = enter(i, 'sport');

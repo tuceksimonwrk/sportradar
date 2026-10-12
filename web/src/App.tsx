@@ -64,6 +64,11 @@ export default function App() {
     [data, favSet, now, sport],
   );
 
+  const calendarMatches = useMemo(
+    () => (data.status === 'ready' ? selectMatches(data.matches.matches, favSet, now, 'all') : []),
+    [data, favSet, now],
+  );
+
   const standingsSport = pickedStandings ?? defaultStandingsSport(favs);
 
   const results = useMemo(
@@ -115,7 +120,7 @@ export default function App() {
                 hasFavorites={favs.length > 0} onGoFavorites={() => goTab('favs')} />
             ) : tab === 'standings' ? (
               <StandingsView standings={data.standings} sport={standingsSport} onSport={setPickedStandings} favs={favs} now={now} />
-            ) : <FavoritesView teams={data.teams.teams} favs={favs} onToggle={toggle} onShare={share} shareMsg={shareMsg} />}
+            ) : <FavoritesView teams={data.teams.teams} favs={favs} matches={calendarMatches} onToggle={toggle} onShare={share} shareMsg={shareMsg} />}
           </div>
         )}
       </main>

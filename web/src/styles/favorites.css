@@ -25,3 +25,23 @@
 .row--all { font-weight: 600; }
 .row input { flex: none; width: 20px; height: 20px; margin: 0; accent-color: var(--sport, var(--ink)); }
 .row:hover > span:last-child { text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
+
+/* ---------- Připomínky v kalendáři ---------- */
+.cal {
+  min-width: 0; margin: 0 0 14px; padding: 14px 16px 16px;
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+}
+.cal__title { display: flex; align-items: center; gap: 8px; margin: 0; font: 800 1.3rem/1.1 var(--display); letter-spacing: .03em; text-transform: uppercase; }
+.cal__title svg { color: var(--amber-ink); flex: none; }
+.cal__lead { margin: 6px 0 12px; }
+.cal .btn { text-align: left; }
+.cal__none, .cal__msg, .cal__hint { margin: 10px 0 0; font-size: .86rem; line-height: 1.4; overflow-wrap: anywhere; }
+.cal__list { list-style: none; margin: 12px 0 0; padding: 0; }
+.cal__item {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px;
+  padding: 10px 0; border-top: 1px solid var(--line);
+}
+.cal__name { display: flex; align-items: center; gap: 8px; min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
+.cal__name .sicon { color: var(--sport); flex: none; }
+.cal__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.cal__actions .btn { padding: 8px 12px; }
