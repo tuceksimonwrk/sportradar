@@ -1,8 +1,9 @@
 import type { Match } from '@sportradar/shared';
-import { competitionLine } from '../lib/labels';
+import { competitionLine, venueLine } from '../lib/labels';
 import { formatCountdown, formatTime } from '../lib/time';
 
 export function MatchCard({ match, now, hero = false }: { match: Match; now: Date; hero?: boolean }) {
+  const venue = venueLine(match.venue);
   const countdown = formatCountdown(match.startsAt, now);
   return (
     <article className={`card${hero ? ' card--hero' : ''}`}>
@@ -13,6 +14,7 @@ export function MatchCard({ match, now, hero = false }: { match: Match; now: Dat
       <div className="card__body">
         <div className="card__title">{match.title}</div>
         <div className="muted">{competitionLine(match.sport, match.competition)}</div>
+        {venue && <div className="muted">{venue}</div>}
         <div className="badges">
           {match.broadcasters.length === 0 && <span className="badge badge--none">kde sledovat: neznámé</span>}
           {match.broadcasters.map((b) =>
