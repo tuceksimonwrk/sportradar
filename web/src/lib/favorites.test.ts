@@ -11,6 +11,14 @@ describe('sanitizeFavorites', () => {
   });
 });
 
+describe('ID délka – hranice', () => {
+  it('100 znaků přijato, 101 odmítnuto', () => {
+    const ok = 'a'.repeat(100);
+    const tooLong = 'a'.repeat(101);
+    expect(sanitizeFavorites([ok, tooLong])).toEqual([ok]);
+  });
+});
+
 describe('load/save', () => {
   it('poškozený JSON → prázdné', () => {
     expect(loadFavorites({ getItem: () => '{nejson' })).toEqual([]);

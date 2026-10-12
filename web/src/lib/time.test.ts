@@ -38,4 +38,7 @@ describe('isStale', () => {
     expect(isStale('2026-10-12T05:59:00Z', now)).toBe(true);
     expect(isStale('2026-10-12T07:00:00Z', now)).toBe(false);
   });
+  it('neplatné generatedAt → stale', () => {
+    expect(isStale('nonsense', new Date('2026-10-12T12:00:00Z'))).toBe(true);
+  });
 });

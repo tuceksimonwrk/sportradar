@@ -27,5 +27,7 @@ export function formatCountdown(iso: string, now: Date): string {
 }
 
 export function isStale(generatedAt: string, now: Date): boolean {
-  return now.getTime() - Date.parse(generatedAt) > 6 * 3600_000;
+  const t = Date.parse(generatedAt);
+  if (Number.isNaN(t)) return true;
+  return now.getTime() - t > 6 * 3600_000;
 }
