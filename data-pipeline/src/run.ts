@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import type { MatchesFile, Sport, StandingsFile, TeamsFile } from '@sportradar/shared';
 import { applyBroadcasters, parseBroadcasters } from './broadcasters';
-import { isSuspiciousEmpty, mergeDatasets, mergeStandings, upcomingCount, type Dataset, type SportOutcome } from './merge';
+import { isSuspiciousEmpty, mergeDatasets, mergeStandings, resolveStandingsTeamIds, upcomingCount, type Dataset, type SportOutcome } from './merge';
 import { applyVenues, parseVenues } from './venues';
 import type { Adapter } from './types';
 import { f1Adapter } from './adapters/f1';
@@ -39,6 +39,7 @@ async function main() {
       const upcoming = upcomingCount(r.matches);
       console.log(`[ok]   ${a.sport}: ${upcoming} zápasů, ${r.matches.length - upcoming} výsledků, ${r.teams.length} týmů`);
       if (r.standings?.length) console.log(`[ok]   ${a.sport}: ${r.standings.length} tabulek`);
+      else if (r.standings) console.log(`[ok]   ${a.sport}: tabulka zatím prázdná`);
       if (r.standingsError) { failed.push(`${a.sport}-tabulka`); console.log(`::warning::${a.sport}: tabulka selhala: ${r.standingsError}`); }
       if (upcoming === 0) {
         if (isSuspiciousEmpty(prev, a.sport, now)) { failed.push(a.sport); console.log(`::warning::${a.sport}: 0 zápasů, ponechávám stará data`); }
@@ -52,7 +53,11 @@ async function main() {
   }));
 
   const merged = mergeDatasets(prev, outcomes, now);
-  const tables = mergeStandings(prevStandings, outcomes);
+  // týmy z tohoto běhu + z minula (klub, který zrovna nehraje v načteném okně, jinak zůstal bez teamId)
+  const knownTeams = [...new Map([...prev.teams, ...merged.teams].map((t) => [t.id, t])).values()];
+  const resolved = resolveStandingsTeamIds(mergeStandings(prevStandings, outcomes, now), knownTeams);
+  const tables = resolved.tables;
+  for (const [sport, u] of Object.entries(resolved.unresolved)) console.log(`::warning::${sport}: ${u.missing} z ${u.total} řádků tabulky bez teamId`);
   let matches = merged.matches;
   try {
     const cfg = parseBroadcasters(await readFile(new URL('../broadcasters.yml', import.meta.url), 'utf8'));

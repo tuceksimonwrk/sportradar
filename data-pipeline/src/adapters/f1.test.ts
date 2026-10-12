@@ -118,8 +118,9 @@ describe('parseF1Standings', () => {
   it('jedna strana prázdná → jen druhá tabulka; obě prázdné → []', () => {
     expect(parseF1Standings(drivers, {}).map((x) => x.id)).toEqual(['f1-drivers']);
     expect(parseF1Standings({}, cons).map((x) => x.id)).toEqual(['f1-constructors']);
-    expect(parseF1Standings(null, undefined)).toEqual([]);
-    expect(parseF1Standings({ MRData: { StandingsTable: { StandingsLists: [] } } }, {})).toEqual([]);
+    expect(parseF1Standings({ MRData: { StandingsTable: { StandingsLists: [] } } }, { MRData: { StandingsTable: { StandingsLists: [] } } })).toEqual([]); // před 1. kolem
+    expect(() => parseF1Standings(null, undefined)).toThrow();                // žádná data nemá očekávaný tvar
+    expect(() => parseF1Standings({}, {})).toThrow();
   });
 });
 

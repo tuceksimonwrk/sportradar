@@ -67,41 +67,57 @@ export function parseElhRound(html: string, now: Date): AdapterResult {
   return { matches, teams: [...teams.values()] };
 }
 
-const ELH_COLS: Record<string, string> = { z: 'z', v: 'v', vp: 'vp', pp: 'pp', p: 'p', 'skóre': 'skore', b: 'b' };
+const ELH_ORDER = ['z', 'v', 'vp', 'pp', 'p', 'skóre', 'b'];
+const ELH_KEY: Record<string, string> = { z: 'z', v: 'v', vp: 'vp', pp: 'pp', p: 'p', 'skóre': 'skore', b: 'b' };
 const ELH_TITLES: Record<string, string> = {
   z: 'Zápasy', v: 'Výhry', vp: 'Výhry v prodloužení', pp: 'Prohry v prodloužení', p: 'Prohry', skore: 'Skóre', b: 'Body',
 };
 const norm = (s: string) => s.replace(/\s+/g, ' ').trim();
+const BLANK = new Set(['', '-', '–']);
+const MIN_ELH_ROWS = 10;
 
-/** Hlavní tabulka základní části: první tabulka s hlavičkou Tým + Z V VP PP P Skóre B (doma/venku mají stejné hlavičky, ale jdou až po ní). */
+/**
+ * Hlavní tabulka základní části: tabulka s hlavičkou Tým Z V P Skóre B, jejíž nadpis neobsahuje doma/venku.
+ * Platná, ale ještě prázdná tabulka → []. Nenalezená tabulka, zahozený řádek nebo pozice mimo 1..N → výjimka (chyba tvaru).
+ */
 export function parseElhStandings(html: string, teams: Team[]): StandingsTable[] {
   const $ = cheerio.load(html);
   for (const table of $('table').toArray()) {
     const heads = $(table).find('thead th').map((_, h) => norm($(h).text()).toLowerCase()).get();
-    const need = ['tým', 'z', 'v', 'vp', 'pp', 'p', 'skóre', 'b'];
-    if (!need.every((n) => heads.includes(n))) continue;
+    if (!['tým', 'z', 'v', 'p', 'b', 'skóre'].every((n) => heads.includes(n))) continue;
+    const heading = norm($(table).prevAll('h1,h2,h3,h4,h5,h6').first().text()).toLowerCase();
+    if (/doma|venku/.test(heading)) continue;
+    const labels = ELH_ORDER.filter((l) => heads.includes(l));
     const idx = (label: string) => heads.indexOf(label);
-    const cols = Object.keys(ELH_COLS).map((label) => ({ label, key: ELH_COLS[label], i: idx(label) }));
-    const columns: StandingsColumn[] = cols.map((c) => ({ key: c.key, label: c.label === 'skóre' ? 'Skóre' : c.label.toUpperCase(), title: ELH_TITLES[c.key] }));
+    const columns: StandingsColumn[] = labels.map((l) => ({ key: ELH_KEY[l], label: l === 'skóre' ? 'Skóre' : l.toUpperCase(), title: ELH_TITLES[ELH_KEY[l]] }));
+    const candidates = $(table).find('tbody tr').toArray()
+      .map((tr) => $(tr).children('td').map((__, c) => norm($(c).text())).get())
+      .filter((tds) => tds.length > 0);
     const rows: StandingRow[] = [];
-    $(table).find('tbody tr').each((_, tr) => {
-      const tds = $(tr).children('td').map((__, c) => norm($(c).text())).get();
-      const pos = Number.parseInt(tds[idx('#') >= 0 ? idx('#') : 0] ?? '', 10);
+    let blank = 0;
+    for (const tds of candidates) {
+      const stats = labels.map((l) => tds[idx(l)] ?? '');
+      if (stats.every((x) => BLANK.has(x))) { blank++; continue; }
+      const pos = /^(\d+)\.?$/.exec(tds[idx('#') >= 0 ? idx('#') : 0] ?? '');
       const name = tds[idx('tým')];
-      if (!Number.isInteger(pos) || !name || tds.length < heads.length) return;
+      if (!pos || !name || tds.length < heads.length) continue;
       const values: Record<string, string | number> = {};
-      for (const c of cols) {
-        const raw = tds[c.i] ?? '';
-        if (c.key === 'skore') { if (!/^[0-9]+:[0-9]+$/.test(raw)) return; values.skore = raw; }
-        else { if (!/^[0-9]+$/.test(raw)) return; values[c.key] = Number(raw); }
-      }
+      let ok = true;
+      labels.forEach((l, i) => {
+        const raw = stats[i].replace(/\s*:\s*/g, ':');
+        if (l === 'skóre') { if (/^[0-9]+:[0-9]+$/.test(raw)) values.skore = raw; else ok = false; }
+        else if (/^[0-9]+$/.test(raw)) values[ELH_KEY[l]] = Number(raw); else ok = false;
+      });
+      if (!ok) continue;
       const teamId = matchTeamId(name, teams);
-      rows.push({ pos, name, ...(teamId && { teamId }), values });
-    });
-    if (rows.length === 0) continue;
+      rows.push({ pos: Number(pos[1]), name, ...(teamId && { teamId }), values });
+    }
+    if (candidates.length === 0 || blank === candidates.length) return []; // ještě bez odehraných zápasů
+    if (rows.length !== candidates.length) throw new Error(`ELH: tabulka má ${candidates.length - rows.length} nezpracovatelných řádků z ${candidates.length} (změněné HTML?)`);
+    if (rows.length < MIN_ELH_ROWS || rows.some((r, i) => r.pos !== i + 1)) throw new Error('ELH: neočekávané pořadí v tabulce (změněné HTML?)');
     return [{ id: 'cz-hockey', sport: 'cz-hockey', title: 'Tipsport extraliga', columns, rows }];
   }
-  return [];
+  throw new Error('ELH: tabulka nenalezena (změněné HTML?)');
 }
 
 export const elhAdapter = {
@@ -121,7 +137,6 @@ export const elhAdapter = {
     const out = combine(parts);
     try {
       const tables = parseElhStandings(await get('https://www.hokej.cz/tipsport-extraliga/table'), out.teams);
-      if (tables.length === 0) throw new Error('ELH: tabulka nenalezena (změněné HTML?)');
       out.standings = tables;
     } catch (e) { out.standingsError = (e as Error).message; }
     return out;

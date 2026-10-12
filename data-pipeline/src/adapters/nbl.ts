@@ -52,28 +52,43 @@ const NBL_COLUMNS = [
   { key: 'skore', label: 'Skóre', title: 'Skóre (vstřeleno:obdrženo)' },
 ];
 
-/** Aktuální tabulka: hlavička pořadí + tým + z v p vstřeleno obdrženo + doma/venku (historická tabulka „tituly“ ji nemá). */
+const MIN_NBL_ROWS = 6;
+const nblBlank = (s: string) => s === '' || s === '-' || s === '–';
+
+/**
+ * Aktuální tabulka: hlavička pořadí + tým + z v p vstřeleno obdrženo + doma/venku (historická tabulka „tituly“ ji nemá).
+ * Prázdná platná tabulka → []; nenalezená tabulka, zahozený řádek nebo pozice mimo 1..N → výjimka.
+ */
 export function parseNblStandings(html: string): StandingsTable[] {
   const $ = cheerio.load(html);
   for (const table of $('table').toArray()) {
     const heads = $(table).find('thead th').map((_, h) => $(h).text().replace(/\s+/g, ' ').trim().toLowerCase()).get();
-    if (!['pořadí', 'tým', 'z', 'v', 'p', 'vstřeleno', 'obdrženo', 'doma', 'venku'].every((n) => heads.includes(n))) continue;
+    if (!['pořadí', 'tým', 'z', 'v', 'p', 'vstřeleno', 'obdrženo', 'doma', 'venku'].every((x) => heads.includes(x))) continue;
+    const candidates = $(table).find('tbody tr').toArray().map((tr) => $(tr).children('td').toArray()).filter((tds) => tds.length > 0);
     const rows: StandingRow[] = [];
-    $(table).find('tbody tr').each((_, tr) => {
-      const tds = $(tr).children('td').toArray();
-      const li = tds.findIndex((td) => $(td).find('a[href*="/tym/"]').length > 0);
-      if (li < 1) return;
-      const name = $(tds[li]).text().replace(/\s+/g, ' ').trim();
-      const pos = Number.parseInt($(tds[0]).text(), 10);
-      const cell = (o: number) => $(tds[li + o]).text().replace(/\s+/g, ' ').trim();
-      const [z, v, p, vs, ob] = [1, 2, 3, 5, 6].map((o) => cell(o));
-      if (!name || !Number.isInteger(pos) || ![z, v, p, vs, ob].every((x) => /^[0-9]+$/.test(x))) return;
-      rows.push({ pos, name, teamId: `cz-basket:${slugify(name)}`, values: { z: Number(z), v: Number(v), p: Number(p), skore: `${vs}:${ob}` } });
-    });
-    if (rows.length === 0) continue;
+    let blank = 0;
+    for (const tds of candidates) {
+      const text = (td: (typeof tds)[number] | undefined) => (td ? $(td).text().replace(/\s+/g, ' ').trim() : '');
+      const num = (td: (typeof tds)[number] | undefined) => text(td).replace(/\s/g, '');
+      let li = -1; let name = '';
+      tds.forEach((td, i) => {
+        if (li >= 0) return;
+        const a = $(td).find('a[href*="/tym/"]').toArray().find((x) => $(x).text().replace(/\s+/g, ' ').trim());
+        if (a) { li = i; name = $(a).text().replace(/\s+/g, ' ').trim(); }
+      });
+      if (li < 0) continue;
+      const [z, v, p, vs, ob] = [1, 2, 3, 5, 6].map((o) => num(tds[li + o]));
+      if ([z, v, p, vs, ob].every(nblBlank)) { blank++; continue; }
+      const pos = /^(\d+)\.?$/.exec(text(tds[0]));
+      if (!pos || ![z, v, p, vs, ob].every((x) => /^[0-9]+$/.test(x))) continue;
+      rows.push({ pos: Number(pos[1]), name, teamId: `cz-basket:${slugify(name)}`, values: { z: Number(z), v: Number(v), p: Number(p), skore: `${vs}:${ob}` } });
+    }
+    if (candidates.length === 0 || blank === candidates.length) return []; // ještě bez odehraných zápasů
+    if (rows.length !== candidates.length) throw new Error(`NBL: tabulka má ${candidates.length - rows.length} nezpracovatelných řádků z ${candidates.length} (změněné HTML?)`);
+    if (rows.length < MIN_NBL_ROWS || rows.some((r, i) => r.pos !== i + 1)) throw new Error('NBL: neočekávané pořadí v tabulce (změněné HTML?)');
     return [{ id: 'cz-basket', sport: 'cz-basket', title: 'NBL', columns: NBL_COLUMNS, rows }];
   }
-  return [];
+  throw new Error('NBL: tabulka nenalezena (změněné HTML?)');
 }
 
 export const nblAdapter = {
@@ -82,7 +97,6 @@ export const nblAdapter = {
     const out: AdapterResult = parseNbl(await get('https://www.nbl.basketball/zapasy'), now);
     try {
       const tables = parseNblStandings(await get('https://www.nbl.basketball/tabulka'));
-      if (tables.length === 0) throw new Error('NBL: tabulka nenalezena (změněné HTML?)');
       out.standings = tables;
     } catch (e) { out.standingsError = (e as Error).message; }
     return out;

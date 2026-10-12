@@ -72,7 +72,7 @@ const signed = (v: unknown): string => (typeof v === 'number' && Number.isFinite
 
 export function parseNhlStandings(json: unknown): StandingsTable[] {
   const list = (json as any)?.standings;
-  if (!Array.isArray(list)) return [];
+  if (!Array.isArray(list)) throw new Error("NHL: neočekávaný tvar tabulky (změněná data?)");
   const by: Record<string, { seq: number; row: StandingRow }[]> = { Eastern: [], Western: [] };
   for (const e of list) {
     const abbrev = e?.teamAbbrev?.default;
@@ -114,7 +114,6 @@ export const nhlAdapter = {
     const out: AdapterResult = combine(parts);
     try {
       const tables = parseNhlStandings(await get('https://api-web.nhle.com/v1/standings/now'));
-      if (tables.length === 0) throw new Error('NHL: prázdná tabulka (změněná data?)');
       out.standings = tables;
     } catch (e) { out.standingsError = (e as Error).message; }
     return out;

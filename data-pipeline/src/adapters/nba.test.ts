@@ -144,9 +144,16 @@ describe('parseNbaStandings', () => {
     expect(t[1].rows[2].values).toEqual({ v: '–', p: '–', pct: '–', gb: '–' });
   });
   it('prázdný / změněný vstup → []', () => {
-    expect(parseNbaStandings({})).toEqual([]);
     expect(parseNbaStandings({ children: [{ name: 'Eastern Conference', standings: { entries: [] } }] })).toEqual([]);
-    expect(parseNbaStandings(undefined)).toEqual([]);
+    expect(parseNbaStandings({ children: [] })).toEqual([]);
+    expect(() => parseNbaStandings({})).toThrow();
+    expect(() => parseNbaStandings(undefined)).toThrow();
+  });
+  it('playoffSeed 0 nebo chybějící = nejnižší priorita (řadí se podle winPercent)', () => {
+    const r = parseNbaStandings({ children: [{ name: 'Eastern Conference', standings: { entries: [
+      entry('AAA', '0', '3', '0', '1.000', '-'), entry('BBB', '1', '1', '2', '.333', '2'), entry('CCC', null, '2', '1', '.667', '1'),
+    ] } }] });
+    expect(r[0].rows.map((x) => x.teamId)).toEqual(['nba:BBB', 'nba:AAA', 'nba:CCC']);
   });
 });
 

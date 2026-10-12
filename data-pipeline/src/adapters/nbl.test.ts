@@ -58,43 +58,57 @@ describe('parseNbl', () => {
 
 const nth = (s: string) => `<th>${s}</th>`;
 const NBL_HEAD = `<thead><tr>${['pořadí'].map(nth).join('')}<th colspan="2">tým</th>${['z', 'v', 'p', 'úspěšnost', 'vstřeleno', 'obdrženo', 'rozdíl', 'doma', 'venku'].map(nth).join('')}</tr></thead>`;
-const nrow = (pos: string, name: string, z: string, v: string, p: string, pct: string, vs: string, ob: string) => `
-<tr><td class="font-weight-bold"> ${pos} </td><td><div class="d-flex"><a class="d-block"><span class="sr-only">Posun v tabulce</span></a><img alt=""></div></td>
+const nrow = (pos: string, name: string, z = '6', v = '3', p = '3', pct = '50.0', vs = '500', ob = '480', logo = '') => `
+<tr><td class="font-weight-bold"> ${pos} </td><td><div class="d-flex"><a class="d-block" href="/tym/logo-${pos}">${logo}<img alt=""></a></div></td>
 <td><a href="/tym/x?y=2026" class="d-md-flex">${name}</a></td><td>${z}</td><td class="text-center">${v}</td><td class="text-center">${p}</td>
 <td class="text-center"> ${pct} </td><td class="text-right">${vs}</td><td class="text-right">${ob}</td><td>0</td><td>3</td><td>3</td></tr>`;
-const nblTable = `
-<table><thead><tr><th>pořadí</th><th>tým</th><th>S</th><th>z</th><th>v</th><th>p</th><th>B</th><th>tituly</th></tr></thead><tbody>
-<tr><td>1.</td><td><a href="/tym/era">ERA Basketball Nymburk</a></td><td>1</td></tr></tbody></table>
-<table>${NBL_HEAD}<tbody>
-${nrow('1.', 'SK Slavia Praha ERA NBK', '6', '6', '0', '100.0', '604', '454')}
-${nrow('2.', 'BK KVIS Pardubice', '6', '5', '1', '83.3', '535', '496')}
-${nrow('3.', 'Nový Tým', '0', '0', '0', '-', '0', '0')}
-${nrow('4.', 'Vadný Tým', 'a', 'b', 'c', '-', '-', '-')}
-<tr><td>5.</td><td>bez odkazu</td></tr>
-</tbody></table>`;
+const NBL_CLUBS = ['SK Slavia Praha ERA NBK', 'BK KVIS Pardubice', 'SLUNETA Ústí nad Labem', 'BK ARMEX ENERGY Děčín', 'NH Ostrava', 'Sršni Photomate Písek',
+  'BK Opava', 'USK Praha', 'BK GAPA Hradec Králové', 'PUMPA Basket Brno', 'BK Olomoucko', 'BK Loko BaliMania Plzeň'];
+const nrows = (n: number, mod: (i: number) => string[] = () => []) =>
+  Array.from({ length: n }, (_, i) => nrow(String(i + 1) + '.', NBL_CLUBS[i], ...(mod(i) as [string?]))).join('');
+const nblMain = (body: string) => `<table>${NBL_HEAD}<tbody>${body}</tbody></table>`;
+const nblHistoric = `<table><thead><tr><th>pořadí</th><th>tým</th><th>S</th><th>z</th><th>v</th><th>p</th><th>B</th><th>tituly</th></tr></thead><tbody>
+<tr><td>1.</td><td><a href="/tym/era">ERA Basketball Nymburk</a></td><td>1</td></tr></tbody></table>`;
 
 describe('parseNblStandings', () => {
-  const t = parseNblStandings(nblTable);
+  const t = parseNblStandings(`${nblHistoric}${nblMain(nrows(12))}`);
   it('vybere tabulku podle hlaviček (doma/venku), ne historickou', () => {
     expect(t).toHaveLength(1);
     expect(t[0]).toMatchObject({ id: 'cz-basket', sport: 'cz-basket', title: 'NBL' });
     expect(t[0].columns.map((c) => c.label)).toEqual(['Z', 'V', 'P', 'Skóre']);
-    expect(t[0].rows.map((r) => r.name)).toEqual(['SK Slavia Praha ERA NBK', 'BK KVIS Pardubice', 'Nový Tým']);
+    expect(t[0].rows).toHaveLength(12);
   });
-  it('hodnoty, teamId přes slugify, vadné řádky zahozeny', () => {
-    expect(t[0].rows[0]).toEqual({ pos: 1, name: 'SK Slavia Praha ERA NBK', teamId: 'cz-basket:sk-slavia-praha-era-nbk', values: { z: 6, v: 6, p: 0, skore: '604:454' } });
-    expect(t[0].rows[2].values).toEqual({ z: 0, v: 0, p: 0, skore: '0:0' });
+  it('hodnoty, teamId přes slugify', () => {
+    expect(t[0].rows[0]).toEqual({ pos: 1, name: 'SK Slavia Praha ERA NBK', teamId: 'cz-basket:sk-slavia-praha-era-nbk', values: { z: 6, v: 3, p: 3, skore: '500:480' } });
   });
-  it('změněné / prázdné HTML → []', () => {
-    expect(parseNblStandings('<html></html>')).toEqual([]);
-    expect(parseNblStandings('<table><thead><tr><th>pořadí</th><th>tým</th></tr></thead></table>')).toEqual([]);
+  it('jméno týmu je první neprázdný odkaz /tym/ (ne logo), nbsp ve skóre', () => {
+    const r = parseNblStandings(nblMain(nrows(6, (i) => (i === 0 ? ['6', '3', '3', '50.0', '5 00', '480'] : []))));
+    expect(r[0].rows[0].name).toBe('SK Slavia Praha ERA NBK');
+    expect(r[0].rows[0].values.skore).toBe('500:480');
+  });
+  it('řádek, který nejde zpracovat → chyba tvaru', () => {
+    expect(() => parseNblStandings(nblMain(nrows(5) + nrow('6.', 'BK Opava', 'x')))).toThrow();
+    expect(() => parseNblStandings(nblMain(nrows(6) + '<tr><td>7.</td><td>bez odkazu</td></tr>'))).toThrow();
+  });
+  it('pozice nejsou 1..N nebo N < 6 → chyba', () => {
+    expect(() => parseNblStandings(nblMain(nrows(6).replace('> 3. <', '> 4. <')))).toThrow();
+    expect(() => parseNblStandings(nblMain(nrows(5)))).toThrow();
+  });
+  it('platná, ale prázdná tabulka (bez řádků / jen pomlčky) → []', () => {
+    expect(parseNblStandings(nblMain(''))).toEqual([]);
+    const dashes = Array.from({ length: 12 }, (_, i) => nrow(`${i + 1}.`, NBL_CLUBS[i], '-', '-', '-', '-', '-', '-')).join('');
+    expect(parseNblStandings(nblMain(dashes))).toEqual([]);
+  });
+  it('žádná tabulka s očekávanými hlavičkami → chyba', () => {
+    expect(() => parseNblStandings('<html></html>')).toThrow();
+    expect(() => parseNblStandings(nblHistoric)).toThrow();
   });
 });
 
 describe('nblAdapter.fetch – tabulky', () => {
   const now = new Date('2026-10-12T12:00:00Z');
   it('úspěch: standings přítomné', async () => {
-    const r = await nblAdapter.fetch(now, async (u: string) => (u.endsWith('/tabulka') ? nblTable : html));
+    const r = await nblAdapter.fetch(now, async (u: string) => (u.endsWith('/tabulka') ? nblMain(nrows(12)) : html));
     expect(r.standings?.[0].id).toBe('cz-basket');
     expect(r.standingsError).toBeUndefined();
   });
@@ -103,5 +117,12 @@ describe('nblAdapter.fetch – tabulky', () => {
     expect(r.matches.length).toBeGreaterThan(0);
     expect(r.standings).toBeUndefined();
     expect(r.standingsError).toContain('boom');
+  });
+  it('změněné HTML = standingsError; prázdná tabulka = [] bez chyby', async () => {
+    const changed = await nblAdapter.fetch(now, async (u: string) => (u.endsWith('/tabulka') ? '<html></html>' : html));
+    expect(changed.standingsError).toBeTruthy();
+    const empty = await nblAdapter.fetch(now, async (u: string) => (u.endsWith('/tabulka') ? nblMain('') : html));
+    expect(empty.standings).toEqual([]);
+    expect(empty.standingsError).toBeUndefined();
   });
 });

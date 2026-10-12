@@ -98,64 +98,88 @@ describe('elhAdapter.fetch', () => {
 
 const th = (label: string, title: string) => `<th><span class="hasqtip" data-content="${title}">${label}</span></th>`;
 const HEAD = `<thead><tr>${th('#', 'Pořadí')}${th('Tým', 'Název týmu')}${th('Z', 'Zápasy')}${th('V', 'Výhry')}${th('VP', 'Výhry v prodloužení')}${th('PP', 'Prohry v prodloužení')}${th('P', 'Prohry')}${th('Skóre', 'Celkové skóre')}${th('B', 'Body')}${th('B%', 'Úspěšnost')}</tr></thead>`;
-const srow = (pos: string, name: string, z: string, v: string, vp: string, pp: string, p: string, skore: string, b: string) => `
+const srow = (pos: string, name: string, z = '10', v = '5', vp = '0', pp = '1', p = '4', skore = '30:25', b = '16') => `
 <tr><td>${pos}</td><td data-sort-value="x">
    ${name}
 </td><td>${z}</td><td>${v}</td><td>${vp}</td>
 
 <td>${pp}</td><td>${p}</td><td data-sort-value="49">${skore}</td><td class="sorting-by">${b}</td><td>93</td></tr>`;
-const tableHtml = `
-<table><thead><tr><th>Pořadí</th><th>Klub</th><th>Body</th></tr></thead><tbody><tr><td>2.</td><td><a href="/klub/x?t=junk%3C%21DOCTYPE">HC Dynamo Pardubice</a></td><td>26</td></tr></tbody></table>
-<h3>Tipsport extraliga</h3>
-<table class="table-soupiska">${HEAD}<tbody>
-${srow('1', 'HC Oceláři Třinec', '10', '9', '0', '1', '0', '49:23', '28')}
-${srow('2', 'HC Dynamo Pardubice', '11', '8', '1', '0', '2', '47:31', '26')}
-${srow('3', 'HC Nový Klub', '9', '6', '0', '0', '3', '22:16', '18')}
-${srow('x', 'Vadný řádek', '1', '1', '0', '0', '0', '1:0', '3')}
-<tr><td>5</td><td>Krátký řádek</td><td>1</td></tr>
-</tbody></table>
-<h3>Tipsport extraliga - VENKU</h3>
-<table class="table-soupiska">${HEAD}<tbody>${srow('1', 'HC Sparta Praha', '4', '4', '0', '0', '0', '15:7', '12')}</tbody></table>`;
+const CLUBS = ['HC Oceláři Třinec', 'HC Dynamo Pardubice', 'BYD Energie Karlovy Vary', 'HC Škoda Plzeň', 'Mountfield HK', 'Banes Motor Č. Budějovice',
+  'Rytíři Kladno', 'HC Sparta Praha', 'Bílí Tygři Liberec', 'HC VERVA Litvínov', 'HC Kometa Brno', 'BK Mladá Boleslav', 'HC VÍTKOVICE RIDERA', 'HC Olomouc'];
+const rowsOf = (n: number, mod: (i: number) => Partial<string[]> | string[] = () => []) =>
+  Array.from({ length: n }, (_, i) => srow(String(i + 1), CLUBS[i], ...(mod(i) as string[]))).join('\n');
+const mainTable = (body: string, h = 'Tipsport extraliga') => `<h2>${h}</h2><table class="table-soupiska">${HEAD}<tbody>${body}</tbody></table>`;
+const decoy = `<table><thead><tr><th>Pořadí</th><th>Klub</th><th>Body</th></tr></thead><tbody><tr><td>2.</td><td><a href="/klub/x?t=junk%3C%21DOCTYPE">HC Dynamo Pardubice</a></td><td>26</td></tr></tbody></table>`;
 
 describe('parseElhStandings', () => {
   const teams = [
     { id: 'cz-hockey:TRI', sport: 'cz-hockey' as const, name: 'HC Oceláři Třinec' },
     { id: 'cz-hockey:PCE', sport: 'cz-hockey' as const, name: 'HC Dynamo Pardubice' },
   ];
-  const t = parseElhStandings(tableHtml, teams);
-  it('vybere hlavní tabulku podle hlaviček (ne první tabulku, ne doma/venku)', () => {
+  const t = parseElhStandings(`${decoy}${mainTable(rowsOf(14))}${mainTable(rowsOf(12), 'Tipsport extraliga - VENKU')}`, teams);
+  it('vybere hlavní tabulku podle hlaviček (ne decoy, ne doma/venku)', () => {
     expect(t).toHaveLength(1);
     expect(t[0]).toMatchObject({ id: 'cz-hockey', sport: 'cz-hockey', title: 'Tipsport extraliga' });
-    expect(t[0].rows.map((r) => r.name)).toEqual(['HC Oceláři Třinec', 'HC Dynamo Pardubice', 'HC Nový Klub']);
+    expect(t[0].rows).toHaveLength(14);
     expect(t[0].columns.map((c) => c.label)).toEqual(['Z', 'V', 'VP', 'PP', 'P', 'Skóre', 'B']);
     expect(t[0].columns.map((c) => c.key)).toEqual(['z', 'v', 'vp', 'pp', 'p', 'skore', 'b']);
   });
+  it('doma/venku tabulka před hlavní se přeskočí podle nadpisu', () => {
+    const r = parseElhStandings(`${mainTable(rowsOf(12), 'Tipsport extraliga - DOMA')}${mainTable(rowsOf(14))}`, teams);
+    expect(r[0].rows).toHaveLength(14);
+  });
   it('hodnoty, pozice a teamId (klub bez shody → bez teamId)', () => {
-    expect(t[0].rows[0]).toEqual({ pos: 1, name: 'HC Oceláři Třinec', teamId: 'cz-hockey:TRI', values: { z: 10, v: 9, vp: 0, pp: 1, p: 0, skore: '49:23', b: 28 } });
+    expect(t[0].rows[0]).toEqual({ pos: 1, name: 'HC Oceláři Třinec', teamId: 'cz-hockey:TRI', values: { z: 10, v: 5, vp: 0, pp: 1, p: 4, skore: '30:25', b: 16 } });
     expect(t[0].rows[1].teamId).toBe('cz-hockey:PCE');
     expect(t[0].rows[2]).not.toHaveProperty('teamId');
   });
-  it('změněné / prázdné HTML → []', () => {
-    expect(parseElhStandings('<html></html>', teams)).toEqual([]);
-    expect(parseElhStandings('<table><thead><tr><th>Tým</th></tr></thead></table>', teams)).toEqual([]);
+  it('nbsp a mezery kolem dvojtečky ve skóre se normalizují', () => {
+    const r = parseElhStandings(mainTable(rowsOf(10, (i) => (i === 0 ? ['10', '5', '0', '1', '4', '49 : 23', '16'] : []))), teams);
+    expect(r[0].rows[0].values.skore).toBe('49:23');
+  });
+  it('řádek, který nejde zpracovat → chyba tvaru (tabulka se nezkrátí potichu)', () => {
+    const bad = rowsOf(9) + srow('10', 'HC Olomouc', 'x');
+    expect(() => parseElhStandings(mainTable(bad), teams)).toThrow();
+    expect(() => parseElhStandings(mainTable(rowsOf(10, (i) => (i === 3 ? ['10', '5', '0', '1', '4', 'nic', '16'] : []))), teams)).toThrow();
+  });
+  it('pozice nejsou 1..N nebo N < 10 → chyba', () => {
+    const gap = rowsOf(10).replace('<tr><td>5</td>', '<tr><td>6</td>');
+    expect(() => parseElhStandings(mainTable(gap), teams)).toThrow();
+    expect(() => parseElhStandings(mainTable(rowsOf(9)), teams)).toThrow();
+  });
+  it('platná, ale ještě prázdná tabulka (bez řádků / jen pomlčky) → []', () => {
+    expect(parseElhStandings(mainTable(''), teams)).toEqual([]);
+    const dashes = Array.from({ length: 14 }, (_, i) => srow(`${i + 1}`, CLUBS[i], '-', '-', '-', '-', '-', '-', '-')).join('');
+    expect(parseElhStandings(mainTable(dashes), teams)).toEqual([]);
+  });
+  it('žádná tabulka s očekávanými hlavičkami → chyba', () => {
+    expect(() => parseElhStandings('<html></html>', teams)).toThrow();
+    expect(() => parseElhStandings(decoy, teams)).toThrow();
   });
 });
 
 describe('elhAdapter.fetch – tabulky', () => {
   const now = new Date('2026-10-12T12:00:00Z');
-  const teamHtml = `${html}`;
+  const tableHtml = mainTable(rowsOf(14));
   it('úspěch: standings přítomné, teamId z týmů adapteru', async () => {
-    const get = async (u: string) => (u.endsWith('/table') ? tableHtml : teamHtml);
+    const get = async (u: string) => (u.endsWith('/table') ? tableHtml : html);
     const r = await elhAdapter.fetch(now, get);
     expect(r.standings?.[0].id).toBe('cz-hockey');
     expect(r.standingsError).toBeUndefined();
     expect(r.standings![0].rows[1].teamId).toBe('cz-hockey:PCE');
   });
-  it('selhání tabulky nezabije zápasy', async () => {
-    const get = async (u: string) => { if (u.endsWith('/table')) throw new Error('boom'); return teamHtml; };
+  it('selhání tabulky (HTTP) nezabije zápasy', async () => {
+    const get = async (u: string) => { if (u.endsWith('/table')) throw new Error('boom'); return html; };
     const r = await elhAdapter.fetch(now, get);
     expect(r.matches.length).toBeGreaterThan(0);
     expect(r.standings).toBeUndefined();
     expect(r.standingsError).toContain('boom');
+  });
+  it('změněné HTML = standingsError; prázdná tabulka mimo sezónu = [] bez chyby', async () => {
+    const changed = await elhAdapter.fetch(now, async (u: string) => (u.endsWith('/table') ? '<html></html>' : html));
+    expect(changed.standingsError).toBeTruthy();
+    const empty = await elhAdapter.fetch(now, async (u: string) => (u.endsWith('/table') ? mainTable('') : html));
+    expect(empty.standings).toEqual([]);
+    expect(empty.standingsError).toBeUndefined();
   });
 });

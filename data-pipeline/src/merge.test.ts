@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Match, StandingsTable, Team } from '@sportradar/shared';
-import { isSuspiciousEmpty, mergeDatasets, mergeStandings, upcomingCount } from './merge';
+import { isSuspiciousEmpty, mergeDatasets, mergeStandings, resolveStandingsTeamIds, upcomingCount } from './merge';
 
 const now = new Date('2026-10-12T12:00:00Z');
 const m = (id: string, sport: Match['sport'], startsAt: string): Match =>
@@ -105,22 +105,51 @@ describe('isSuspiciousEmpty', () => {
 });
 
 describe('mergeStandings', () => {
-  const tbl = (id: string, sport: Match['sport'], name = 'x'): StandingsTable =>
-    ({ id, sport, title: id, columns: [], rows: [{ pos: 1, name, values: {} }] });
-  const prevT = [tbl('nhl-east', 'nhl', 'old'), tbl('nhl-west', 'nhl', 'old'), tbl('f1-drivers', 'f1', 'old'), tbl('nba-east', 'nba', 'old')];
+  const OLD = '2026-10-01T00:00:00.000Z';
+  const tbl = (id: string, sport: Match['sport'], name = 'x', updatedAt?: string): StandingsTable =>
+    ({ id, sport, title: id, columns: [], rows: [{ pos: 1, name, values: {} }], ...(updatedAt && { updatedAt }) });
+  const prevT = [tbl('nhl-east', 'nhl', 'old', OLD), tbl('nhl-west', 'nhl', 'old', OLD), tbl('f1-drivers', 'f1', 'old', OLD), tbl('nba-east', 'nba', 'old', OLD)];
   const ok = (standings?: StandingsTable[]) => ({ matches: [], teams: [], ...(standings && { standings }) });
-  it('čerstvé neprázdné tabulky nahradí staré tabulky sportu', () => {
-    const r = mergeStandings(prevT, { nhl: ok([tbl('nhl-east', 'nhl', 'new')]) });
-    expect(r.filter((x) => x.sport === 'nhl').map((x) => x.rows[0].name)).toEqual(['new']);
+  it('čerstvé tabulky nahradí staré se stejným id, dostanou updatedAt = now', () => {
+    const r = mergeStandings(prevT, { nhl: ok([tbl('nhl-east', 'nhl', 'new'), tbl('nhl-west', 'nhl', 'new')]) }, now);
+    expect(r.filter((x) => x.sport === 'nhl').map((x) => [x.rows[0].name, x.updatedAt])).toEqual([['new', now.toISOString()], ['new', now.toISOString()]]);
   });
-  it('chyba, chybějící nebo prázdné standings ponechají předchozí', () => {
-    const r = mergeStandings(prevT, { nhl: new Error('x'), f1: ok(), nba: ok([]) });
+  it('slučuje po id: nhl-west přežije, když je čerstvá jen nhl-east (a zachová si staré updatedAt)', () => {
+    const r = mergeStandings(prevT, { nhl: ok([tbl('nhl-east', 'nhl', 'new')]) }, now);
+    expect(r.filter((x) => x.sport === 'nhl').map((x) => [x.id, x.rows[0].name, x.updatedAt])).toEqual([
+      ['nhl-east', 'new', now.toISOString()], ['nhl-west', 'old', OLD]]);
+  });
+  it('pořadí: nejdřív čerstvé, pak přenesené v pořadí z minula', () => {
+    const p = [tbl('nhl-east', 'nhl', 'o', OLD), tbl('nhl-west', 'nhl', 'o', OLD)];
+    const r = mergeStandings(p, { nhl: ok([tbl('nhl-west', 'nhl', 'n')]) }, now);
+    expect(r.map((x) => x.id)).toEqual(['nhl-west', 'nhl-east']);
+  });
+  it('chyba, chybějící nebo prázdné standings ponechají předchozí beze změny updatedAt', () => {
+    const r = mergeStandings(prevT, { nhl: new Error('x'), f1: ok(), nba: ok([]) }, now);
     expect(r.map((x) => x.id).sort()).toEqual(['f1-drivers', 'nba-east', 'nhl-east', 'nhl-west']);
-    expect(r.every((x) => x.rows[0].name === 'old')).toBe(true);
+    expect(r.every((x) => x.rows[0].name === 'old' && x.updatedAt === OLD)).toBe(true);
   });
   it('sport bez dat a bez předchozích → nic; výstup v pořadí SPORTS', () => {
-    const r = mergeStandings([], { nba: ok([tbl('nba-east', 'nba')]), f1: ok([tbl('f1-drivers', 'f1')]) });
+    const r = mergeStandings([], { nba: ok([tbl('nba-east', 'nba')]), f1: ok([tbl('f1-drivers', 'f1')]) }, now);
     expect(r.map((x) => x.id)).toEqual(['f1-drivers', 'nba-east']);
-    expect(mergeStandings([], {})).toEqual([]);
+    expect(mergeStandings([], {}, now)).toEqual([]);
+  });
+});
+
+describe('resolveStandingsTeamIds', () => {
+  const teams: Team[] = [{ id: 'cz-hockey:PCE', sport: 'cz-hockey', name: 'HC Dynamo Pardubice' }, { id: 'nhl:PIT', sport: 'nhl', name: 'Pittsburgh Penguins' }];
+  const tb = (sport: Match['sport'], names: string[], withId?: string): StandingsTable =>
+    ({ id: sport, sport, title: 't', columns: [], rows: names.map((n, i) => ({ pos: i + 1, name: n, ...(i === 0 && withId && { teamId: withId }), values: {} })) });
+  it('doplní chybějící teamId z týmů téhož sportu (tolerantní shoda) a spočítá nevyřešené', () => {
+    const { tables, unresolved } = resolveStandingsTeamIds([tb('cz-hockey', ['Dynamo Pardubice', 'Neznámý'])], teams);
+    expect(tables[0].rows.map((r) => r.teamId)).toEqual(['cz-hockey:PCE', undefined]);
+    expect(unresolved).toEqual({ 'cz-hockey': { missing: 1, total: 2 } });
+  });
+  it('existující teamId a F1 se nemění', () => {
+    const f1 = tb('f1', ['A B']);
+    const { tables, unresolved } = resolveStandingsTeamIds([tb('nhl', ['Pittsburgh Penguins'], 'nhl:XXX'), f1], teams);
+    expect(tables[0].rows[0].teamId).toBe('nhl:XXX');
+    expect(tables[1]).toBe(f1);
+    expect(unresolved).toEqual({});
   });
 });

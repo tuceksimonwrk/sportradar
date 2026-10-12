@@ -49,3 +49,23 @@ describe('matchTeamId', () => {
     expect(matchTeamId('x', [])).toBeUndefined();
   });
 });
+
+describe('matchTeamId – tolerantní shoda', () => {
+  const T = (id: string, name: string) => ({ id, name });
+  const teams = [T('a', 'HC Dynamo Pardubice'), T('b', 'BK Olomoucko'), T('c', 'HC Olomouc'), T('d', 'BK Opava'), T('e', 'SK Slavia Praha ERA NBK'), T('f', 'Rytíři Kladno')];
+  it('bez klubového prefixu na jedné ze stran', () => {
+    expect(matchTeamId('Dynamo Pardubice', teams)).toBe('a');
+    expect(matchTeamId('Olomoucko', teams)).toBe('b');
+    expect(matchTeamId('HK Opava', teams)).toBe('d');
+    expect(matchTeamId('Kladno', [T('f', 'FK Kladno')])).toBe('f');
+  });
+  it('jednoznačné slovní obsažení kratšího v delším', () => {
+    expect(matchTeamId('Slavia Praha', teams)).toBe('e');
+    expect(matchTeamId('Rytíři Kladno HC', teams)).toBe('f');
+  });
+  it('víceznačné obsažení / jiné slovo → undefined', () => {
+    expect(matchTeamId('Olomouc', teams)).toBe('c');               // přesná shoda po odstranění prefixu
+    expect(matchTeamId('Praha', [T('x', 'HC Sparta Praha'), T('y', 'HC Slavia Praha')])).toBeUndefined();
+    expect(matchTeamId('Olomou', teams)).toBeUndefined();         // část slova se nepočítá
+  });
+});

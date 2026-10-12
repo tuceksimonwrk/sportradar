@@ -95,6 +95,8 @@ function f1Rows(list: unknown, nameOf: (x: any) => string, subOf?: (x: any) => s
 }
 
 export function parseF1Standings(driversJson: unknown, constructorsJson: unknown): StandingsTable[] {
+  const shaped = (j: unknown) => Array.isArray((j as any)?.MRData?.StandingsTable?.StandingsLists);
+  if (!shaped(driversJson) && !shaped(constructorsJson)) throw new Error("F1: neočekávaný tvar tabulky (změněná data?)");
   const lists = (j: unknown) => (j as any)?.MRData?.StandingsTable?.StandingsLists?.[0];
   const drivers = f1Rows(lists(driversJson)?.DriverStandings,
     (x) => [x?.Driver?.givenName, x?.Driver?.familyName].filter((p) => typeof p === 'string' && p.trim()).join(' '),
@@ -121,7 +123,6 @@ export const f1Adapter = {
         get('https://api.jolpi.ca/ergast/f1/current/constructorStandings.json'),
       ]);
       const tables = parseF1Standings(d, c);
-      if (tables.length === 0) throw new Error('F1: prázdná tabulka (změněná data?)');
       out.standings = tables;
     } catch (e) { out.standingsError = (e as Error).message; }
     return out;

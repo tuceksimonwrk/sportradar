@@ -43,5 +43,8 @@ export interface StandingRow {
   teamId?: string;              // id týmu shodné s Team.id (pro zvýraznění oblíbených), jinak undefined
   values: Record<string, string | number>;   // klíč = StandingsColumn.key
 }
-export interface StandingsTable { id: string; sport: Sport; title: string; columns: StandingsColumn[]; rows: StandingRow[] }
+export interface StandingsTable {
+  id: string; sport: Sport; title: string; columns: StandingsColumn[]; rows: StandingRow[];
+  updatedAt?: string;           // ISO: kdy se tabulka naposledy úspěšně stáhla (přenesené tabulky si starou hodnotu drží)
+}
 export interface StandingsFile { generatedAt: string; tables: StandingsTable[] }

@@ -1,5 +1,6 @@
 import { SPORTS, type Match, type Sport, type StandingsTable, type Team } from '@sportradar/shared';
 import type { AdapterResult } from './types';
+import { matchTeamId } from './util';
 
 export interface Dataset { matches: Match[]; teams: Team[] }
 export type SportOutcome = AdapterResult | Error;
@@ -60,13 +61,37 @@ export function isSuspiciousEmpty(prev: Dataset, sport: Sport, now: Date): boole
   });
 }
 
-/** Tabulky po sportech: čerstvé (neprázdné) vyhrávají, jinak zůstanou poslední dobré. */
-export function mergeStandings(prev: StandingsTable[], outcomes: Partial<Record<Sport, SportOutcome>>): StandingsTable[] {
+/** Tabulky po sportech a po id: čerstvé dostanou updatedAt = now, chybějící se přenesou z minula (se starým updatedAt). */
+export function mergeStandings(prev: StandingsTable[], outcomes: Partial<Record<Sport, SportOutcome>>, now: Date): StandingsTable[] {
   const out: StandingsTable[] = [];
+  const stamp = now.toISOString();
   for (const sport of SPORTS) {
     const o = outcomes[sport];
-    const fresh = o && !(o instanceof Error) && o.standings && o.standings.length > 0 ? o.standings : null;
-    out.push(...(fresh ?? prev.filter((t) => t.sport === sport)));
+    const fresh = o && !(o instanceof Error) && o.standings ? o.standings : [];
+    const freshIds = new Set(fresh.map((t) => t.id));
+    out.push(...fresh.map((t) => ({ ...t, updatedAt: stamp })));
+    out.push(...prev.filter((t) => t.sport === sport && !freshIds.has(t.id)));
   }
   return out;
+}
+
+/** Doplní chybějící teamId (ne F1) z daných týmů; vrací i počty nevyřešených řádků po sportech. */
+export function resolveStandingsTeamIds(tables: StandingsTable[], teams: Team[]): { tables: StandingsTable[]; unresolved: Partial<Record<Sport, { missing: number; total: number }>> } {
+  const unresolved: Partial<Record<Sport, { missing: number; total: number }>> = {};
+  const out = tables.map((t) => {
+    if (t.sport === 'f1') return t;
+    const pool = teams.filter((x) => x.sport === t.sport);
+    const rows = t.rows.map((r) => {
+      if (r.teamId) return r;
+      const id = matchTeamId(r.name, pool);
+      return id ? { ...r, teamId: id } : r;
+    });
+    const missing = rows.filter((r) => !r.teamId).length;
+    if (missing > 0) {
+      const cur = unresolved[t.sport] ?? { missing: 0, total: 0 };
+      unresolved[t.sport] = { missing: cur.missing + missing, total: cur.total + rows.length };
+    }
+    return { ...t, rows };
+  });
+  return { tables: out, unresolved };
 }

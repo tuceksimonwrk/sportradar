@@ -122,9 +122,9 @@ describe('parseNhlStandings', () => {
     expect(t[1].rows).toHaveLength(2);
   });
   it('prázdný / neznámý vstup → []', () => {
-    expect(parseNhlStandings({})).toEqual([]);
-    expect(parseNhlStandings({ standings: [] })).toEqual([]);
-    expect(parseNhlStandings(null)).toEqual([]);
+    expect(parseNhlStandings({ standings: [] })).toEqual([]);          // platné, jen prázdné
+    expect(() => parseNhlStandings({})).toThrow();                     // změněný tvar
+    expect(() => parseNhlStandings(null)).toThrow();
   });
 });
 
@@ -141,9 +141,12 @@ describe('nhlAdapter.fetch – tabulky', () => {
     expect(r.standings).toBeUndefined();
     expect(r.standingsError).toContain('boom');
   });
-  it('prázdné tabulky = chyba tabulky', async () => {
-    const r = await nhlAdapter.fetch(now, (async (u: string) => (u.includes('standings') ? {} : sched)) as any);
-    expect(r.standings).toBeUndefined();
-    expect(r.standingsError).toBeTruthy();
+  it('prázdná platná tabulka = [] bez chyby; změněný tvar = chyba', async () => {
+    const empty = await nhlAdapter.fetch(now, (async (u: string) => (u.includes('standings') ? { standings: [] } : sched)) as any);
+    expect(empty.standings).toEqual([]);
+    expect(empty.standingsError).toBeUndefined();
+    const bad = await nhlAdapter.fetch(now, (async (u: string) => (u.includes('standings') ? {} : sched)) as any);
+    expect(bad.standings).toBeUndefined();
+    expect(bad.standingsError).toBeTruthy();
   });
 });

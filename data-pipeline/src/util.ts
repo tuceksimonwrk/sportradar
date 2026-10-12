@@ -44,8 +44,24 @@ export function combine(results: AdapterResult[]): AdapterResult {
   return { matches: [...matches.values()], teams: [...teams.values()] };
 }
 
-/** Najde id týmu podle jména (shoda přes slugify); bez shody undefined. */
+const CLUB_PREFIX = /^(hc|bk|hk|sk|fk|bc)-(?=.)/;
+const stripPrefix = (slug: string) => slug.replace(CLUB_PREFIX, '');
+const hasWords = (long: string, short: string) => `-${long}-`.includes(`-${short}-`);
+
+/** Najde id týmu podle jména: přesná shoda slugu → shoda bez klubového prefixu (hc-, bk-…) → jednoznačné slovní obsažení. */
 export function matchTeamId(name: string, teams: { id: string; name: string }[]): string | undefined {
   const key = slugify(name);
-  return key ? teams.find((t) => slugify(t.name) === key)?.id : undefined;
+  if (!key) return undefined;
+  const slugs = teams.map((t) => ({ id: t.id, slug: slugify(t.name) })).filter((t) => t.slug);
+  const exact = slugs.find((t) => t.slug === key);
+  if (exact) return exact.id;
+  const k = stripPrefix(key);
+  const bare = slugs.filter((t) => stripPrefix(t.slug) === k);
+  if (bare.length === 1) return bare[0].id;
+  if (bare.length > 1) return undefined;
+  const contained = slugs.filter((t) => {
+    const s = stripPrefix(t.slug);
+    return s.length >= k.length ? hasWords(s, k) : hasWords(k, s);
+  });
+  return contained.length === 1 ? contained[0].id : undefined;
 }

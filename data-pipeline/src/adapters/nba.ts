@@ -81,7 +81,7 @@ const NBA_CONF = [
 
 export function parseNbaStandings(json: unknown): StandingsTable[] {
   const children = (json as any)?.children;
-  if (!Array.isArray(children)) return [];
+  if (!Array.isArray(children)) throw new Error('NBA: neočekávaný tvar tabulky (změněná data?)');
   const tables: StandingsTable[] = [];
   for (const conf of NBA_CONF) {
     const child = children.find((c: any) => conf.match.test(String(c?.name ?? '')));
@@ -101,7 +101,7 @@ export function parseNbaStandings(json: unknown): StandingsTable[] {
       };
       const seed = Number(stat('playoffSeed')?.value);
       const pct = Number(stat('winPercent')?.value);
-      parsed.push({ seed: Number.isFinite(seed) && stat('playoffSeed') ? seed : Infinity, pct: Number.isFinite(pct) ? pct : -1,
+      parsed.push({ seed: Number.isFinite(seed) && seed > 0 ? seed : Infinity, pct: Number.isFinite(pct) ? pct : -1,
         row: { name, teamId: `nba:${abbr}`, values: { v: disp('wins'), p: disp('losses'), pct: disp('winPercent'), gb: disp('gamesBehind') } } });
     }
     if (parsed.length === 0) continue;
@@ -124,7 +124,6 @@ export const nbaAdapter = {
     const out: AdapterResult = combine([...settled, ...past].map((s, i) => parseNba((s as PromiseFulfilledResult<unknown>).value, now, { resultsOnly: i >= settled.length })));
     try {
       const tables = parseNbaStandings(await get('https://site.api.espn.com/apis/v2/sports/basketball/nba/standings'));
-      if (tables.length === 0) throw new Error('NBA: prázdná tabulka (změněná data?)');
       out.standings = tables;
     } catch (e) { out.standingsError = (e as Error).message; }
     return out;
