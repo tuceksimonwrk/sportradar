@@ -12,7 +12,7 @@ import { nbaAdapter } from './adapters/nba';
 import { elhAdapter } from './adapters/elh';
 import { nblAdapter } from './adapters/nbl';
 import { footballAdapter } from './adapters/football';
-import { buildDetailIndex, createFetcher, generateDetails, selectDetailMatches, staleDetailFiles } from './details';
+import { buildDetailIndex, createFetcher, generateDetails, requestsBySport, selectDetailMatches, staleDetailFiles } from './details';
 import { getJson, getText } from './util';
 
 const OUT = new URL('../../web/public/data/', import.meta.url);
@@ -116,7 +116,8 @@ async function main() {
     console.log(`::warning::kalendáře: ${(e as Error).message}`);
   }
   try {
-    // detail zápasu (statistiky + sestavy) pro zápasy v příštích 36 h; selhání jednoho detailu běh neshodí
+    // detail zápasu (statistiky + sestavy) pro zápasy v příštích 7 dnech; selhání jednoho detailu běh neshodí
+    const started = Date.now();
     const selected = selectDetailMatches(matches, now);
     const get = createFetcher((url) => getText(url));
     const run = await generateDetails(selected, { get, now, matches, teams: knownTeams, standings: tables },
@@ -134,6 +135,8 @@ async function main() {
     const per = Object.entries(run.counts).map(([s, c]) => `${s} ${c.ok}/${c.total}`).join(', ');
     console.log(`[ok]   detaily: ${run.files.size} souborů, ${Math.round(bytes / 1024)} kB${per ? ` (${per})` : ''}`
       + `${run.kept ? `, ${run.kept} ponecháno z minula` : ''}, ${get.count} HTTP požadavků${stale.length ? `, ${stale.length} zastaralých smazáno` : ''}`);
+    const largest = Math.max(0, ...[...run.files.values()].map((d) => Buffer.byteLength(JSON.stringify(d))));
+    console.log(`[ok]   detaily: požadavky podle sportu ${Object.entries(requestsBySport(get.urls)).map(([k, n]) => `${k} ${n}`).join(', ')}; největší ${Math.round(largest / 1024)} kB; trvání ${((Date.now() - started) / 1000).toFixed(1)} s`);
   } catch (e) {
     failed.push('detaily');
     console.log(`::warning::detaily: ${(e as Error).message}`);

@@ -2,7 +2,7 @@ import type { Sport } from './index';
 import { calendarFileName } from './calendar';
 
 /** Detail se generuje pro zápasy, které začínají nejpozději za tolik hodin (hodinová pipeline, ne živě). */
-export const DETAIL_WINDOW_HOURS = 36;
+export const DETAIL_WINDOW_HOURS = 168; // 7 dní
 
 /** Řádek porovnání: hodnoty k zobrazení + volitelně čísla pro sloupek (lowerIsBetter = menší je lepší). */
 export interface DetailStatRow {

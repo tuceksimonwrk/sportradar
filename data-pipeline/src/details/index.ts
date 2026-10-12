@@ -6,7 +6,7 @@ import { footballDetail } from './football';
 import { nbaDetail } from './nba';
 import { nhlDetail } from './nhl';
 
-export { buildDetailIndex, createFetcher, selectDetailMatches, staleDetailFiles } from './common';
+export { buildDetailIndex, createFetcher, requestsBySport, selectDetailMatches, staleDetailFiles } from './common';
 
 export const DETAIL_BUILDERS: Record<Sport, DetailBuilder> = {
   nhl: nhlDetail, nba: nbaDetail, f1: f1Detail, 'cz-hockey': elhDetail, 'cz-basket': nblDetail,

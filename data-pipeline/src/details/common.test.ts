@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Match, MatchDetail, StandingsTable } from '@sportradar/shared';
-import { buildDetailIndex, createFetcher, dec, failedDetailSports, pickDetail, selectDetailMatches, sidesOf, staleDetailFiles, standingFor } from './common';
+import { buildDetailIndex, createFetcher, dec, failedDetailSports, pickDetail, requestsBySport, selectDetailMatches, sidesOf, staleDetailFiles, standingFor } from './common';
 
 const now = new Date('2026-10-12T12:00:00Z');
 const m = (id: string, startsAt: string, extra: Partial<Match> = {}): Match =>
@@ -9,10 +9,10 @@ const det = (id: string, generatedAt = now.toISOString()): MatchDetail =>
   ({ matchId: id, sport: 'nhl', generatedAt, source: 'x', stats: [], notes: [] });
 
 describe('selectDetailMatches', () => {
-  it('jen bez výsledku, start v [now − 3 h, now + 36 h] (hranice včetně), seřazené', () => {
+  it('jen bez výsledku, start v [now − 3 h, now + 7 dní] (hranice včetně), seřazené', () => {
     const list = [
-      m('nhl:late', '2026-10-14T00:00:00.001Z'),       // 36 h + 1 ms → ne
-      m('nhl:edge', '2026-10-14T00:00:00.000Z'),       // přesně 36 h → ano
+      m('nhl:late', '2026-10-19T12:00:00.001Z'),       // 168 h + 1 ms → ne
+      m('nhl:edge', '2026-10-19T12:00:00.000Z'),       // přesně 168 h → ano
       m('nhl:soon', '2026-10-12T13:00:00.000Z'),
       m('nhl:done', '2026-10-12T13:00:00.000Z', { result: { home: 1, away: 0 } }),
       m('nhl:live', '2026-10-12T10:00:00.000Z'),       // probíhá (−2 h)
@@ -27,9 +27,9 @@ describe('selectDetailMatches', () => {
     expect(sel).toHaveLength(80);
     expect(sel[0].id).toBe('nba:99');
   });
-  it('výchozí strop 140 (víkend s fotbalem: ~60 fotbalových zápasů navíc)', () => {
-    const list = Array.from({ length: 200 }, (_, i) => m(`nba:${i}`, new Date(now.getTime() + i * 60_000).toISOString()));
-    expect(selectDetailMatches(list, now)).toHaveLength(140);
+  it('výchozí strop 320 (7 dní všech sportů včetně fotbalu)', () => {
+    const list = Array.from({ length: 400 }, (_, i) => m(`nba:${i}`, new Date(now.getTime() + i * 60_000).toISOString()));
+    expect(selectDetailMatches(list, now)).toHaveLength(320);
   });
   it('neplatné datum se přeskočí', () => {
     expect(selectDetailMatches([m('nhl:x', 'nonsense')], now)).toEqual([]);
@@ -110,5 +110,20 @@ describe('helpers', () => {
     expect(standingFor([t], 'nhl:PIT')?.row.pos).toBe(3);
     expect(standingFor([t], 'nhl:XXX')).toBeUndefined();
     expect(standingFor([t], undefined)).toBeUndefined();
+  });
+});
+
+describe('requestsBySport', () => {
+  it('počty požadavků detailů podle zdroje/sportu', () => {
+    expect(requestsBySport([
+      'https://api-web.nhle.com/v1/gamecenter/1/landing', 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=1',
+      'https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/summary?event=2', 'https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/teams/382/roster',
+      'https://www.hokej.cz/zapas/1', 'https://www.nbl.basketball/tabulka', 'https://api.jolpi.ca/ergast/f1/current', 'https://example.com/x',
+    ])).toEqual({ nhl: 1, nba: 1, football: 2, 'cz-hockey': 1, 'cz-basket': 1, f1: 1, other: 1 });
+  });
+  it('fetcher si pamatuje skutečně stažené URL (cache se nepočítá)', async () => {
+    const f = createFetcher(async () => '{}');
+    await f.text('a'); await f.text('a'); await f.text('b');
+    expect(f.urls).toEqual(['a', 'b']);
   });
 });

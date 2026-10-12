@@ -8,6 +8,7 @@ export interface Fetcher {
   text(url: string): Promise<string>;
   json<T = any>(url: string): Promise<T>;
   readonly count: number;
+  readonly urls: readonly string[];   // skutečně stažené URL (bez cache) v pořadí
 }
 
 export function createFetcher(raw: RawGet, limit = 4): Fetcher {
@@ -15,6 +16,7 @@ export function createFetcher(raw: RawGet, limit = 4): Fetcher {
   const queue: (() => void)[] = [];
   let active = 0;
   let count = 0;
+  const urls: string[] = [];
   const acquire = () => new Promise<void>((res) => {
     if (active < limit) { active++; res(); } else queue.push(() => { active++; res(); });
   });
@@ -24,7 +26,7 @@ export function createFetcher(raw: RawGet, limit = 4): Fetcher {
     if (!p) {
       p = (async () => {
         await acquire();
-        count++;
+        count++; urls.push(url);
         try { return await raw(url); } finally { release(); }
       })();
       cache.set(url, p);
@@ -35,6 +37,7 @@ export function createFetcher(raw: RawGet, limit = 4): Fetcher {
     text,
     async json<T>(url: string) { return JSON.parse(await text(url)) as T; },
     get count() { return count; },
+    get urls() { return urls; },
   };
 }
 
@@ -50,7 +53,7 @@ export type DetailBuilder = (match: Match, ctx: DetailContext) => Promise<MatchD
 const ONGOING_MS = 3 * 3600_000;
 
 /** Zápasy bez výsledku se startem v [now − 3 h, now + hours] (probíhající si detail nechají), nejbližší první, max `cap`. */
-export function selectDetailMatches(matches: Match[], now: Date, hours = DETAIL_WINDOW_HOURS, cap = 140): Match[] {
+export function selectDetailMatches(matches: Match[], now: Date, hours = DETAIL_WINDOW_HOURS, cap = 320): Match[] {
   const from = now.getTime() - ONGOING_MS;
   const to = now.getTime() + hours * 3600_000;
   return matches
@@ -143,3 +146,14 @@ export function textRow(label: string, h: string | undefined, a: string | undefi
 }
 export const rows = (...r: (DetailStatRow | undefined)[]) => r.filter((x): x is DetailStatRow => !!x);
 export const blockOf = (title: string, r: DetailStatRow[], note?: string): DetailStatBlock[] => (r.length ? [{ title, rows: r, ...(note && { note }) }] : []);
+
+const SOURCES: [RegExp, string][] = [
+  [/nhle\.com/, 'nhl'], [/\/basketball\/nba\//, 'nba'], [/\/sports\/soccer\//, 'football'],
+  [/hokej\.cz/, 'cz-hockey'], [/nbl\.basketball/, 'cz-basket'], [/jolpi\.ca/, 'f1'],
+];
+/** Počty požadavků detailů podle sportu (odvozeno ze zdroje URL; neznámé → 'other'). */
+export function requestsBySport(urls: readonly string[]): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const u of urls) { const k = SOURCES.find(([re]) => re.test(u))?.[1] ?? 'other'; out[k] = (out[k] ?? 0) + 1; }
+  return out;
+}

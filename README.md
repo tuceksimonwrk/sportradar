@@ -30,7 +30,7 @@ Feedy se generují při každém hodinovém běhu (jen zápasy bez výsledku, st
 
 U nejbližšího zápasu a u nadcházejících karet se objeví tlačítko **Detail zápasu** (jen pokud pro zápas existuje detail). Otevře panel s porovnáním týmů a sestavami (u F1 pořadí šampionátu a rošt).
 
-- **Okno:** detaily se generují pro zápasy bez výsledku, které začínají v příštích **36 hodinách** (probíhající do 3 h od začátku si detail nechají), max. 140 zápasů. Data obnovuje **hodinová pipeline** – nejde o živá data.
+- **Okno:** detaily se generují pro zápasy bez výsledku, které začínají v příštích **7 dnech** (`DETAIL_WINDOW_HOURS` = 168) (probíhající do 3 h od začátku si detail nechají), max. 320 zápasů. Data obnovuje **hodinová pipeline** – nejde o živá data.
 - **Soubory:** `web/public/data/detail/<id>.json` (id jako u kalendářů: `nhl:2026020098` → `nhl_2026020098.json`, viz `detailFileName` ve `shared`) a `detail/index.json` se seznamem id. Web načte index jednou; když chybí, tlačítka se nezobrazí.
 - **Co obsahuje podle sportu:**
   - **NHL** (api-web.nhle.com): sezóna (pořadí, body, bilance, góly na zápas, doma/venku, série), forma hráčů za posledních 5 zápasů, nejlepší hráči sezóny, brankáři (průměr obdržených gólů, úspěšnost zákroků); soupisky obou týmů (útočníci, obránci, brankáři).

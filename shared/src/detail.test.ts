@@ -11,7 +11,7 @@ describe('detailFileName / detailPath', () => {
   it('cesta relativně k data/', () => {
     expect(detailPath('nba:401909834')).toBe('detail/nba_401909834.json');
   });
-  it('okno 36 h', () => { expect(DETAIL_WINDOW_HOURS).toBe(36); });
+  it('okno 7 dní (168 h)', () => { expect(DETAIL_WINDOW_HOURS).toBe(168); });
 });
 
 describe('isMatchDetail / isDetailIndex', () => {
