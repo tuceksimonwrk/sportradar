@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Match } from '@sportradar/shared';
-import { LIVE_INTERVAL_MS, buildFeeds, liveCandidates, parseEspnLive, sameLive, type LiveFeed, type LiveState } from './lib/live';
+import { LIVE_INTERVAL_MS, buildFeeds, liveCandidates, parseEspnLive, sameLive, type LiveFeed, type LiveSport, type LiveState } from './lib/live';
+import { mapProxyFeed } from './lib/liveProxy';
 import { createPoller } from './lib/livePoller';
 
 export interface LiveInfo {
@@ -8,6 +9,8 @@ export interface LiveInfo {
   states: ReadonlyMap<string, LiveState>;
   /** Kandidáti, jejichž zdroj je nedostupný (a nemáme o nich žádný stav). */
   unavailable: ReadonlySet<string>;
+  /** Některý feed vlastní proxy je po opakovaných chybách vypnutý. */
+  proxyDown: boolean;
 }
 
 const FETCH_TIMEOUT_MS = 10_000;
@@ -38,11 +41,14 @@ async function fetchJson(url: string, signal: AbortSignal): Promise<unknown> {
 
 const EMPTY_STATES: ReadonlyMap<string, LiveState> = new Map();
 
+const isProxy = (f: LiveFeed) => f.sport.startsWith('proxy:');
+
 /**
- * Živé skóre z ESPN pro zobrazené zápasy NBA a fotbalu v okně [začátek − 15 min, začátek + 4 h].
+ * Živé skóre pro zobrazené zápasy v okně [začátek − 15 min, začátek + 4 h]: NBA a fotbal z ESPN,
+ * NHL, extraliga a NBL přes vlastní proxy (jen je-li `proxyUrl` nastavená).
  * Dotazuje jen když existují kandidáti a záložka je vidět; nic nepersistuje.
  */
-export function useLiveScores(matches: readonly Match[], now: Date): LiveInfo {
+export function useLiveScores(matches: readonly Match[], now: Date, proxyUrl?: string): LiveInfo {
   const [states, setStates] = useState<ReadonlyMap<string, LiveState>>(EMPTY_STATES);
   const [down, setDown] = useState<ReadonlySet<string>>(new Set());
   const pollerRef = useRef<ReturnType<typeof createPoller> | null>(null);
@@ -50,12 +56,14 @@ export function useLiveScores(matches: readonly Match[], now: Date): LiveInfo {
   const t = now.getTime();
   const { feeds, candidates } = useMemo(() => {
     // zápasy, které už skončily (phase post), se nedotazují znovu
-    const c = liveCandidates(matches, t).filter((m) => states.get(m.id)?.phase !== 'post');
-    return { feeds: buildFeeds(c), candidates: c };
-  }, [matches, t, states]);
+    const c = liveCandidates(matches, t, { proxyUrl }).filter((m) => states.get(m.id)?.phase !== 'post');
+    return { feeds: buildFeeds(c, { proxyUrl }), candidates: c };
+  }, [matches, t, states, proxyUrl]);
   const sig = JSON.stringify(feeds.map((f) => [f.url, f.matchIds]));
   const feedsRef = useRef<LiveFeed[]>(feeds);
   feedsRef.current = feeds;
+  const candidatesRef = useRef<Match[]>(candidates);
+  candidatesRef.current = candidates;
 
   useEffect(() => {
     const poller = createPoller({
@@ -63,7 +71,9 @@ export function useLiveScores(matches: readonly Match[], now: Date): LiveInfo {
       isVisible: () => typeof document === 'undefined' || document.visibilityState !== 'hidden',
       fetchJson,
       onData: (feed, json) => {
-        const parsed = parseEspnLive(json, feed.sport);
+        const parsed = isProxy(feed)
+          ? mapProxyFeed(json, candidatesRef.current.filter((m) => feed.matchIds.includes(m.id)))
+          : parseEspnLive(json, feed.sport as LiveSport);
         setStates((prev) => {
           let next: Map<string, LiveState> | null = null;
           for (const [id, s] of parsed) {
@@ -115,5 +125,6 @@ export function useLiveScores(matches: readonly Match[], now: Date): LiveInfo {
     return out;
   }, [down, candidates, feeds, states]);
 
-  return useMemo(() => ({ states, unavailable }), [states, unavailable]);
+  const proxyDown = feeds.some((f) => isProxy(f) && down.has(f.key));
+  return useMemo(() => ({ states, unavailable, proxyDown }), [states, unavailable, proxyDown]);
 }

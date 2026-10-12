@@ -187,4 +187,22 @@ describe('createPoller', () => {
     await vi.advanceTimersByTimeAsync(0);
     expect(deps.onData).not.toHaveBeenCalled();
   });
+  it('feed vlastní proxy: stejný rytmus, backoff (40/80/160/300 s) i vypnutí po 5 chybách', async () => {
+    const proxyFeed: LiveFeed = { key: 'https://p.example/nhl?date=2026-10-12', url: 'https://p.example/nhl?date=2026-10-12', sport: 'proxy:nhl', matchIds: ['nhl:1'] };
+    const { poller, calls, state, deps } = setup();
+    state.fail = true;
+    poller.setFeeds([proxyFeed]);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(calls).toHaveLength(1);
+    for (const [wait, n] of [[40_000, 2], [80_000, 3], [160_000, 4], [300_000, 5]] as const) {
+      await vi.advanceTimersByTimeAsync(wait - 1);
+      expect(calls).toHaveLength(n - 1);
+      await vi.advanceTimersByTimeAsync(1);
+      expect(calls).toHaveLength(n);
+    }
+    expect(deps.onFailure).toHaveBeenLastCalledWith(proxyFeed, 5, true);
+    await vi.advanceTimersByTimeAsync(600_000);
+    expect(calls).toHaveLength(5);
+    poller.stop();
+  });
 });

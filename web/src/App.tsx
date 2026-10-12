@@ -23,6 +23,8 @@ import { MatchDetailPanel } from './components/MatchDetailPanel';
 import { LiveContext } from './components/LiveContext';
 import { LIVE_AFTER_MS } from './lib/live';
 import { useLiveScores } from './useLiveScores';
+import { useLiveConfig } from './useLiveConfig';
+import { liveFootnote } from './lib/liveProxy';
 
 const storage = (): Storage | undefined => { try { return window.localStorage; } catch { return undefined; } };
 
@@ -84,7 +86,8 @@ export default function App() {
     () => (data.status === 'ready' ? selectMatches(data.matches.matches, favSet, now, sport, competition, { showAll, windowMs: LIVE_AFTER_MS }) : []),
     [data, favSet, now, sport, competition, showAll],
   );
-  const live = useLiveScores(livePool, now);
+  const liveConfig = useLiveConfig();
+  const live = useLiveScores(livePool, now, liveConfig.proxyUrl);
   const liveIds = useMemo(() => new Set([...live.states.values()].filter((s) => s.phase === 'live').map((s) => s.matchId)), [live.states]);
   const selected = useMemo(
     () => (data.status === 'ready' ? selectMatches(data.matches.matches, favSet, now, sport, competition, { showAll, liveIds }) : []),
@@ -167,7 +170,7 @@ export default function App() {
             Data: NHL, ESPN, Jolpica, hokej.cz, nbl.basketball, chanceliga.cz
             {data.status === 'ready' && <> · aktualizováno {updatedLabel(data.matches.generatedAt, now)}</>}
           </p>
-          <p className="foot__fine">Živé skóre: NBA a fotbal (ESPN). Ostatní soutěže ho zatím nemají.</p>
+          <p className="foot__fine">{liveFootnote(liveConfig.healthy && !live.proxyDown)}</p>
           <p className="foot__fine">Neoficiální fanouškovská stránka. Loga a názvy patří jejich vlastníkům.</p>
         </div>
       </footer>

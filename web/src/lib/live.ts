@@ -1,7 +1,7 @@
 import { competitionById, type Match } from '@sportradar/shared';
 import { dayKey } from './time';
 
-/** Živé skóre z veřejného scoreboardu ESPN (čte ho přímo prohlížeč). Nic se neukládá. */
+/** Živé skóre z veřejného scoreboardu ESPN (čte ho přímo prohlížeč) a z vlastní proxy (NHL, ELH, NBL). Nic se neukládá. */
 export type LivePhase = 'pre' | 'live' | 'post';
 
 export interface LiveState {
@@ -15,6 +15,10 @@ export interface LiveState {
 }
 
 export type LiveSport = 'nba' | 'football';
+/** Druh feedu: ESPN (NBA, fotbal) nebo vlastní proxy (NHL, extraliga, NBL). */
+export type FeedKind = LiveSport | 'proxy:nhl' | 'proxy:elh' | 'proxy:nbl';
+/** Volby živého skóre: `proxyUrl` z live-config.json (bez něj se NHL/ELH/NBL nedotazují). */
+export interface LiveOptions { proxyUrl?: string }
 
 export const LIVE_INTERVAL_MS = 20_000;
 export const LIVE_BEFORE_MS = 15 * 60_000;
@@ -108,30 +112,37 @@ export function parseEspnLive(json: unknown, sport: LiveSport, now: number = Dat
 
 /* ---------- kandidáti a feedy ---------- */
 
-/** Zápas, pro který existuje živý zdroj (NBA a fotbal z ESPN; česká liga ne). */
-export function isLiveCapable(m: Match): boolean {
+/** Zápas, pro který existuje živý zdroj (NBA a fotbal z ESPN; NHL, ELH a NBL jen přes nastavenou proxy; česká liga ne). */
+export function isLiveCapable(m: Match, opts: LiveOptions = {}): boolean {
+  if (m.sport === 'nhl') return !!opts.proxyUrl && /^nhl:\d+$/.test(m.id);
+  if (m.sport === 'cz-hockey') return !!opts.proxyUrl && /^cz-hockey:\d+$/.test(m.id);
+  if (m.sport === 'cz-basket') return !!opts.proxyUrl && m.teams.length === 2;
   if (m.sport === 'nba') return /^nba:\d+$/.test(m.id);
   if (m.sport === 'football') return /^football:\d+$/.test(m.id) && !!m.competitionId && FOOTBALL_LIVE.has(m.competitionId) && !!competitionById(m.competitionId);
   return false;
 }
 
 /** Zápasy, u kterých má smysl se ptát na živé skóre: start v [now − 4 h, now + 15 min], bez uloženého výsledku. */
-export function liveCandidates(matches: readonly Match[], now: number): Match[] {
+export function liveCandidates(matches: readonly Match[], now: number, opts: LiveOptions = {}): Match[] {
   return matches.filter((m) => {
-    if (m.result || !isLiveCapable(m)) return false;
+    if (m.result || !isLiveCapable(m, opts)) return false;
     const t = Date.parse(m.startsAt);
     return Number.isFinite(t) && t >= now - LIVE_AFTER_MS && t <= now + LIVE_BEFORE_MS;
   });
 }
 
-export interface LiveFeed { key: string; url: string; sport: LiveSport; matchIds: string[] }
+export interface LiveFeed { key: string; url: string; sport: FeedKind; matchIds: string[] }
 
 const ymd = (key: string) => key.replace(/-/g, '');
 
-/** Feedy ke stažení: NBA po dnech (UTC i východoamerický, podle něj ESPN zápasy řadí), fotbal po (soutěž, UTC den). */
-export function buildFeeds(candidates: readonly Match[]): LiveFeed[] {
+/**
+ * Feedy ke stažení: NBA po dnech (UTC i východoamerický, podle něj ESPN zápasy řadí), fotbal po (soutěž, UTC den);
+ * s proxy navíc NHL po východoamerickém dni, extraliga po pražském dni a NBL jako jeden feed.
+ */
+export function buildFeeds(candidates: readonly Match[], opts: LiveOptions = {}): LiveFeed[] {
   const feeds = new Map<string, LiveFeed>();
-  const add = (url: string, sport: LiveSport, id: string) => {
+  const proxy = opts.proxyUrl;
+  const add = (url: string, sport: FeedKind, id: string) => {
     const f = feeds.get(url);
     if (!f) feeds.set(url, { key: url, url, sport, matchIds: [id] });
     else if (!f.matchIds.includes(id)) f.matchIds.push(id);
@@ -142,6 +153,12 @@ export function buildFeeds(candidates: readonly Match[]): LiveFeed[] {
       for (const d of days) add(`${ESPN}basketball/nba/scoreboard?dates=${ymd(d)}`, 'nba', m.id);
     } else if (m.sport === 'football' && m.competitionId) {
       add(`${ESPN}soccer/${m.competitionId}/scoreboard?dates=${ymd(dayKey(m.startsAt, 'UTC'))}`, 'football', m.id);
+    } else if (proxy && m.sport === 'nhl') {
+      add(`${proxy}/nhl?date=${dayKey(m.startsAt, 'America/New_York')}`, 'proxy:nhl', m.id);
+    } else if (proxy && m.sport === 'cz-hockey') {
+      add(`${proxy}/elh?date=${dayKey(m.startsAt, 'Europe/Prague')}`, 'proxy:elh', m.id);
+    } else if (proxy && m.sport === 'cz-basket') {
+      add(`${proxy}/nbl`, 'proxy:nbl', m.id);
     }
   }
   return [...feeds.values()];
