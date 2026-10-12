@@ -1,5 +1,5 @@
 const KEY = 'sportradar:favorites:v1';
-const ID_RE = /^[A-Za-z0-9][A-Za-z0-9:_-]{0,99}$/;
+const ID_RE = /^[A-Za-z0-9][A-Za-z0-9:_.-]{0,99}$/; // '.' kvůli soutěžím ('league:eng.1')
 const MAX = 300;
 
 export function sanitizeFavorites(v: unknown): string[] {

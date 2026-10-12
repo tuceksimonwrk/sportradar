@@ -11,6 +11,14 @@ describe('sanitizeFavorites', () => {
   });
 });
 
+describe('oblíbené soutěže (league:<id> s tečkou)', () => {
+  it('league:eng.1 a fotbalové týmy projdou, sdílení je zachová', () => {
+    expect(sanitizeFavorites(['league:eng.1', 'league:uefa.champions', 'football:382', 'football:cz_sk-slavia-praha', '.x']))
+      .toEqual(['league:eng.1', 'league:uefa.champions', 'football:382', 'football:cz_sk-slavia-praha']);
+    expect(decodeShare(encodeShare(['league:eng.1', 'football']))).toEqual(['league:eng.1', 'football']);
+  });
+});
+
 describe('ID délka – hranice', () => {
   it('100 znaků přijato, 101 odmítnuto', () => {
     const ok = 'a'.repeat(100);

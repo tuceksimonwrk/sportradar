@@ -20,6 +20,12 @@ describe('isFavorite', () => {
     expect(isFavorite(all[2], new Set(['f1']))).toBe(true);
     expect(isFavorite(all[4], new Set(['cz-hockey:PCE']))).toBe(false);
   });
+  it('oblíbená soutěž league:<competitionId>', () => {
+    const pl: Match = { ...m('football:1', 'football', '2026-10-13T17:00:00Z', ['football:1', 'football:2']), competitionId: 'eng.1' };
+    expect(isFavorite(pl, new Set(['league:eng.1']))).toBe(true);
+    expect(isFavorite(pl, new Set(['league:esp.1']))).toBe(false);
+    expect(isFavorite(all[3], new Set(['league:eng.1']))).toBe(false); // bez competitionId
+  });
 });
 
 describe('selectMatches', () => {

@@ -9,6 +9,7 @@ export { buildDetailIndex, createFetcher, selectDetailMatches, staleDetailFiles 
 
 export const DETAIL_BUILDERS: Record<Sport, DetailBuilder> = {
   nhl: nhlDetail, nba: nbaDetail, f1: f1Detail, 'cz-hockey': elhDetail, 'cz-basket': nblDetail,
+  football: async (m) => { throw new Error(`detail fotbalu zatím není (${m.id})`); },
 };
 
 export interface DetailRun {

@@ -41,6 +41,7 @@ export function matchDurationMinutes(match: Pick<Match, 'id' | 'sport'>): number
   switch (match.sport) {
     case 'f1': return /-Race$/.test(match.id) ? 120 : 60;
     case 'cz-basket': return 120;
+    case 'football': return 120;
     default: return 150; // nhl, nba, cz-hockey
   }
 }

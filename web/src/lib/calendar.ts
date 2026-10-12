@@ -1,4 +1,4 @@
-import { SPORTS, SPORT_LABELS, buildIcs, calendarFileName, type Match, type Sport, type Team } from '@sportradar/shared';
+import { SPORTS, SPORT_LABELS, buildIcs, calendarFileName, competitionById, parseLeagueFavorite, type Match, type Sport, type Team } from '@sportradar/shared';
 
 export interface FeedInfo { id: string; label: string; file: string; sport: Sport }
 
@@ -19,7 +19,9 @@ export function favoriteFeeds(favs: string[], teams: Team[]): FeedInfo[] {
   const byId = new Map(teams.map((t) => [t.id, t]));
   const out: FeedInfo[] = [];
   for (const id of new Set(favs)) {
+    const comp = competitionById(parseLeagueFavorite(id));
     if ((SPORTS as string[]).includes(id)) out.push({ id, label: SPORT_LABELS[id as Sport], file: `${calendarFileName(id)}.ics`, sport: id as Sport });
+    else if (comp) out.push({ id, label: comp.name, file: `${calendarFileName(id)}.ics`, sport: comp.sport });
     else { const t = byId.get(id); if (t) out.push({ id, label: t.name, file: `${calendarFileName(id)}.ics`, sport: t.sport }); }
   }
   return out;

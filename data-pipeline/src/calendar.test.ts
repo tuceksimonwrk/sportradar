@@ -38,7 +38,8 @@ describe('varianty předstihu', () => {
 
 describe('buildCalendarFiles', () => {
   it('soubor pro každý tým s nadcházejícím zápasem a každý sport', () => {
-    const names = ['cz-basket', 'cz-hockey', 'f1', 'nba', 'nhl', 'nhl_PIT', 'nhl_WSH'];
+    const leagues = ['eng.1', 'esp.1', 'ita.1', 'ger.1', 'fra.1', 'uefa.champions', 'cze.1'].map((c) => `league_${c}`);
+    const names = ['cz-basket', 'cz-hockey', 'f1', 'nba', 'nhl', 'football', 'nhl_PIT', 'nhl_WSH', ...leagues];
     for (const min of [0, 15, 30, 60, 120]) for (const n of names) expect(files.has(`${min}/${n}.ics`)).toBe(true);
     expect(files.size).toBe(names.length * 6); // 5 variant × + legacy
   });
@@ -62,6 +63,20 @@ describe('buildCalendarFiles', () => {
     expect(files.get('60/nba.ics')).toContain('BEGIN:VCALENDAR');
     expect(files.get('60/nba.ics')).not.toContain('VEVENT');
     expect(files.has('60/cz-hockey_PCE.ics')).toBe(false);
+  });
+  it('feed soutěže (league:<id>) obsahuje jen zápasy s daným competitionId, ve všech předstizích', () => {
+    const fb = [
+      m('football:1', 'football', '2026-10-13T19:00:00.000Z', ['football:382', 'football:364'], { competitionId: 'eng.1', competition: 'Premier League' }),
+      m('football:2', 'football', '2026-10-14T19:00:00.000Z', ['football:382', 'football:160'], { competitionId: 'uefa.champions', competition: 'Liga mistrů' }),
+      m('football:3', 'football', '2026-10-13T18:00:00.000Z', [], { competitionId: 'eng.1', result: { home: 1, away: 0 } }),
+    ];
+    const f = buildCalendarFiles(fb, [], now);
+    expect(uids(f.get('60/league_eng.1.ics')!)).toEqual(['football:1']);
+    expect(uids(f.get('15/league_uefa.champions.ics')!)).toEqual(['football:2']);
+    expect(f.get('0/league_uefa.champions.ics')).toContain('X-WR-CALNAME:Sportradar – Liga mistrů');
+    expect(f.get('league_eng.1.ics')).toBe(f.get('60/league_eng.1.ics'));
+    expect(uids(f.get('60/football.ics')!)).toEqual(['football:1', 'football:2']);
+    expect(uids(f.get('60/football_382.ics')!)).toEqual(['football:1', 'football:2']);
   });
   it('neznámý tým (bez záznamu v teams) dostane soubor s id jako názvem', () => {
     const f = buildCalendarFiles([m('nba:1', 'nba', '2026-10-13T00:00:00.000Z', ['nba:BOS'])], [], now);

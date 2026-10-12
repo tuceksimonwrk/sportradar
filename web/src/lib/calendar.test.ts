@@ -30,5 +30,10 @@ describe('favoriteFeeds', () => {
       { id: 'nhl:PIT', label: 'Pittsburgh Penguins', file: 'nhl_PIT.ics', sport: 'nhl' },
     ]);
   });
+  it('oblíbená soutěž → feed soutěže; neznámá soutěž se přeskočí', () => {
+    expect(favoriteFeeds(['league:eng.1', 'league:xyz.9'], teams)).toEqual([
+      { id: 'league:eng.1', label: 'Premier League', file: 'league_eng.1.ics', sport: 'football' },
+    ]);
+  });
   it('prázdné oblíbené → prázdný seznam', () => expect(favoriteFeeds([], teams)).toEqual([]));
 });

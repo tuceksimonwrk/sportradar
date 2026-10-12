@@ -12,7 +12,7 @@ const ctx = { get: createFetcher(async () => '{}'), now, matches: [], teams: [],
 
 describe('generateDetails', () => {
   it('čerstvé detaily, chyba jednoho nepoloží ostatní; předchozí se ponechá', async () => {
-    const builders = { nhl: async (x: Match) => (x.id === 'nhl:2' ? bad(x, ctx) : ok(x, ctx)), nba: bad, f1: ok, 'cz-hockey': ok, 'cz-basket': ok } as Record<Sport, DetailBuilder>;
+    const builders = { nhl: async (x: Match) => (x.id === 'nhl:2' ? bad(x, ctx) : ok(x, ctx)), nba: bad, f1: ok, 'cz-hockey': ok, 'cz-basket': ok, football: ok } as Record<Sport, DetailBuilder>;
     const prev = new Map([['nhl_2.json', det('nhl:2', 'old')]]);
     const r = await generateDetails([m('nhl:1'), m('nhl:2'), m('nba:1'), m('nba:2'), m('f1:x')], ctx, async (f) => prev.get(f) ?? null, builders);
     expect([...r.files.keys()].sort()).toEqual(['f1_x.json', 'nhl_1.json', 'nhl_2.json']);

@@ -1,9 +1,10 @@
-import { REMINDER_MINUTES, REMINDER_OPTIONS, SPORTS, SPORT_LABELS, buildIcs, calendarFileName, type Match, type Team } from '@sportradar/shared';
+import { COMPETITIONS, REMINDER_MINUTES, REMINDER_OPTIONS, SPORTS, SPORT_LABELS, buildIcs, calendarFileName, leagueFavoriteId, type Match, type Team } from '@sportradar/shared';
 
 const KEEP_AFTER_START_MS = 3 * 3600_000;
 
 /**
- * Kalendářové feedy (iCalendar): jeden soubor na každý tým s nadcházejícím zápasem a jeden na každý sport.
+ * Kalendářové feedy (iCalendar): jeden soubor na každý tým s nadcházejícím zápasem, jeden na každý sport
+ * a jeden na každou soutěž z COMPETITIONS (`league_<id>.ics`, zápasy podle competitionId).
  * Klíč mapy = relativní cesta v `web/public/data/cal/`: `<minuty>/<název>.ics` pro každý předstih z REMINDER_OPTIONS
  * (0 = bez VALARM) a navíc stará cesta `<název>.ics` (= varianta 60 min), aby fungovala dřívější odběry.
  * Zahrnuje jen zápasy bez výsledku a se startem ≥ now − 3 h.
@@ -26,5 +27,6 @@ export function buildCalendarFiles(matches: Match[], teams: Team[], now: Date, s
   for (const m of upcoming) for (const id of new Set(m.teams)) (byTeam.get(id) ?? byTeam.set(id, []).get(id)!).push(m);
   for (const [id, list] of byTeam) add(calendarFileName(id), list, names.get(id) ?? id);
   for (const sport of SPORTS) add(calendarFileName(sport), upcoming.filter((m) => m.sport === sport), SPORT_LABELS[sport]);
+  for (const c of COMPETITIONS) add(calendarFileName(leagueFavoriteId(c.id)), upcoming.filter((m) => m.competitionId === c.id), c.name);
   return out;
 }

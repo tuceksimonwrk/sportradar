@@ -1,11 +1,12 @@
-import type { Match, Sport } from '@sportradar/shared';
+import { leagueFavoriteId, type Match, type Sport } from '@sportradar/shared';
 import { dayKey } from './time';
 
 const ONGOING_WINDOW_MS = 3 * 3600_000;
 const RESULTS_WINDOW_MS = 14 * 86400_000;
 
 export function isFavorite(m: Match, favs: ReadonlySet<string>): boolean {
-  return favs.has(m.sport) || m.teams.some((t) => favs.has(t));
+  return favs.has(m.sport) || m.teams.some((t) => favs.has(t))
+    || (!!m.competitionId && favs.has(leagueFavoriteId(m.competitionId)));
 }
 
 export function selectMatches(matches: Match[], favs: ReadonlySet<string>, now: Date, sport: Sport | 'all' = 'all'): Match[] {
