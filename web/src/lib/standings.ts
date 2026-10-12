@@ -1,9 +1,36 @@
-import { SPORTS, type Sport, type StandingRow, type StandingsFile, type StandingsTable } from '@sportradar/shared';
+import { COMPETITIONS, SPORTS, competitionById, parseLeagueFavorite, type Sport, type StandingRow, type StandingsFile, type StandingsTable, type Team } from '@sportradar/shared';
 
-/** Sport z id oblíbené položky: `nhl:PIT` → nhl, `f1` → f1; neznámé → undefined. */
+/** Sport z id oblíbené položky: `nhl:PIT` → nhl, `f1` → f1, `league:eng.1` → sport soutěže; neznámé → undefined. */
 function sportOfId(id: string): Sport | undefined {
+  const comp = competitionById(parseLeagueFavorite(id));
+  if (comp) return comp.sport;
   const prefix = id.split(':', 1)[0];
   return SPORTS.find((s) => s === prefix);
+}
+
+/** Id soutěže z id tabulky: 'football-eng.1' → 'eng.1', 'football-uefa.champions-2' (skupina) → 'uefa.champions'. */
+export function tableCompetitionId(tableId: string): string | undefined {
+  return COMPETITIONS.find((c) => tableId === `${c.sport}-${c.id}` || tableId.startsWith(`${c.sport}-${c.id}-`))?.id;
+}
+
+/** Výběr jedné tabulky (čipy) jen u sportů s více než dvěma tabulkami (fotbal); NHL/NBA/F1 zůstávají pod sebou. */
+export function showTableSelector(tables: readonly StandingsTable[]): boolean {
+  return tables.length > 2;
+}
+
+/**
+ * Výchozí tabulka: podle prvního oblíbeného (v pořadí oblíbených), který k nějaké tabulce vede –
+ * soutěž (`league:<id>`), klub v řádcích tabulky, nebo klub podle `Team.league`; jinak první tabulka.
+ */
+export function defaultTableId(tables: readonly StandingsTable[], favs: readonly string[], teams: ReadonlyMap<string, Team>): string | undefined {
+  const ofComp = (comp?: string) => (comp ? tables.find((t) => tableCompetitionId(t.id) === comp) : undefined);
+  for (const id of favs) {
+    const hit = ofComp(parseLeagueFavorite(id))
+      ?? tables.find((t) => t.rows.some((r) => r.teamId === id))
+      ?? ofComp(teams.get(id)?.league);
+    if (hit) return hit.id;
+  }
+  return tables[0]?.id;
 }
 
 /** Sport, který se v Tabulkách ukáže jako první: první ze SPORTS s oblíbeným, jinak NHL. */

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Match } from '@sportradar/shared';
-import { groupByDay, isFavorite, selectMatches, selectResults } from './schedule';
+import { competitionForSport, groupByDay, isFavorite, selectMatches, selectResults } from './schedule';
 
 const m = (id: string, sport: Match['sport'], startsAt: string, teams: string[] = []): Match =>
   ({ id, sport, competition: 'c', startsAt, title: id, teams, broadcasters: [] });
@@ -88,5 +88,41 @@ describe('groupByDay', () => {
   it('funguje i na sestupném vstupu (výsledky)', () => {
     const a = m('a', 'nhl', '2026-10-15T10:00:00Z'); const b = m('b', 'nhl', '2026-10-15T08:00:00Z'); const c = m('c', 'nhl', '2026-10-14T10:00:00Z');
     expect(groupByDay([a, b, c], 'Europe/Prague').map((g) => [g.key, g.matches.map((x) => x.id)])).toEqual([['2026-10-15', ['a', 'b']], ['2026-10-14', ['c']]]);
+  });
+});
+
+describe('filtr soutěže (fotbal)', () => {
+  const fb = (id: string, comp: string | undefined, startsAt: string, result = false): Match => ({
+    ...m(id, 'football', startsAt, [`football:${id}a`, `football:${id}b`]),
+    ...(comp && { competitionId: comp }),
+    ...(result && { result: { home: 1, away: 0 } }),
+  });
+  const list = [
+    fb('pl', 'eng.1', '2026-10-13T15:00:00Z'),
+    fb('cl', 'uefa.champions', '2026-10-14T19:00:00Z'),
+    fb('cz', 'cze.1', '2026-10-15T16:00:00Z'),
+    fb('pl-r', 'eng.1', '2026-10-10T15:00:00Z', true),
+    fb('cz-r', 'cze.1', '2026-10-09T16:00:00Z', true),
+    m('pit', 'nhl', '2026-10-13T23:00:00Z', ['nhl:PIT']),
+  ];
+  const favs = new Set(['football', 'nhl:PIT']);
+  it('Program: jen vybraná soutěž, když je zvolený fotbal', () => {
+    expect(selectMatches(list, favs, now, 'football', 'eng.1').map((x) => x.id)).toEqual(['pl']);
+    expect(selectMatches(list, favs, now, 'football', 'uefa.champions').map((x) => x.id)).toEqual(['cl']);
+    expect(selectMatches(list, favs, now, 'football', 'all').map((x) => x.id)).toEqual(['pl', 'cl', 'cz']);
+  });
+  it('Výsledky: jen vybraná soutěž', () => {
+    expect(selectResults(list, favs, now, 'football', 'cze.1').map((x) => x.id)).toEqual(['cz-r']);
+    expect(selectResults(list, favs, now, 'football').map((x) => x.id)).toEqual(['pl-r', 'cz-r']);
+  });
+  it('mimo fotbal se soutěž ignoruje', () => {
+    expect(selectMatches(list, favs, now, 'all', 'eng.1').map((x) => x.id)).toEqual(['pl', 'pit', 'cl', 'cz']);
+    expect(selectMatches(list, favs, now, 'nhl', 'eng.1').map((x) => x.id)).toEqual(['pit']);
+  });
+  it('competitionForSport: soutěž zůstává jen u fotbalu', () => {
+    expect(competitionForSport('football', 'eng.1')).toBe('eng.1');
+    expect(competitionForSport('nhl', 'eng.1')).toBe('all');
+    expect(competitionForSport('all', 'cze.1')).toBe('all');
+    expect(competitionForSport('football', 'xyz.9')).toBe('all'); // neznámá soutěž
   });
 });

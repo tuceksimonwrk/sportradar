@@ -14,14 +14,14 @@ export function webcalUrl(httpUrl: string): string {
   return httpUrl.replace(/^https?:/i, 'webcal:');
 }
 
-/** Oblíbené (id sportu nebo týmu) → odebíratelné feedy se štítkem; neznámé týmy se přeskočí. */
+/** Oblíbené (id sportu, soutěže nebo týmu) → odebíratelné feedy se štítkem; neznámé týmy se přeskočí. */
 export function favoriteFeeds(favs: string[], teams: Team[]): FeedInfo[] {
   const byId = new Map(teams.map((t) => [t.id, t]));
   const out: FeedInfo[] = [];
   for (const id of new Set(favs)) {
     const comp = competitionById(parseLeagueFavorite(id));
     if ((SPORTS as string[]).includes(id)) out.push({ id, label: SPORT_LABELS[id as Sport], file: `${calendarFileName(id)}.ics`, sport: id as Sport });
-    else if (comp) out.push({ id, label: comp.name, file: `${calendarFileName(id)}.ics`, sport: comp.sport });
+    else if (comp) out.push({ id, label: `${comp.name} (${comp.country})`, file: `${calendarFileName(id)}.ics`, sport: comp.sport });
     else { const t = byId.get(id); if (t) out.push({ id, label: t.name, file: `${calendarFileName(id)}.ics`, sport: t.sport }); }
   }
   return out;

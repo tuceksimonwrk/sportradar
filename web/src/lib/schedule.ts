@@ -1,4 +1,4 @@
-import { leagueFavoriteId, type Match, type Sport } from '@sportradar/shared';
+import { competitionById, leagueFavoriteId, type Match, type Sport } from '@sportradar/shared';
 import { dayKey } from './time';
 
 const ONGOING_WINDOW_MS = 3 * 3600_000;
@@ -9,18 +9,30 @@ export function isFavorite(m: Match, favs: ReadonlySet<string>): boolean {
     || (!!m.competitionId && favs.has(leagueFavoriteId(m.competitionId)));
 }
 
-export function selectMatches(matches: Match[], favs: ReadonlySet<string>, now: Date, sport: Sport | 'all' = 'all'): Match[] {
+/** Soutěž ve filtru dává smysl jen u fotbalu a jen známá; jinak 'all'. */
+export function competitionForSport(sport: Sport | 'all', competition: string): string {
+  return sport === 'football' && competitionById(competition) ? competition : 'all';
+}
+
+/** Filtr sportu a (u fotbalu) soutěže podle `match.competitionId`. */
+function inView(m: Match, sport: Sport | 'all', competition: string): boolean {
+  if (sport !== 'all' && m.sport !== sport) return false;
+  const comp = competitionForSport(sport, competition);
+  return comp === 'all' || m.competitionId === comp;
+}
+
+export function selectMatches(matches: Match[], favs: ReadonlySet<string>, now: Date, sport: Sport | 'all' = 'all', competition = 'all'): Match[] {
   const cutoff = now.getTime() - ONGOING_WINDOW_MS;
   return matches
-    .filter((m) => Date.parse(m.startsAt) >= cutoff && (sport === 'all' || m.sport === sport) && isFavorite(m, favs) && !m.result)
+    .filter((m) => Date.parse(m.startsAt) >= cutoff && inView(m, sport, competition) && isFavorite(m, favs) && !m.result)
     .sort((a, b) => a.startsAt.localeCompare(b.startsAt) || a.id.localeCompare(b.id));
 }
 
 /** Odehrané zápasy oblíbených za posledních 14 dní, nejnovější první. */
-export function selectResults(matches: Match[], favs: ReadonlySet<string>, now: Date, sport: Sport | 'all' = 'all'): Match[] {
+export function selectResults(matches: Match[], favs: ReadonlySet<string>, now: Date, sport: Sport | 'all' = 'all', competition = 'all'): Match[] {
   const cutoff = now.getTime() - RESULTS_WINDOW_MS;
   return matches
-    .filter((m) => m.result && Date.parse(m.startsAt) >= cutoff && (sport === 'all' || m.sport === sport) && isFavorite(m, favs))
+    .filter((m) => m.result && Date.parse(m.startsAt) >= cutoff && inView(m, sport, competition) && isFavorite(m, favs))
     .sort((a, b) => b.startsAt.localeCompare(a.startsAt) || a.id.localeCompare(b.id));
 }
 

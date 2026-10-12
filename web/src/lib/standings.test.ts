@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { StandingRow, StandingsFile, StandingsTable } from '@sportradar/shared';
-import { defaultStandingsSport, isFavoriteRow, oldestUpdatedAt, tablesForSport } from './standings';
+import type { StandingRow, StandingsFile, StandingsTable, Team } from '@sportradar/shared';
+import { defaultStandingsSport, defaultTableId, isFavoriteRow, oldestUpdatedAt, showTableSelector, tableCompetitionId, tablesForSport } from './standings';
 
 describe('defaultStandingsSport', () => {
   it('bez oblíbených nhl', () => { expect(defaultStandingsSport([])).toBe('nhl'); });
@@ -51,5 +51,54 @@ describe('oldestUpdatedAt', () => {
     expect(oldestUpdatedAt([t(), t('nesmysl'), t('2026-10-05T00:00:00.000Z')], FB)).toBe('2026-10-05T00:00:00.000Z');
     expect(oldestUpdatedAt([t(), t('nesmysl')], FB)).toBe(FB);
     expect(oldestUpdatedAt([], FB)).toBe(FB);
+  });
+});
+
+describe('fotbal: výběr tabulky', () => {
+  const row = (teamId: string): StandingRow => ({ pos: 1, name: teamId, teamId, values: {} });
+  const t = (id: string, teamIds: string[] = []): StandingsTable => ({ id, sport: 'football', title: id, columns: [], rows: teamIds.map(row) });
+  const tables = [
+    t('football-eng.1', ['football:359', 'football:331']),
+    t('football-esp.1', ['football:86']),
+    t('football-uefa.champions', ['football:359', 'football:86', 'football:494']),
+    t('football-cze.1', ['football:cz_sk-slavia-praha']),
+  ];
+  const teams = new Map<string, Team>([
+    ['football:359', { id: 'football:359', sport: 'football', name: 'Arsenal', league: 'eng.1' }],
+    ['football:132', { id: 'football:132', sport: 'football', name: 'Bayern', league: 'ger.1' }],
+  ]);
+
+  it('defaultStandingsSport: oblíbená soutěž → fotbal', () => {
+    expect(defaultStandingsSport(['league:eng.1'])).toBe('football');
+    expect(defaultStandingsSport(['league:cze.1', 'nhl:PIT'])).toBe('nhl'); // pořadí SPORTS
+    expect(defaultStandingsSport(['league:xyz.9'])).toBe('nhl');             // neznámá soutěž
+  });
+  it('tableCompetitionId z id tabulky (i se skupinou)', () => {
+    expect(tableCompetitionId('football-eng.1')).toBe('eng.1');
+    expect(tableCompetitionId('football-uefa.champions')).toBe('uefa.champions');
+    expect(tableCompetitionId('football-uefa.champions-2')).toBe('uefa.champions');
+    expect(tableCompetitionId('nhl-east')).toBeUndefined();
+    expect(tableCompetitionId('football-xyz.9')).toBeUndefined();
+  });
+  it('výběr tabulky jen při více než 2 tabulkách', () => {
+    expect(showTableSelector(tables)).toBe(true);
+    expect(showTableSelector(tables.slice(0, 2))).toBe(false);
+    expect(showTableSelector([])).toBe(false);
+  });
+  it('výchozí tabulka: první oblíbený klub nebo soutěž v pořadí oblíbených', () => {
+    expect(defaultTableId(tables, ['nhl:PIT', 'football:86', 'league:cze.1'], teams)).toBe('football-esp.1');
+    expect(defaultTableId(tables, ['league:uefa.champions', 'football:359'], teams)).toBe('football-uefa.champions');
+    expect(defaultTableId(tables, ['football:494'], teams)).toBe('football-uefa.champions'); // klub jen z LM
+  });
+  it('klub mimo tabulky podle Team.league; jinak první tabulka', () => {
+    const withGer = [...tables, t('football-ger.1')];
+    expect(defaultTableId(withGer, ['football:132'], teams)).toBe('football-ger.1');
+    expect(defaultTableId(tables, ['football', 'nhl:PIT'], teams)).toBe('football-eng.1');
+    expect(defaultTableId(tables, [], teams)).toBe('football-eng.1');
+    expect(defaultTableId([], ['football:359'], teams)).toBeUndefined();
+  });
+  it('oblíbená soutěž nezvýrazňuje řádky', () => {
+    expect(isFavoriteRow(row('football:359'), 'football', ['league:eng.1'])).toBe(false);
+    expect(isFavoriteRow(row('football:359'), 'football', ['football:359'])).toBe(true);
   });
 });

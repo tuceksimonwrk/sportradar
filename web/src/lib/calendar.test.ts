@@ -32,7 +32,12 @@ describe('favoriteFeeds', () => {
   });
   it('oblíbená soutěž → feed soutěže; neznámá soutěž se přeskočí', () => {
     expect(favoriteFeeds(['league:eng.1', 'league:xyz.9'], teams)).toEqual([
-      { id: 'league:eng.1', label: 'Premier League', file: 'league_eng.1.ics', sport: 'football' },
+      { id: 'league:eng.1', label: 'Premier League (Anglie)', file: 'league_eng.1.ics', sport: 'football' },
+    ]);
+  });
+  it('soubor soutěže odpovídá calendarFileName (league_<id>)', () => {
+    expect(favoriteFeeds(['league:uefa.champions', 'league:cze.1'], teams).map((f) => [f.label, f.file])).toEqual([
+      ['Liga mistrů (Evropa)', 'league_uefa.champions.ics'], ['Chance Liga (Česko)', 'league_cze.1.ics'],
     ]);
   });
   it('prázdné oblíbené → prázdný seznam', () => expect(favoriteFeeds([], teams)).toEqual([]));
