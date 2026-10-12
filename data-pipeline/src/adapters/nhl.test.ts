@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { nhlAdapter, parseNhl } from './nhl';
+import { nhlAdapter, parseNhl, parseNhlStandings } from './nhl';
 
 const team = (abbrev: string, place: string, name: string) =>
   ({ abbrev, placeName: { default: place }, commonName: { default: name } });
@@ -87,5 +87,63 @@ describe('nhlAdapter.fetch', () => {
   it('vadné startTimeUTC u přeskočeného stavu nepadne', () => {
     const g = { id: 9, gameType: 2, startTimeUTC: 'nonsense', gameState: 'PPD', homeTeam: team('PIT', 'Pittsburgh', 'Penguins'), awayTeam: team('NYR', 'New York', 'Rangers') };
     expect(parseNhl({ gameWeek: [{ games: [g] }] }, now).matches).toEqual([]);
+  });
+});
+
+describe('parseNhlStandings', () => {
+  const row = (abbrev: string, conf: string, seq: number, extra: object = {}) => ({
+    teamAbbrev: { default: abbrev }, teamName: { default: `Tým ${abbrev}` }, conferenceName: conf, conferenceSequence: seq,
+    gamesPlayed: 7, wins: 5, losses: 1, otLosses: 1, points: 11, goalDifferential: 10, ...extra,
+  });
+  const json = { standings: [
+    row('NYR', 'Eastern', 2, { goalDifferential: -3, points: 9 }),
+    row('CAR', 'Eastern', 1),
+    row('EDM', 'Western', 1, { goalDifferential: 0 }),
+    { ...row('XXX', 'Western', 2), goalDifferential: undefined, teamName: undefined, placeName: { default: 'Utah' }, teamCommonName: { default: 'Mammoth' } },
+    { conferenceName: 'Western', conferenceSequence: 3 },
+  ] };
+  const t = parseNhlStandings(json);
+  it('dvě tabulky podle konference, řazené podle conferenceSequence', () => {
+    expect(t.map((x) => x.id)).toEqual(['nhl-east', 'nhl-west']);
+    expect(t[0].title).toBe('NHL – Východní konference');
+    expect(t[1].title).toBe('NHL – Západní konference');
+    expect(t[0].rows.map((r) => r.pos)).toEqual([1, 2]);
+    expect(t[0].rows.map((r) => r.teamId)).toEqual(['nhl:CAR', 'nhl:NYR']);
+    expect(t[0].columns.map((c) => c.label)).toEqual(['Z', 'V', 'P', 'PP', 'B', 'S']);
+  });
+  it('hodnoty a znaménkové skóre', () => {
+    expect(t[0].rows[0].values).toEqual({ z: 7, v: 5, p: 1, pp: 1, b: 11, s: '+10' });
+    expect(t[0].rows[1].values.s).toBe('-3');
+    expect(t[1].rows[0].values.s).toBe('0');
+  });
+  it('chybějící údaje: jméno z place+common, skóre –, řádek bez zkratky se zahodí', () => {
+    expect(t[1].rows[1]).toMatchObject({ name: 'Utah Mammoth', teamId: 'nhl:XXX' });
+    expect(t[1].rows[1].values.s).toBe('–');
+    expect(t[1].rows).toHaveLength(2);
+  });
+  it('prázdný / neznámý vstup → []', () => {
+    expect(parseNhlStandings({})).toEqual([]);
+    expect(parseNhlStandings({ standings: [] })).toEqual([]);
+    expect(parseNhlStandings(null)).toEqual([]);
+  });
+});
+
+describe('nhlAdapter.fetch – tabulky', () => {
+  const sched = { gameWeek: [] };
+  const stand = { standings: [{ teamAbbrev: { default: 'CAR' }, teamName: { default: 'Carolina Hurricanes' }, conferenceName: 'Eastern', conferenceSequence: 1, gamesPlayed: 1, wins: 1, losses: 0, otLosses: 0, points: 2, goalDifferential: 1 }] };
+  it('úspěch: standings přítomné', async () => {
+    const r = await nhlAdapter.fetch(now, (async (u: string) => (u.includes('standings') ? stand : sched)) as any);
+    expect(r.standings?.[0].id).toBe('nhl-east');
+    expect(r.standingsError).toBeUndefined();
+  });
+  it('selhání tabulky nezabije zápasy, nastaví standingsError', async () => {
+    const r = await nhlAdapter.fetch(now, (async (u: string) => { if (u.includes('standings')) throw new Error('boom'); return sched; }) as any);
+    expect(r.standings).toBeUndefined();
+    expect(r.standingsError).toContain('boom');
+  });
+  it('prázdné tabulky = chyba tabulky', async () => {
+    const r = await nhlAdapter.fetch(now, (async (u: string) => (u.includes('standings') ? {} : sched)) as any);
+    expect(r.standings).toBeUndefined();
+    expect(r.standingsError).toBeTruthy();
   });
 });

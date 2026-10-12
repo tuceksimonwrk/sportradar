@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { attachF1Podium, f1Adapter, f1RacesNeedingPodium, parseF1 } from './f1';
+import { attachF1Podium, f1Adapter, f1RacesNeedingPodium, parseF1, parseF1Standings } from './f1';
 
 const json = {
   MRData: { RaceTable: { Races: [
@@ -83,7 +83,7 @@ describe('f1Adapter.fetch', () => {
     const urls: string[] = [];
     const get = async (u: string) => { urls.push(u); if (u.endsWith('current.json')) return sched; throw new Error('boom'); };
     const r = await f1Adapter.fetch(now, get as any);
-    expect(urls).toEqual(['https://api.jolpi.ca/ergast/f1/current.json', 'https://api.jolpi.ca/ergast/f1/current/19/results.json']);
+    expect(urls.filter((u) => !u.includes('tandings'))).toEqual(['https://api.jolpi.ca/ergast/f1/current.json', 'https://api.jolpi.ca/ergast/f1/current/19/results.json']);
     expect(r.matches.some((m) => m.result)).toBe(false);
   });
   it('podium se připojí', async () => {
@@ -91,5 +91,50 @@ describe('f1Adapter.fetch', () => {
       : { MRData: { RaceTable: { Races: [{ Results: [{ position: '1', Driver: { givenName: 'A', familyName: 'B' } }] }] } } };
     const r = await f1Adapter.fetch(now, get as any);
     expect(r.matches.find((m) => m.result)?.result?.podium).toEqual([{ pos: 1, name: 'A B' }]);
+  });
+});
+
+describe('parseF1Standings', () => {
+  const drivers = { MRData: { StandingsTable: { StandingsLists: [{ DriverStandings: [
+    { position: '1', points: '340', wins: '8', Driver: { givenName: 'Andrea Kimi', familyName: 'Antonelli', code: 'ANT' }, Constructors: [{ name: 'Mercedes' }] },
+    { position: '2', points: '238', wins: '3', Driver: { givenName: 'George', familyName: 'Russell' }, Constructors: [] },
+    { position: 'x', points: '1', wins: '0', Driver: { givenName: 'Bad', familyName: 'Row' } },
+  ] }] } } };
+  const cons = { MRData: { StandingsTable: { StandingsLists: [{ ConstructorStandings: [
+    { position: '1', points: '578', wins: '11', Constructor: { name: 'Mercedes' } },
+    { position: '2', points: '444', wins: '2', Constructor: { name: 'Ferrari' } },
+  ] }] } } };
+  it('jezdci a konstruktéři', () => {
+    const t = parseF1Standings(drivers, cons);
+    expect(t.map((x) => x.id)).toEqual(['f1-drivers', 'f1-constructors']);
+    expect(t[0].title).toBe('Formule 1 – jezdci');
+    expect(t[0].columns.map((c) => c.label)).toEqual(['B', 'V']);
+    expect(t[0].rows[0]).toEqual({ pos: 1, name: 'Andrea Kimi Antonelli', sub: 'Mercedes', values: { b: 340, v: 8 } });
+    expect(t[0].rows[1]).toEqual({ pos: 2, name: 'George Russell', values: { b: 238, v: 3 } });
+    expect(t[0].rows).toHaveLength(2);
+    expect(t[1].title).toBe('Formule 1 – konstruktéři');
+    expect(t[1].rows[1]).toEqual({ pos: 2, name: 'Ferrari', values: { b: 444, v: 2 } });
+  });
+  it('jedna strana prázdná → jen druhá tabulka; obě prázdné → []', () => {
+    expect(parseF1Standings(drivers, {}).map((x) => x.id)).toEqual(['f1-drivers']);
+    expect(parseF1Standings({}, cons).map((x) => x.id)).toEqual(['f1-constructors']);
+    expect(parseF1Standings(null, undefined)).toEqual([]);
+    expect(parseF1Standings({ MRData: { StandingsTable: { StandingsLists: [] } } }, {})).toEqual([]);
+  });
+});
+
+describe('f1Adapter.fetch – tabulky', () => {
+  const sched = { MRData: { RaceTable: { Races: [] } } };
+  const drivers = { MRData: { StandingsTable: { StandingsLists: [{ DriverStandings: [{ position: '1', points: '1', wins: '0', Driver: { givenName: 'A', familyName: 'B' } }] }] } } };
+  const t = new Date('2026-10-12T12:00:00Z');
+  it('úspěch: standings přítomné', async () => {
+    const r = await f1Adapter.fetch(t, (async (u: string) => (u.includes('tandings') ? drivers : sched)) as any);
+    expect(r.standings?.map((x) => x.id)).toEqual(['f1-drivers']);
+    expect(r.standingsError).toBeUndefined();
+  });
+  it('selhání tabulky nezabije zápasy', async () => {
+    const r = await f1Adapter.fetch(t, (async (u: string) => { if (u.includes('tandings')) throw new Error('boom'); return sched; }) as any);
+    expect(r.standings).toBeUndefined();
+    expect(r.standingsError).toContain('boom');
   });
 });

@@ -1,4 +1,4 @@
-import type { Match, Team, Venue } from '@sportradar/shared';
+import type { Match, StandingRow, StandingsTable, Team, Venue } from '@sportradar/shared';
 import type { Adapter, AdapterResult } from '../types';
 import { combine, getJson } from '../util';
 
@@ -70,6 +70,47 @@ export function nbaPastRange(now: Date, days = 4): string[] {
 
 const espn = (d: string) => `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${d}`;
 
+const NBA_COLUMNS = [
+  { key: 'v', label: 'V', title: 'Výhry' }, { key: 'p', label: 'P', title: 'Prohry' },
+  { key: 'pct', label: '%', title: 'Úspěšnost' }, { key: 'gb', label: 'Ztr.', title: 'Ztráta na lídra' },
+];
+const NBA_CONF = [
+  { match: /east/i, id: 'nba-east', title: 'NBA – Východní konference' },
+  { match: /west/i, id: 'nba-west', title: 'NBA – Západní konference' },
+];
+
+export function parseNbaStandings(json: unknown): StandingsTable[] {
+  const children = (json as any)?.children;
+  if (!Array.isArray(children)) return [];
+  const tables: StandingsTable[] = [];
+  for (const conf of NBA_CONF) {
+    const child = children.find((c: any) => conf.match.test(String(c?.name ?? '')));
+    const entries = child?.standings?.entries;
+    if (!Array.isArray(entries)) continue;
+    const parsed: { seed: number; pct: number; row: Omit<StandingRow, 'pos'> }[] = [];
+    for (const e of entries) {
+      const abbr = e?.team?.abbreviation;
+      const name = e?.team?.displayName;
+      if (typeof abbr !== 'string' || !abbr || typeof name !== 'string' || !name) continue;
+      const stats: any[] = Array.isArray(e.stats) ? e.stats : [];
+      const stat = (n: string) => stats.find((x) => x?.name === n);
+      const disp = (n: string): string | number => {
+        const d = stat(n)?.displayValue;
+        if (typeof d !== 'string' || !d.trim()) return '–';
+        return n === 'wins' || n === 'losses' ? (Number.isFinite(Number(d)) ? Number(d) : '–') : d;
+      };
+      const seed = Number(stat('playoffSeed')?.value);
+      const pct = Number(stat('winPercent')?.value);
+      parsed.push({ seed: Number.isFinite(seed) && stat('playoffSeed') ? seed : Infinity, pct: Number.isFinite(pct) ? pct : -1,
+        row: { name, teamId: `nba:${abbr}`, values: { v: disp('wins'), p: disp('losses'), pct: disp('winPercent'), gb: disp('gamesBehind') } } });
+    }
+    if (parsed.length === 0) continue;
+    parsed.sort((a, b) => a.seed - b.seed || b.pct - a.pct);
+    tables.push({ id: conf.id, sport: 'nba', title: conf.title, columns: NBA_COLUMNS, rows: parsed.map((x, i) => ({ pos: i + 1, ...x.row })) });
+  }
+  return tables;
+}
+
 export const nbaAdapter = {
   sport: 'nba' as const,
   async fetch(now, get: (url: string) => Promise<unknown> = getJson) {
@@ -80,6 +121,12 @@ export const nbaAdapter = {
     const bad = settled.filter((s) => s.status === 'rejected');
     if (bad.length > 0) throw new Error(`NBA: selhalo ${bad.length} z ${settled.length} dnů (${(bad[0] as PromiseRejectedResult).reason?.message ?? bad[0]})`);
     const past = pastSettled.filter((s): s is PromiseFulfilledResult<unknown> => s.status === 'fulfilled');
-    return combine([...settled, ...past].map((s, i) => parseNba((s as PromiseFulfilledResult<unknown>).value, now, { resultsOnly: i >= settled.length })));
+    const out: AdapterResult = combine([...settled, ...past].map((s, i) => parseNba((s as PromiseFulfilledResult<unknown>).value, now, { resultsOnly: i >= settled.length })));
+    try {
+      const tables = parseNbaStandings(await get('https://site.api.espn.com/apis/v2/sports/basketball/nba/standings'));
+      if (tables.length === 0) throw new Error('NBA: prázdná tabulka (změněná data?)');
+      out.standings = tables;
+    } catch (e) { out.standingsError = (e as Error).message; }
+    return out;
   },
 } satisfies Adapter;

@@ -43,3 +43,9 @@ export function combine(results: AdapterResult[]): AdapterResult {
   }
   return { matches: [...matches.values()], teams: [...teams.values()] };
 }
+
+/** Najde id týmu podle jména (shoda přes slugify); bez shody undefined. */
+export function matchTeamId(name: string, teams: { id: string; name: string }[]): string | undefined {
+  const key = slugify(name);
+  return key ? teams.find((t) => slugify(t.name) === key)?.id : undefined;
+}

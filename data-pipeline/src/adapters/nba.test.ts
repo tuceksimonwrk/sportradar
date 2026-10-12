@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { nbaAdapter, nbaDateRange, nbaPastRange, parseNba } from './nba';
+import { nbaAdapter, nbaDateRange, nbaPastRange, parseNba, parseNbaStandings } from './nba';
 
 const comp = (home: [string, string], away: [string, string], venue?: object, score?: [unknown, unknown]) => ({
   ...(venue ? { venue } : {}),
@@ -114,5 +114,54 @@ describe('nbaAdapter.fetch', () => {
     const r = await nbaAdapter.fetch(now, get as any);
     expect(r.matches.filter((m) => m.result)).toHaveLength(1);
     expect(r.matches.filter((m) => !m.result).length).toBeGreaterThan(0);
+  });
+});
+
+describe('parseNbaStandings', () => {
+  const stat = (name: string, displayValue: string, value = Number(displayValue)) => ({ name, displayValue, value });
+  const entry = (abbr: string, seed: string | null, w: string, l: string, pct: string, gb: string, pctVal = Number(pct)) => ({
+    team: { abbreviation: abbr, displayName: `Tým ${abbr}` },
+    stats: [stat('wins', w), stat('losses', l), stat('winPercent', pct, pctVal), stat('gamesBehind', gb), ...(seed ? [stat('playoffSeed', seed)] : [])],
+  });
+  const standJson = { children: [
+    { name: 'Eastern Conference', standings: { entries: [entry('NY', '2', '1', '1', '.500', '1'), entry('BOS', '1', '2', '0', '1.000', '-')] } },
+    { name: 'Western Conference', standings: { entries: [
+      entry('LAL', null, '1', '1', '.500', '1'), entry('DEN', null, '2', '0', '1.000', '-'),
+      { team: { abbreviation: 'UTA', displayName: 'Utah Jazz' }, stats: [] },
+    ] } },
+  ] };
+  const t = parseNbaStandings(standJson);
+  it('dvě tabulky podle konference, řazené podle playoffSeed', () => {
+    expect(t.map((x) => x.id)).toEqual(['nba-east', 'nba-west']);
+    expect(t[0].title).toBe('NBA – Východní konference');
+    expect(t[0].rows.map((r) => [r.pos, r.teamId])).toEqual([[1, 'nba:BOS'], [2, 'nba:NY']]);
+    expect(t[0].columns.map((c) => c.label)).toEqual(['V', 'P', '%', 'Ztr.']);
+    expect(t[0].rows[0].values).toEqual({ v: 2, p: 0, pct: '1.000', gb: '-' });
+  });
+  it('bez playoffSeed řadí podle winPercent, tým bez statistik skončí poslední s –', () => {
+    expect(t[1].rows.map((r) => r.teamId)).toEqual(['nba:DEN', 'nba:LAL', 'nba:UTA']);
+    expect(t[1].rows.map((r) => r.pos)).toEqual([1, 2, 3]);
+    expect(t[1].rows[2].values).toEqual({ v: '–', p: '–', pct: '–', gb: '–' });
+  });
+  it('prázdný / změněný vstup → []', () => {
+    expect(parseNbaStandings({})).toEqual([]);
+    expect(parseNbaStandings({ children: [{ name: 'Eastern Conference', standings: { entries: [] } }] })).toEqual([]);
+    expect(parseNbaStandings(undefined)).toEqual([]);
+  });
+});
+
+describe('nbaAdapter.fetch – tabulky', () => {
+  const now = new Date('2026-10-12T12:00:00Z');
+  const stand = { children: [{ name: 'Eastern Conference', standings: { entries: [{ team: { abbreviation: 'BOS', displayName: 'Boston Celtics' }, stats: [{ name: 'wins', displayValue: '1', value: 1 }] }] } }] };
+  it('úspěch: standings přítomné', async () => {
+    const r = await nbaAdapter.fetch(now, (async (u: string) => (u.includes('/standings') ? stand : json)) as any);
+    expect(r.standings?.[0].id).toBe('nba-east');
+    expect(r.standingsError).toBeUndefined();
+  });
+  it('selhání tabulky nezabije zápasy', async () => {
+    const r = await nbaAdapter.fetch(now, (async (u: string) => { if (u.includes('/standings')) throw new Error('boom'); return json; }) as any);
+    expect(r.matches.length).toBeGreaterThan(0);
+    expect(r.standings).toBeUndefined();
+    expect(r.standingsError).toContain('boom');
   });
 });

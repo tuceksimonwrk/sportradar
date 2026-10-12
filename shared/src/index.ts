@@ -34,3 +34,14 @@ export interface Match {
 export interface Team { id: string; sport: Sport; name: string }
 export interface MatchesFile { generatedAt: string; matches: Match[] }
 export interface TeamsFile { teams: Team[] }
+
+export interface StandingsColumn { key: string; label: string; title?: string }   // label = krátký popisek (Z, V, P, B…), title = celý název
+export interface StandingRow {
+  pos: number;
+  name: string;                 // tým / jezdec
+  sub?: string;                 // F1 jezdci: jméno týmu
+  teamId?: string;              // id týmu shodné s Team.id (pro zvýraznění oblíbených), jinak undefined
+  values: Record<string, string | number>;   // klíč = StandingsColumn.key
+}
+export interface StandingsTable { id: string; sport: Sport; title: string; columns: StandingsColumn[]; rows: StandingRow[] }
+export interface StandingsFile { generatedAt: string; tables: StandingsTable[] }

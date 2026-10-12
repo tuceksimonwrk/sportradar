@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { combine, pragueToUtcIso, slugify } from './util';
+import { combine, matchTeamId, pragueToUtcIso, slugify } from './util';
 
 describe('pragueToUtcIso', () => {
   it('letní čas (CEST, +2)', () => {
@@ -31,5 +31,21 @@ describe('combine', () => {
     ]);
     expect(r.matches.map((x) => x.id)).toEqual(['a', 'b', 'c']);
     expect(r.teams.map((x) => x.id)).toEqual(['x', 'y']);
+  });
+});
+
+describe('matchTeamId', () => {
+  const teams = [
+    { id: 'cz-hockey:PCE', sport: 'cz-hockey' as const, name: 'HC Dynamo Pardubice' },
+    { id: 'cz-hockey:CEB', sport: 'cz-hockey' as const, name: 'Banes Motor Č. Budějovice' },
+  ];
+  it('shoda přes slugify (diakritika, velikost, mezery)', () => {
+    expect(matchTeamId('HC Dynamo Pardubice', teams)).toBe('cz-hockey:PCE');
+    expect(matchTeamId('  banes motor c.  budejovice ', teams)).toBe('cz-hockey:CEB');
+  });
+  it('bez shody / prázdné jméno → undefined', () => {
+    expect(matchTeamId('HC Neznámý', teams)).toBeUndefined();
+    expect(matchTeamId('', teams)).toBeUndefined();
+    expect(matchTeamId('x', [])).toBeUndefined();
   });
 });

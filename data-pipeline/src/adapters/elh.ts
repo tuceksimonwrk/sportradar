@@ -1,7 +1,7 @@
 import * as cheerio from 'cheerio';
-import type { Match, Team } from '@sportradar/shared';
+import type { Match, StandingRow, StandingsColumn, StandingsTable, Team } from '@sportradar/shared';
 import type { Adapter, AdapterResult } from '../types';
-import { combine, getText, pragueToUtcIso } from '../util';
+import { combine, getText, matchTeamId, pragueToUtcIso } from '../util';
 
 const BASE = 'https://www.hokej.cz/tipsport-extraliga/zapasy';
 
@@ -67,6 +67,43 @@ export function parseElhRound(html: string, now: Date): AdapterResult {
   return { matches, teams: [...teams.values()] };
 }
 
+const ELH_COLS: Record<string, string> = { z: 'z', v: 'v', vp: 'vp', pp: 'pp', p: 'p', 'skóre': 'skore', b: 'b' };
+const ELH_TITLES: Record<string, string> = {
+  z: 'Zápasy', v: 'Výhry', vp: 'Výhry v prodloužení', pp: 'Prohry v prodloužení', p: 'Prohry', skore: 'Skóre', b: 'Body',
+};
+const norm = (s: string) => s.replace(/\s+/g, ' ').trim();
+
+/** Hlavní tabulka základní části: první tabulka s hlavičkou Tým + Z V VP PP P Skóre B (doma/venku mají stejné hlavičky, ale jdou až po ní). */
+export function parseElhStandings(html: string, teams: Team[]): StandingsTable[] {
+  const $ = cheerio.load(html);
+  for (const table of $('table').toArray()) {
+    const heads = $(table).find('thead th').map((_, h) => norm($(h).text()).toLowerCase()).get();
+    const need = ['tým', 'z', 'v', 'vp', 'pp', 'p', 'skóre', 'b'];
+    if (!need.every((n) => heads.includes(n))) continue;
+    const idx = (label: string) => heads.indexOf(label);
+    const cols = Object.keys(ELH_COLS).map((label) => ({ label, key: ELH_COLS[label], i: idx(label) }));
+    const columns: StandingsColumn[] = cols.map((c) => ({ key: c.key, label: c.label === 'skóre' ? 'Skóre' : c.label.toUpperCase(), title: ELH_TITLES[c.key] }));
+    const rows: StandingRow[] = [];
+    $(table).find('tbody tr').each((_, tr) => {
+      const tds = $(tr).children('td').map((__, c) => norm($(c).text())).get();
+      const pos = Number.parseInt(tds[idx('#') >= 0 ? idx('#') : 0] ?? '', 10);
+      const name = tds[idx('tým')];
+      if (!Number.isInteger(pos) || !name || tds.length < heads.length) return;
+      const values: Record<string, string | number> = {};
+      for (const c of cols) {
+        const raw = tds[c.i] ?? '';
+        if (c.key === 'skore') { if (!/^[0-9]+:[0-9]+$/.test(raw)) return; values.skore = raw; }
+        else { if (!/^[0-9]+$/.test(raw)) return; values[c.key] = Number(raw); }
+      }
+      const teamId = matchTeamId(name, teams);
+      rows.push({ pos, name, ...(teamId && { teamId }), values });
+    });
+    if (rows.length === 0) continue;
+    return [{ id: 'cz-hockey', sport: 'cz-hockey', title: 'Tipsport extraliga', columns, rows }];
+  }
+  return [];
+}
+
 export const elhAdapter = {
   sport: 'cz-hockey' as const,
   async fetch(now, get: (url: string) => Promise<string> = getText) {
@@ -81,6 +118,12 @@ export const elhAdapter = {
         parts.push(parseElhRound(b.value, now));
       }
     }
-    return combine(parts);
+    const out = combine(parts);
+    try {
+      const tables = parseElhStandings(await get('https://www.hokej.cz/tipsport-extraliga/table'), out.teams);
+      if (tables.length === 0) throw new Error('ELH: tabulka nenalezena (změněné HTML?)');
+      out.standings = tables;
+    } catch (e) { out.standingsError = (e as Error).message; }
+    return out;
   },
 } satisfies Adapter;

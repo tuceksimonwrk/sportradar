@@ -1,5 +1,5 @@
 import * as cheerio from 'cheerio';
-import type { Match, Team } from '@sportradar/shared';
+import type { Match, StandingRow, StandingsTable, Team } from '@sportradar/shared';
 import type { Adapter, AdapterResult } from '../types';
 import { getText, pragueToUtcIso, slugify } from '../util';
 
@@ -47,9 +47,44 @@ export function parseNbl(html: string, now: Date): AdapterResult {
   return { matches, teams: [...teams.values()] };
 }
 
-export const nblAdapter: Adapter = {
-  sport: 'cz-basket',
-  async fetch(now) {
-    return parseNbl(await getText('https://www.nbl.basketball/zapasy'), now);
+const NBL_COLUMNS = [
+  { key: 'z', label: 'Z', title: 'Zápasy' }, { key: 'v', label: 'V', title: 'Výhry' }, { key: 'p', label: 'P', title: 'Prohry' },
+  { key: 'skore', label: 'Skóre', title: 'Skóre (vstřeleno:obdrženo)' },
+];
+
+/** Aktuální tabulka: hlavička pořadí + tým + z v p vstřeleno obdrženo + doma/venku (historická tabulka „tituly“ ji nemá). */
+export function parseNblStandings(html: string): StandingsTable[] {
+  const $ = cheerio.load(html);
+  for (const table of $('table').toArray()) {
+    const heads = $(table).find('thead th').map((_, h) => $(h).text().replace(/\s+/g, ' ').trim().toLowerCase()).get();
+    if (!['pořadí', 'tým', 'z', 'v', 'p', 'vstřeleno', 'obdrženo', 'doma', 'venku'].every((n) => heads.includes(n))) continue;
+    const rows: StandingRow[] = [];
+    $(table).find('tbody tr').each((_, tr) => {
+      const tds = $(tr).children('td').toArray();
+      const li = tds.findIndex((td) => $(td).find('a[href*="/tym/"]').length > 0);
+      if (li < 1) return;
+      const name = $(tds[li]).text().replace(/\s+/g, ' ').trim();
+      const pos = Number.parseInt($(tds[0]).text(), 10);
+      const cell = (o: number) => $(tds[li + o]).text().replace(/\s+/g, ' ').trim();
+      const [z, v, p, vs, ob] = [1, 2, 3, 5, 6].map((o) => cell(o));
+      if (!name || !Number.isInteger(pos) || ![z, v, p, vs, ob].every((x) => /^[0-9]+$/.test(x))) return;
+      rows.push({ pos, name, teamId: `cz-basket:${slugify(name)}`, values: { z: Number(z), v: Number(v), p: Number(p), skore: `${vs}:${ob}` } });
+    });
+    if (rows.length === 0) continue;
+    return [{ id: 'cz-basket', sport: 'cz-basket', title: 'NBL', columns: NBL_COLUMNS, rows }];
+  }
+  return [];
+}
+
+export const nblAdapter = {
+  sport: 'cz-basket' as const,
+  async fetch(now, get: (url: string) => Promise<string> = getText) {
+    const out: AdapterResult = parseNbl(await get('https://www.nbl.basketball/zapasy'), now);
+    try {
+      const tables = parseNblStandings(await get('https://www.nbl.basketball/tabulka'));
+      if (tables.length === 0) throw new Error('NBL: tabulka nenalezena (změněné HTML?)');
+      out.standings = tables;
+    } catch (e) { out.standingsError = (e as Error).message; }
+    return out;
   },
-};
+} satisfies Adapter;

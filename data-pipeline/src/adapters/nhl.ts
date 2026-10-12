@@ -1,4 +1,4 @@
-import type { Match, Team, Venue } from '@sportradar/shared';
+import type { Match, StandingRow, StandingsTable, Team, Venue } from '@sportradar/shared';
 import type { Adapter, AdapterResult } from '../types';
 import { combine, getJson } from '../util';
 
@@ -58,6 +58,39 @@ export function parseNhl(json: unknown, now: Date): AdapterResult {
   return { matches, teams: [...teams.values()] };
 }
 
+const nhlConf = {
+  Eastern: { id: 'nhl-east', title: 'NHL – Východní konference' },
+  Western: { id: 'nhl-west', title: 'NHL – Západní konference' },
+} as const;
+const NHL_COLUMNS = [
+  { key: 'z', label: 'Z', title: 'Zápasy' }, { key: 'v', label: 'V', title: 'Výhry' }, { key: 'p', label: 'P', title: 'Prohry' },
+  { key: 'pp', label: 'PP', title: 'Prohry v prodloužení / nájezdech' }, { key: 'b', label: 'B', title: 'Body' },
+  { key: 's', label: 'S', title: 'Rozdíl skóre' },
+];
+const int = (v: unknown): number | '–' => (typeof v === 'number' && Number.isFinite(v) ? v : '–');
+const signed = (v: unknown): string => (typeof v === 'number' && Number.isFinite(v) ? (v > 0 ? `+${v}` : String(v)) : '–');
+
+export function parseNhlStandings(json: unknown): StandingsTable[] {
+  const list = (json as any)?.standings;
+  if (!Array.isArray(list)) return [];
+  const by: Record<string, { seq: number; row: StandingRow }[]> = { Eastern: [], Western: [] };
+  for (const e of list) {
+    const abbrev = e?.teamAbbrev?.default;
+    const seq = e?.conferenceSequence;
+    if (typeof abbrev !== 'string' || !abbrev || !(e?.conferenceName in by) || typeof seq !== 'number') continue;
+    const full = e.teamName?.default ?? [e.placeName?.default, e.teamCommonName?.default].filter(Boolean).join(' ');
+    if (typeof full !== 'string' || !full) continue;
+    by[e.conferenceName].push({ seq, row: {
+      pos: seq, name: full, teamId: `nhl:${abbrev}`,
+      values: { z: int(e.gamesPlayed), v: int(e.wins), p: int(e.losses), pp: int(e.otLosses), b: int(e.points), s: signed(e.goalDifferential) },
+    } });
+  }
+  return (Object.keys(nhlConf) as (keyof typeof nhlConf)[])
+    .filter((c) => by[c].length > 0)
+    .map((c) => ({ id: nhlConf[c].id, sport: 'nhl' as const, title: nhlConf[c].title, columns: NHL_COLUMNS,
+      rows: by[c].sort((a, b) => a.seq - b.seq).map((x) => x.row) }));
+}
+
 export const nhlAdapter = {
   sport: 'nhl' as const,
   async fetch(now, get: (url: string) => Promise<unknown> = getJson) {
@@ -78,6 +111,12 @@ export const nhlAdapter = {
       parts.push(parseNhl(json, now));
       prevDate = json.previousStartDate;
     }
-    return combine(parts);
+    const out: AdapterResult = combine(parts);
+    try {
+      const tables = parseNhlStandings(await get('https://api-web.nhle.com/v1/standings/now'));
+      if (tables.length === 0) throw new Error('NHL: prázdná tabulka (změněná data?)');
+      out.standings = tables;
+    } catch (e) { out.standingsError = (e as Error).message; }
+    return out;
   },
 } satisfies Adapter;

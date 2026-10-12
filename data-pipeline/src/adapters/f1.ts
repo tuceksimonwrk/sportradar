@@ -1,4 +1,4 @@
-import type { Match, Venue } from '@sportradar/shared';
+import type { Match, StandingRow, StandingsTable, Venue } from '@sportradar/shared';
 import type { Adapter, AdapterResult } from '../types';
 import { getJson } from '../util';
 
@@ -79,6 +79,33 @@ export function attachF1Podium(matches: Match[], resultsByRound: Record<string, 
   });
 }
 
+const F1_COLUMNS = [{ key: 'b', label: 'B', title: 'Body' }, { key: 'v', label: 'V', title: 'Vítězství' }];
+
+function f1Rows(list: unknown, nameOf: (x: any) => string, subOf?: (x: any) => string | undefined): StandingRow[] {
+  if (!Array.isArray(list)) return [];
+  const rows: StandingRow[] = [];
+  for (const x of list) {
+    const pos = Number(x?.position), b = Number(x?.points), v = Number(x?.wins);
+    const name = nameOf(x).trim();
+    if (!Number.isInteger(pos) || pos < 1 || !Number.isFinite(b) || !Number.isFinite(v) || !name) continue;
+    const sub = subOf?.(x)?.trim();
+    rows.push({ pos, name, ...(sub && { sub }), values: { b, v } });
+  }
+  return rows.sort((a, c) => a.pos - c.pos);
+}
+
+export function parseF1Standings(driversJson: unknown, constructorsJson: unknown): StandingsTable[] {
+  const lists = (j: unknown) => (j as any)?.MRData?.StandingsTable?.StandingsLists?.[0];
+  const drivers = f1Rows(lists(driversJson)?.DriverStandings,
+    (x) => [x?.Driver?.givenName, x?.Driver?.familyName].filter((p) => typeof p === 'string' && p.trim()).join(' '),
+    (x) => (typeof x?.Constructors?.[0]?.name === 'string' ? x.Constructors[0].name : undefined));
+  const constructors = f1Rows(lists(constructorsJson)?.ConstructorStandings, (x) => (typeof x?.Constructor?.name === 'string' ? x.Constructor.name : ''));
+  const tables: StandingsTable[] = [];
+  if (drivers.length) tables.push({ id: 'f1-drivers', sport: 'f1', title: 'Formule 1 – jezdci', columns: F1_COLUMNS, rows: drivers });
+  if (constructors.length) tables.push({ id: 'f1-constructors', sport: 'f1', title: 'Formule 1 – konstruktéři', columns: F1_COLUMNS, rows: constructors });
+  return tables;
+}
+
 export const f1Adapter = {
   sport: 'f1' as const,
   async fetch(now, get: (url: string) => Promise<unknown> = getJson) {
@@ -87,6 +114,16 @@ export const f1Adapter = {
     const settled = await Promise.allSettled(rounds.map((r) => get(`https://api.jolpi.ca/ergast/f1/current/${r}/results.json`)));
     const byRound: Record<string, unknown> = {};
     settled.forEach((s, i) => { if (s.status === 'fulfilled') byRound[rounds[i]] = s.value; });
-    return { matches: attachF1Podium(base.matches, byRound), teams: base.teams };
+    const out: AdapterResult = { matches: attachF1Podium(base.matches, byRound), teams: base.teams };
+    try {
+      const [d, c] = await Promise.all([
+        get('https://api.jolpi.ca/ergast/f1/current/driverStandings.json'),
+        get('https://api.jolpi.ca/ergast/f1/current/constructorStandings.json'),
+      ]);
+      const tables = parseF1Standings(d, c);
+      if (tables.length === 0) throw new Error('F1: prázdná tabulka (změněná data?)');
+      out.standings = tables;
+    } catch (e) { out.standingsError = (e as Error).message; }
+    return out;
   },
 } satisfies Adapter;
