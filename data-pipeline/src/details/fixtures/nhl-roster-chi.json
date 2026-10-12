@@ -1,0 +1,100 @@
+{
+ "forwards": [
+  {
+   "id": 8484144,
+   "firstName": {
+    "default": "Connor"
+   },
+   "lastName": {
+    "default": "Bedard"
+   },
+   "sweaterNumber": 98,
+   "positionCode": "C"
+  },
+  {
+   "id": 8477479,
+   "firstName": {
+    "default": "Tyler"
+   },
+   "lastName": {
+    "default": "Bertuzzi"
+   },
+   "sweaterNumber": 59,
+   "positionCode": "L"
+  },
+  {
+   "id": 8477987,
+   "firstName": {
+    "default": "Ryan"
+   },
+   "lastName": {
+    "default": "Donato"
+   },
+   "sweaterNumber": 8,
+   "positionCode": "C"
+  },
+  {
+   "id": 8485391,
+   "firstName": {
+    "default": "Anton"
+   },
+   "lastName": {
+    "default": "Frondell"
+   },
+   "sweaterNumber": 16,
+   "positionCode": "C"
+  }
+ ],
+ "defensemen": [
+  {
+   "id": 8481524,
+   "firstName": {
+    "default": "Bowen"
+   },
+   "lastName": {
+    "default": "Byram"
+   },
+   "sweaterNumber": 24,
+   "positionCode": "D"
+  },
+  {
+   "id": 8474013,
+   "firstName": {
+    "default": "Ian"
+   },
+   "lastName": {
+    "default": "Cole"
+   },
+   "sweaterNumber": 28,
+   "positionCode": "D"
+  }
+ ],
+ "goalies": [
+  {
+   "id": 8481519,
+   "firstName": {
+    "default": "Spencer"
+   },
+   "lastName": {
+    "default": "Knight"
+   },
+   "sweaterNumber": 30,
+   "positionCode": "G"
+  },
+  {
+   "id": 8482821,
+   "firstName": {
+    "default": "Arvid"
+   },
+   "lastName": {
+    "default": "Soderblom",
+    "cs": "Söderblom",
+    "fi": "Söderblom",
+    "sk": "Söderblom",
+    "sv": "Söderblom"
+   },
+   "sweaterNumber": 40,
+   "positionCode": "G"
+  }
+ ]
+}

@@ -1,0 +1,101 @@
+{
+ "forwards": [
+  {
+   "id": 8479638,
+   "firstName": {
+    "default": "Justin"
+   },
+   "lastName": {
+    "default": "Brazeau"
+   },
+   "sweaterNumber": 16,
+   "positionCode": "R"
+  },
+  {
+   "id": 8482475,
+   "firstName": {
+    "default": "Egor"
+   },
+   "lastName": {
+    "default": "Chinakhov",
+    "cs": "Činachov",
+    "fi": "Tshinahov",
+    "sk": "Činachov"
+   },
+   "sweaterNumber": 59,
+   "positionCode": "R"
+  },
+  {
+   "id": 8471675,
+   "firstName": {
+    "default": "Sidney"
+   },
+   "lastName": {
+    "default": "Crosby"
+   },
+   "sweaterNumber": 87,
+   "positionCode": "C"
+  },
+  {
+   "id": 8480980,
+   "firstName": {
+    "default": "Connor"
+   },
+   "lastName": {
+    "default": "Dewar"
+   },
+   "sweaterNumber": 19,
+   "positionCode": "C"
+  }
+ ],
+ "defensemen": [
+  {
+   "id": 8483398,
+   "firstName": {
+    "default": "Declan"
+   },
+   "lastName": {
+    "default": "Carlile"
+   },
+   "sweaterNumber": 72,
+   "positionCode": "D"
+  },
+  {
+   "id": 8479398,
+   "firstName": {
+    "default": "Samuel"
+   },
+   "lastName": {
+    "default": "Girard"
+   },
+   "sweaterNumber": 49,
+   "positionCode": "D"
+  }
+ ],
+ "goalies": [
+  {
+   "id": 8483703,
+   "firstName": {
+    "default": "Sergei"
+   },
+   "lastName": {
+    "default": "Murashov"
+   },
+   "sweaterNumber": 1,
+   "positionCode": "G"
+  },
+  {
+   "id": 8481668,
+   "firstName": {
+    "default": "Arturs"
+   },
+   "lastName": {
+    "default": "Silovs",
+    "cs": "Šilovs",
+    "sk": "Šilovs"
+   },
+   "sweaterNumber": 37,
+   "positionCode": "G"
+  }
+ ]
+}

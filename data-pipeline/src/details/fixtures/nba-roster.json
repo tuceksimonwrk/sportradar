@@ -1,0 +1,90 @@
+{
+ "athletes": [
+  {
+   "id": "4684208",
+   "displayName": "Brooks Barnhizer",
+   "shortName": "B. Barnhizer",
+   "jersey": "23",
+   "injuries": [],
+   "position": {
+    "name": "Forward",
+    "abbreviation": "F"
+   }
+  },
+  {
+   "id": "2991350",
+   "displayName": "Alex Caruso",
+   "shortName": "A. Caruso",
+   "jersey": "9",
+   "injuries": [
+    {
+     "status": "Day-To-Day",
+     "date": "2026-10-10T19:35Z"
+    }
+   ],
+   "position": {
+    "name": "Guard",
+    "abbreviation": "G"
+   }
+  },
+  {
+   "id": "5105800",
+   "displayName": "Josh Dix",
+   "shortName": "J. Dix",
+   "jersey": "21",
+   "injuries": [],
+   "position": {
+    "name": "Guard",
+    "abbreviation": "G"
+   }
+  },
+  {
+   "id": "4278073",
+   "displayName": "Shai Gilgeous-Alexander",
+   "shortName": "S. Gilgeous-Alexander",
+   "jersey": "2",
+   "injuries": [
+    {
+     "status": "Day-To-Day",
+     "date": "2026-10-10T19:17Z"
+    }
+   ],
+   "position": {
+    "name": "Guard",
+    "abbreviation": "G"
+   }
+  },
+  {
+   "id": "4222252",
+   "displayName": "Isaiah Hartenstein",
+   "shortName": "I. Hartenstein",
+   "jersey": "55",
+   "injuries": [
+    {
+     "status": "Day-To-Day",
+     "date": "2026-10-10T19:28Z"
+    }
+   ],
+   "position": {
+    "name": "Center",
+    "abbreviation": "C"
+   }
+  },
+  {
+   "id": "5061603",
+   "displayName": "Thomas Sorber",
+   "shortName": "T. Sorber",
+   "jersey": "12",
+   "injuries": [
+    {
+     "status": "Day-To-Day",
+     "date": "2026-10-10T19:47Z"
+    }
+   ],
+   "position": {
+    "name": "Center",
+    "abbreviation": "C"
+   }
+  }
+ ]
+}

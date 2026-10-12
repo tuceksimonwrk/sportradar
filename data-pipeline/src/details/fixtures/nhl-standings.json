@@ -1,0 +1,68 @@
+{
+ "standings": [
+  {
+   "teamAbbrev": {
+    "default": "PIT"
+   },
+   "teamName": {
+    "default": "Pittsburgh Penguins",
+    "fr": "Penguins de Pittsburgh"
+   },
+   "conferenceName": "Eastern",
+   "conferenceSequence": 7,
+   "leagueSequence": 14,
+   "gamesPlayed": 6,
+   "wins": 3,
+   "losses": 2,
+   "otLosses": 1,
+   "points": 7,
+   "pointPctg": 0.583333,
+   "goalFor": 22,
+   "goalAgainst": 17,
+   "goalDifferential": 5,
+   "homeWins": 2,
+   "homeLosses": 1,
+   "homeOtLosses": 0,
+   "roadWins": 1,
+   "roadLosses": 1,
+   "roadOtLosses": 1,
+   "l10Wins": 3,
+   "l10Losses": 2,
+   "l10OtLosses": 1,
+   "streakCode": "W",
+   "streakCount": 1
+  },
+  {
+   "teamAbbrev": {
+    "default": "CHI"
+   },
+   "teamName": {
+    "default": "Chicago Blackhawks",
+    "fr": "Blackhawks de Chicago"
+   },
+   "conferenceName": "Western",
+   "conferenceSequence": 15,
+   "leagueSequence": 30,
+   "gamesPlayed": 6,
+   "wins": 1,
+   "losses": 5,
+   "otLosses": 0,
+   "points": 2,
+   "pointPctg": 0.166667,
+   "goalFor": 12,
+   "goalAgainst": 26,
+   "goalDifferential": -14,
+   "homeWins": 1,
+   "homeLosses": 1,
+   "homeOtLosses": 0,
+   "roadWins": 0,
+   "roadLosses": 4,
+   "roadOtLosses": 0,
+   "l10Wins": 1,
+   "l10Losses": 5,
+   "l10OtLosses": 0,
+   "streakCode": "L",
+   "streakCount": 2
+  }
+ ]
+}

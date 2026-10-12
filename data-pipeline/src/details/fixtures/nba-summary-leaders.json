@@ -1,0 +1,144 @@
+{
+ "header": {
+  "competitions": [
+   {
+    "competitors": [
+     {
+      "id": "7",
+      "homeAway": "home",
+      "team": {
+       "id": "7",
+       "abbreviation": "DEN",
+       "displayName": "Denver Nuggets"
+      }
+     },
+     {
+      "id": "4",
+      "homeAway": "away",
+      "team": {
+       "id": "4",
+       "abbreviation": "CHI",
+       "displayName": "Chicago Bulls"
+      }
+     }
+    ]
+   }
+  ]
+ },
+ "leaders": [
+  {
+   "team": {
+    "id": "7",
+    "abbreviation": "DEN",
+    "displayName": "Denver Nuggets"
+   },
+   "leaders": [
+    {
+     "name": "points",
+     "displayName": "Points",
+     "leaders": [
+      {
+       "displayValue": "25",
+       "value": 25,
+       "athlete": {
+        "id": "3064290",
+        "displayName": "Aaron Gordon",
+        "shortName": "A. Gordon",
+        "jersey": "32"
+       }
+      }
+     ]
+    },
+    {
+     "name": "assists",
+     "displayName": "Assists",
+     "leaders": [
+      {
+       "displayValue": "10",
+       "value": 10,
+       "athlete": {
+        "id": "3112335",
+        "displayName": "Nikola Jokic",
+        "shortName": "N. Jokic",
+        "jersey": "15"
+       }
+      }
+     ]
+    },
+    {
+     "name": "rebounds",
+     "displayName": "Rebounds",
+     "leaders": [
+      {
+       "displayValue": "11",
+       "value": 11,
+       "athlete": {
+        "id": "3112335",
+        "displayName": "Nikola Jokic",
+        "shortName": "N. Jokic",
+        "jersey": "15"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "team": {
+    "id": "4",
+    "abbreviation": "CHI",
+    "displayName": "Chicago Bulls"
+   },
+   "leaders": [
+    {
+     "name": "points",
+     "displayName": "Points",
+     "leaders": [
+      {
+       "displayValue": "26",
+       "value": 26,
+       "athlete": {
+        "id": "5044385",
+        "displayName": "Leonard Miller",
+        "shortName": "L. Miller",
+        "jersey": "11"
+       }
+      }
+     ]
+    },
+    {
+     "name": "assists",
+     "displayName": "Assists",
+     "leaders": [
+      {
+       "displayValue": "8",
+       "value": 8,
+       "athlete": {
+        "id": "4871145",
+        "displayName": "Josh Giddey",
+        "shortName": "J. Giddey",
+        "jersey": "3"
+       }
+      }
+     ]
+    },
+    {
+     "name": "rebounds",
+     "displayName": "Rebounds",
+     "leaders": [
+      {
+       "displayValue": "7",
+       "value": 7,
+       "athlete": {
+        "id": "5044385",
+        "displayName": "Leonard Miller",
+        "shortName": "L. Miller",
+        "jersey": "11"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
