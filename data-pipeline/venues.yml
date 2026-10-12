@@ -1,0 +1,30 @@
+# Domácí hala podle týmu. Každý záznam: name, city, checked (YYYY-MM-DD), source (URL).
+# Klíč = id domácího týmu (teams[0]). Neověřené týmy se vynechávají (zápas pak nemá venue).
+teams:
+  # Tipsport extraliga 2026/27
+  "cz-hockey:CEB": { name: "Budvar Aréna", city: "České Budějovice", checked: "2026-10-12", source: "https://cs.wikipedia.org/wiki/Česká_hokejová_extraliga" }
+  "cz-hockey:LIB": { name: "Home Credit Arena", city: "Liberec", checked: "2026-10-12", source: "https://cs.wikipedia.org/wiki/Česká_hokejová_extraliga" }
+  "cz-hockey:MBL": { name: "Ško-Energo Aréna", city: "Mladá Boleslav", checked: "2026-10-12", source: "https://www.prnewswire.com/cs/tiskova-zprava/klub-bk-mlada-boleslav-partner-spolecnosti-nexen-tire-zahajil-13-zari-sezonu-vitezstvim-ve-sko-energo-arene-826968667.html" }
+  "cz-hockey:KVA": { name: "Mattoni Arena", city: "Karlovy Vary", checked: "2026-10-12", source: "https://cs.wikipedia.org/wiki/HC_Energie_Karlovy_Vary" }
+  "cz-hockey:PCE": { name: "Enteria arena", city: "Pardubice", checked: "2026-10-12", source: "https://cs.wikipedia.org/wiki/HC_Dynamo_Pardubice" }
+  "cz-hockey:KOM": { name: "Winning Group Arena", city: "Brno", checked: "2026-10-12", source: "https://cs.wikipedia.org/wiki/Česká_hokejová_extraliga" }
+  "cz-hockey:TRI": { name: "Werk Arena", city: "Třinec", checked: "2026-10-12", source: "https://cs.wikipedia.org/wiki/Česká_hokejová_extraliga" }
+  "cz-hockey:OLO": { name: "Zimní stadion Olomouc", city: "Olomouc", checked: "2026-10-12", source: "https://cs.wikipedia.org/wiki/Česká_hokejová_extraliga" }
+  "cz-hockey:SPA": { name: "O2 arena", city: "Praha", checked: "2026-10-12", source: "https://cs.wikipedia.org/wiki/Česká_hokejová_extraliga" }
+  "cz-hockey:PLZ": { name: "LOGSPEED CZ Aréna", city: "Plzeň", checked: "2026-10-12", source: "https://cs.wikipedia.org/wiki/Česká_hokejová_extraliga" }
+  "cz-hockey:LIT": { name: "Zimní stadion Ivana Hlinky", city: "Litvínov", checked: "2026-10-12", source: "https://cs.wikipedia.org/wiki/HC_Verva_Litvínov" }
+  "cz-hockey:VIT": { name: "Ostravar Aréna", city: "Ostrava", checked: "2026-10-12", source: "https://cs.wikipedia.org/wiki/Česká_hokejová_extraliga" }
+  "cz-hockey:MHK": { name: "ČPP aréna", city: "Hradec Králové", checked: "2026-10-12", source: "https://cs.wikipedia.org/wiki/Mountfield_HK" }
+  "cz-hockey:KLA": { name: "ČEZ stadion Kladno", city: "Kladno", checked: "2026-10-12", source: "https://cs.wikipedia.org/wiki/Česká_hokejová_extraliga" }
+  # NBL (Maxa NBL) 2026/27
+  "cz-basket:bk-armex-energy-decin": { name: "ARMEX Sportcentrum", city: "Děčín", checked: "2026-10-12", source: "https://cs.wikipedia.org/wiki/BK_Armex_Děčín" }
+  "cz-basket:pumpa-basket-brno": { name: "Starez aréna Vodova", city: "Brno", checked: "2026-10-12", source: "https://cs.wikipedia.org/wiki/Basket_Brno" }
+  "cz-basket:bk-loko-balimania-plzen": { name: "Městská sportovní hala", city: "Plzeň", checked: "2026-10-12", source: "https://www.kudyznudy.cz/aktivity/sportovni-hala-mesta-plzne-na-slovanech" }
+  "cz-basket:bk-gapa-hradec-kralove": { name: "Sportovní hala Třebeš", city: "Hradec Králové", checked: "2026-10-12", source: "https://cs.wikipedia.org/wiki/Královští_sokoli_Hradec_Králové" }
+  "cz-basket:bk-kvis-pardubice": { name: "Sportovní hala Dašická", city: "Pardubice", checked: "2026-10-12", source: "https://cs.wikipedia.org/wiki/BK_KVIS_Pardubice" }
+  "cz-basket:bk-olomoucko": { name: "Sportcentrum DDM", city: "Prostějov", checked: "2026-10-12", source: "https://cs.wikipedia.org/wiki/BK_Olomoucko" }
+  "cz-basket:bk-opava": { name: "Hala Opava", city: "Opava", checked: "2026-10-12", source: "https://cs.wikipedia.org/wiki/BK_Opava" }
+  "cz-basket:nh-ostrava": { name: "Bonver Aréna", city: "Ostrava", checked: "2026-10-12", source: "https://en.wikipedia.org/wiki/BK_NH_Ostrava" }
+  "cz-basket:sk-slavia-praha-era-nbk": { name: "Sportovní hala Královka", city: "Praha", checked: "2026-10-12", source: "https://www.flashscore.com.tr/takim/slavia-prague-era-nbk/hOKbcTyq/" }
+  "cz-basket:usk-praha": { name: "Hala Folimanka", city: "Praha", checked: "2026-10-12", source: "https://www.uskpraha.cz" }
+  "cz-basket:sluneta-usti-nad-labem": { name: "Sportcenter Sluneta", city: "Ústí nad Labem", checked: "2026-10-12", source: "https://www.flashscore.com.tr/takim/usti-nad-labem/2cjn4a8A/haberler/" }

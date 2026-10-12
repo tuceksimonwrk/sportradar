@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import type { MatchesFile, Sport, TeamsFile } from '@sportradar/shared';
 import { applyBroadcasters, parseBroadcasters } from './broadcasters';
 import { isSuspiciousEmpty, mergeDatasets, type Dataset, type SportOutcome } from './merge';
+import { applyVenues, parseVenues } from './venues';
 import type { Adapter } from './types';
 import { f1Adapter } from './adapters/f1';
 import { nhlAdapter } from './adapters/nhl';
@@ -53,6 +54,13 @@ async function main() {
   } catch (e) {
     failed.push('broadcasters');
     console.log(`::warning::broadcasters.yml neplatný: ${(e as Error).message}`);
+  }
+  try {
+    const vcfg = parseVenues(await readFile(new URL('../venues.yml', import.meta.url), 'utf8'));
+    matches = applyVenues(matches, vcfg);
+  } catch (e) {
+    failed.push('venues');
+    console.log(`::warning::venues.yml neplatný: ${(e as Error).message}`);
   }
 
   await mkdir(OUT, { recursive: true });
