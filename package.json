@@ -1,0 +1,12 @@
+{
+  "name": "sportradar",
+  "private": true,
+  "type": "module",
+  "workspaces": ["shared", "data-pipeline", "web"],
+  "scripts": {
+    "test": "npm test --workspaces --if-present",
+    "data": "npm run build:data -w data-pipeline",
+    "dev": "npm run dev -w web",
+    "build": "npm run build -w web"
+  }
+}
