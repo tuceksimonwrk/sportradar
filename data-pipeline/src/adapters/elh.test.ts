@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { elhRoundNumbers, parseElhRound } from './elh';
+import { elhAdapter, elhRoundNumbers, parseElhRound } from './elh';
 
 const side = (long: string, short: string) =>
   `<div class="preview__name__wrapper"><a href="#"><span class="preview__name--long">${long}</span><span class="preview__name--short">${short}</span></a></div>`;
@@ -50,4 +50,16 @@ describe('parseElhRound', () => {
 
 describe('elhRoundNumbers', () => {
   it('vrátí unikátní čísla kol', () => { expect(elhRoundNumbers(html)).toEqual([1, 2]); });
+});
+
+describe('elhAdapter.fetch', () => {
+  const now = new Date('2026-10-12T12:00:00Z');
+  it('selhání jednoho kola shodí fetch', async () => {
+    const get = async (url: string) => { if (url.endsWith('round=2')) throw new Error('boom'); return html; };
+    await expect(elhAdapter.fetch(now, get)).rejects.toThrow();
+  });
+  it('vše OK vrátí data', async () => {
+    const r = await elhAdapter.fetch(now, async () => html);
+    expect(r.matches.length).toBeGreaterThan(0);
+  });
 });

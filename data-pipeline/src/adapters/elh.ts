@@ -43,18 +43,20 @@ export function parseElhRound(html: string, now: Date): AdapterResult {
   return { matches, teams: [...teams.values()] };
 }
 
-export const elhAdapter: Adapter = {
-  sport: 'cz-hockey',
-  async fetch(now) {
-    const first = await getText(BASE);
+export const elhAdapter = {
+  sport: 'cz-hockey' as const,
+  async fetch(now, get: (url: string) => Promise<string> = getText) {
+    const first = await get(BASE);
     const rounds = elhRoundNumbers(first);
     if (rounds.length === 0) throw new Error('ELH: nenalezena žádná kola (změněné HTML?)');
     const parts: AdapterResult[] = [];
     for (let i = 0; i < rounds.length; i += 4) {
-      const batch = await Promise.allSettled(rounds.slice(i, i + 4).map((r) => getText(`${BASE}?matchList-view-round-round=${r}`)));
-      for (const b of batch) if (b.status === 'fulfilled') parts.push(parseElhRound(b.value, now));
+      const batch = await Promise.allSettled(rounds.slice(i, i + 4).map((r) => get(`${BASE}?matchList-view-round-round=${r}`)));
+      for (const b of batch) {
+        if (b.status === 'rejected') throw new Error(`ELH: kolo se nepodařilo stáhnout (${b.reason?.message ?? b.reason})`);
+        parts.push(parseElhRound(b.value, now));
+      }
     }
-    if (parts.length === 0) throw new Error('ELH: žádné kolo se nepodařilo stáhnout');
     return combine(parts);
   },
-};
+} satisfies Adapter;

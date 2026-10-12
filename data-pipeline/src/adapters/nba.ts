@@ -34,14 +34,18 @@ export function parseNba(json: unknown): AdapterResult {
 
 const ymd = (d: Date) => d.toISOString().slice(0, 10).replaceAll('-', '');
 
-export const nbaAdapter: Adapter = {
-  sport: 'nba',
-  async fetch(now) {
-    const days = Array.from({ length: 14 }, (_, i) => ymd(new Date(now.getTime() + i * 86400_000)));
-    const settled = await Promise.allSettled(days.map((d) =>
-      getJson(`https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${d}`)));
-    const ok = settled.filter((s): s is PromiseFulfilledResult<unknown> => s.status === 'fulfilled');
-    if (ok.length === 0) throw new Error('NBA: všechny dny selhaly');
-    return combine(ok.map((s) => parseNba(s.value)));
+/** ESPN `dates=` používá americká (východní) data, proto začínáme o den dříve než UTC dnes. */
+export function nbaDateRange(now: Date): string[] {
+  return Array.from({ length: 15 }, (_, i) => ymd(new Date(now.getTime() + (i - 1) * 86400_000)));
+}
+
+export const nbaAdapter = {
+  sport: 'nba' as const,
+  async fetch(now, get: (url: string) => Promise<unknown> = getJson) {
+    const settled = await Promise.allSettled(nbaDateRange(now).map((d) =>
+      get(`https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${d}`)));
+    const bad = settled.filter((s) => s.status === 'rejected');
+    if (bad.length > 0) throw new Error(`NBA: selhalo ${bad.length} z ${settled.length} dnů (${(bad[0] as PromiseRejectedResult).reason?.message ?? bad[0]})`);
+    return combine(settled.map((s) => parseNba((s as PromiseFulfilledResult<unknown>).value)));
   },
-};
+} satisfies Adapter;

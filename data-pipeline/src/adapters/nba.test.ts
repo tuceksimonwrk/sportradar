@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseNba } from './nba';
+import { nbaAdapter, nbaDateRange, parseNba } from './nba';
 
 const comp = (home: [string, string], away: [string, string]) => ({
   competitors: [
@@ -27,4 +27,26 @@ describe('parseNba', () => {
     expect(r.teams).toHaveLength(6);
   });
   it('prázdný vstup nepadne', () => { expect(parseNba({}).matches).toEqual([]); });
+});
+
+describe('nbaDateRange', () => {
+  it('začíná dnem předtím (americké datum) a má 15 dní', () => {
+    const d = nbaDateRange(new Date('2026-10-12T01:00:00Z'));
+    expect(d).toHaveLength(15);
+    expect(d[0]).toBe('20261011');
+    expect(d[14]).toBe('20261025');
+  });
+});
+
+describe('nbaAdapter.fetch', () => {
+  const now = new Date('2026-10-12T12:00:00Z');
+  it('selhání jednoho dne shodí fetch', async () => {
+    let n = 0;
+    const get = async () => { if (++n === 3) throw new Error('boom'); return json; };
+    await expect(nbaAdapter.fetch(now, get as any)).rejects.toThrow();
+  });
+  it('vše OK vrátí data', async () => {
+    const r = await nbaAdapter.fetch(now, (async () => json) as any);
+    expect(r.matches.length).toBeGreaterThan(0);
+  });
 });
