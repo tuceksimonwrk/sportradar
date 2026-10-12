@@ -1,0 +1,54 @@
+name: Update data and deploy
+on:
+  schedule:
+    - cron: '17 * * * *'
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      uploaded: ${{ steps.upload.outcome == 'success' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm test
+      - name: Fetch schedules
+        id: pipeline
+        continue-on-error: true
+        run: npm run data
+        env:
+          PREV_DATA_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/data/
+      - run: npm run build
+      - id: upload
+        uses: actions/upload-pages-artifact@v3
+        with: { path: web/dist }
+      - name: Fail run if any adapter failed (sends notification e-mail)
+        if: steps.pipeline.outcome == 'failure'
+        run: exit 1
+
+  deploy:
+    needs: build
+    # build may be red only because of the last step (adapter failure) - deploy then still ships merged data;
+    # if tests/build failed before upload, nothing is deployed.
+    if: always() && needs.build.outputs.uploaded == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
