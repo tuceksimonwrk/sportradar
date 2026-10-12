@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import type { MatchesFile, Sport, TeamsFile } from '@sportradar/shared';
+import type { MatchesFile, Sport, StandingsFile, TeamsFile } from '@sportradar/shared';
 import { applyBroadcasters, parseBroadcasters } from './broadcasters';
-import { isSuspiciousEmpty, mergeDatasets, upcomingCount, type Dataset, type SportOutcome } from './merge';
+import { isSuspiciousEmpty, mergeDatasets, mergeStandings, upcomingCount, type Dataset, type SportOutcome } from './merge';
 import { applyVenues, parseVenues } from './venues';
 import type { Adapter } from './types';
 import { f1Adapter } from './adapters/f1';
@@ -28,6 +28,8 @@ async function main() {
     teams: (await readPrev<TeamsFile>('teams.json'))?.teams ?? [],
   };
 
+  const prevStandings = (await readPrev<StandingsFile>('standings.json'))?.tables ?? [];
+
   const outcomes: Partial<Record<Sport, SportOutcome>> = {};
   const failed: string[] = [];
   await Promise.all(adapters.map(async (a) => {
@@ -36,6 +38,8 @@ async function main() {
       outcomes[a.sport] = r;
       const upcoming = upcomingCount(r.matches);
       console.log(`[ok]   ${a.sport}: ${upcoming} zápasů, ${r.matches.length - upcoming} výsledků, ${r.teams.length} týmů`);
+      if (r.standings?.length) console.log(`[ok]   ${a.sport}: ${r.standings.length} tabulek`);
+      if (r.standingsError) { failed.push(`${a.sport}-tabulka`); console.log(`::warning::${a.sport}: tabulka selhala: ${r.standingsError}`); }
       if (upcoming === 0) {
         if (isSuspiciousEmpty(prev, a.sport, now)) { failed.push(a.sport); console.log(`::warning::${a.sport}: 0 zápasů, ponechávám stará data`); }
         else console.log(`[ok]   ${a.sport}: 0 zápasů (mimo sezónu)`);
@@ -48,6 +52,7 @@ async function main() {
   }));
 
   const merged = mergeDatasets(prev, outcomes, now);
+  const tables = mergeStandings(prevStandings, outcomes);
   let matches = merged.matches;
   try {
     const cfg = parseBroadcasters(await readFile(new URL('../broadcasters.yml', import.meta.url), 'utf8'));
@@ -69,7 +74,9 @@ async function main() {
   const teamsFile: TeamsFile = { teams: merged.teams };
   await writeFile(new URL('matches.json', OUT), JSON.stringify(matchesFile));
   await writeFile(new URL('teams.json', OUT), JSON.stringify(teamsFile));
-  console.log(`Zapsáno: ${matches.length} zápasů, ${merged.teams.length} týmů`);
+  const standingsFile: StandingsFile = { generatedAt: now.toISOString(), tables };
+  await writeFile(new URL('standings.json', OUT), JSON.stringify(standingsFile));
+  console.log(`Zapsáno: ${matches.length} zápasů, ${merged.teams.length} týmů, ${tables.length} tabulek`);
   process.exitCode = failed.length ? 2 : 0;
 }
 

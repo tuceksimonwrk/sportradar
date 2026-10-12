@@ -1,4 +1,4 @@
-import { SPORTS, type Match, type Sport, type Team } from '@sportradar/shared';
+import { SPORTS, type Match, type Sport, type StandingsTable, type Team } from '@sportradar/shared';
 import type { AdapterResult } from './types';
 
 export interface Dataset { matches: Match[]; teams: Team[] }
@@ -58,4 +58,15 @@ export function isSuspiciousEmpty(prev: Dataset, sport: Sport, now: Date): boole
     const t = Date.parse(x.startsAt);
     return t >= from && t <= to;
   });
+}
+
+/** Tabulky po sportech: čerstvé (neprázdné) vyhrávají, jinak zůstanou poslední dobré. */
+export function mergeStandings(prev: StandingsTable[], outcomes: Partial<Record<Sport, SportOutcome>>): StandingsTable[] {
+  const out: StandingsTable[] = [];
+  for (const sport of SPORTS) {
+    const o = outcomes[sport];
+    const fresh = o && !(o instanceof Error) && o.standings && o.standings.length > 0 ? o.standings : null;
+    out.push(...(fresh ?? prev.filter((t) => t.sport === sport)));
+  }
+  return out;
 }

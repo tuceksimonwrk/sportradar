@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Match, Team } from '@sportradar/shared';
-import { isSuspiciousEmpty, mergeDatasets, upcomingCount } from './merge';
+import type { Match, StandingsTable, Team } from '@sportradar/shared';
+import { isSuspiciousEmpty, mergeDatasets, mergeStandings, upcomingCount } from './merge';
 
 const now = new Date('2026-10-12T12:00:00Z');
 const m = (id: string, sport: Match['sport'], startsAt: string): Match =>
@@ -101,5 +101,26 @@ describe('isSuspiciousEmpty', () => {
   it('žádný zápas → v pořádku; jiný sport se nepočítá', () => {
     expect(isSuspiciousEmpty(ds(), 'nhl', now)).toBe(false);
     expect(isSuspiciousEmpty(ds('2026-10-15T12:00:00.000Z'), 'f1', now)).toBe(false);
+  });
+});
+
+describe('mergeStandings', () => {
+  const tbl = (id: string, sport: Match['sport'], name = 'x'): StandingsTable =>
+    ({ id, sport, title: id, columns: [], rows: [{ pos: 1, name, values: {} }] });
+  const prevT = [tbl('nhl-east', 'nhl', 'old'), tbl('nhl-west', 'nhl', 'old'), tbl('f1-drivers', 'f1', 'old'), tbl('nba-east', 'nba', 'old')];
+  const ok = (standings?: StandingsTable[]) => ({ matches: [], teams: [], ...(standings && { standings }) });
+  it('čerstvé neprázdné tabulky nahradí staré tabulky sportu', () => {
+    const r = mergeStandings(prevT, { nhl: ok([tbl('nhl-east', 'nhl', 'new')]) });
+    expect(r.filter((x) => x.sport === 'nhl').map((x) => x.rows[0].name)).toEqual(['new']);
+  });
+  it('chyba, chybějící nebo prázdné standings ponechají předchozí', () => {
+    const r = mergeStandings(prevT, { nhl: new Error('x'), f1: ok(), nba: ok([]) });
+    expect(r.map((x) => x.id).sort()).toEqual(['f1-drivers', 'nba-east', 'nhl-east', 'nhl-west']);
+    expect(r.every((x) => x.rows[0].name === 'old')).toBe(true);
+  });
+  it('sport bez dat a bez předchozích → nic; výstup v pořadí SPORTS', () => {
+    const r = mergeStandings([], { nba: ok([tbl('nba-east', 'nba')]), f1: ok([tbl('f1-drivers', 'f1')]) });
+    expect(r.map((x) => x.id)).toEqual(['f1-drivers', 'nba-east']);
+    expect(mergeStandings([], {})).toEqual([]);
   });
 });
