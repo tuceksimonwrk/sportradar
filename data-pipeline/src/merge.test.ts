@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Match, Team } from '@sportradar/shared';
-import { mergeDatasets } from './merge';
+import { isSuspiciousEmpty, mergeDatasets } from './merge';
 
 const now = new Date('2026-10-12T12:00:00Z');
 const m = (id: string, sport: Match['sport'], startsAt: string): Match =>
@@ -30,5 +30,19 @@ describe('mergeDatasets', () => {
   it('odstraní zápasy starší než 6 h a seřadí podle času', () => {
     const p = { matches: [m('a', 'f1', '2026-10-12T05:00:00.000Z'), m('b', 'f1', '2026-10-12T07:00:00.000Z'), m('c', 'f1', '2026-10-12T06:30:00.000Z')], teams: [] };
     expect(mergeDatasets(p, {}, now).matches.map((x) => x.id)).toEqual(['c', 'b']);
+  });
+});
+
+describe('isSuspiciousEmpty', () => {
+  const ds = (iso?: string) => ({ matches: iso ? [m('nhl:x', 'nhl', iso)] : [], teams: [] });
+  it('zápas v příštích 7 dnech → podezřelé', () => {
+    expect(isSuspiciousEmpty(ds('2026-10-15T12:00:00.000Z'), 'nhl', now)).toBe(true);
+  });
+  it('zápas až za 10 dní → v pořádku (mimo sezónu)', () => {
+    expect(isSuspiciousEmpty(ds('2026-10-22T12:00:00.000Z'), 'nhl', now)).toBe(false);
+  });
+  it('žádný zápas → v pořádku; jiný sport se nepočítá', () => {
+    expect(isSuspiciousEmpty(ds(), 'nhl', now)).toBe(false);
+    expect(isSuspiciousEmpty(ds('2026-10-15T12:00:00.000Z'), 'f1', now)).toBe(false);
   });
 });

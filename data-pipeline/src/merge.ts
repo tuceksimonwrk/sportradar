@@ -25,3 +25,16 @@ export function mergeDatasets(prev: Dataset, outcomes: Partial<Record<Sport, Spo
     teams: [...teams.values()].sort((a, b) => a.name.localeCompare(b.name, 'cs')),
   };
 }
+
+const SUSPICIOUS_WINDOW_MS = 7 * 24 * 3600_000;
+
+/** Prázdný výsledek je podezřelý jen tehdy, pokud předchozí data měla zápas daného sportu v příštích 7 dnech. */
+export function isSuspiciousEmpty(prev: Dataset, sport: Sport, now: Date): boolean {
+  const from = now.getTime();
+  const to = from + SUSPICIOUS_WINDOW_MS;
+  return prev.matches.some((x) => {
+    if (x.sport !== sport) return false;
+    const t = Date.parse(x.startsAt);
+    return t >= from && t <= to;
+  });
+}

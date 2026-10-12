@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import type { MatchesFile, Sport, TeamsFile } from '@sportradar/shared';
 import { applyBroadcasters, parseBroadcasters } from './broadcasters';
-import { mergeDatasets, type Dataset, type SportOutcome } from './merge';
+import { isSuspiciousEmpty, mergeDatasets, type Dataset, type SportOutcome } from './merge';
 import type { Adapter } from './types';
 import { f1Adapter } from './adapters/f1';
 import { nhlAdapter } from './adapters/nhl';
@@ -34,7 +34,10 @@ async function main() {
       const r = await a.fetch(now);
       outcomes[a.sport] = r;
       console.log(`[ok]   ${a.sport}: ${r.matches.length} zápasů, ${r.teams.length} týmů`);
-      if (r.matches.length === 0) { failed.push(a.sport); console.log(`::warning::${a.sport}: 0 zápasů, ponechávám stará data`); }
+      if (r.matches.length === 0) {
+        if (isSuspiciousEmpty(prev, a.sport, now)) { failed.push(a.sport); console.log(`::warning::${a.sport}: 0 zápasů, ponechávám stará data`); }
+        else console.log(`[ok]   ${a.sport}: 0 zápasů (mimo sezónu)`);
+      }
     } catch (e) {
       outcomes[a.sport] = e instanceof Error ? e : new Error(String(e));
       failed.push(a.sport);
