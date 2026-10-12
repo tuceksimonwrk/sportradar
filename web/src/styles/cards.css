@@ -81,7 +81,7 @@ a.badge:hover { background: var(--ink); color: var(--chalk); }
 }
 .calbtn:hover { background: var(--soft); color: var(--ink); }
 .calbtn:focus-visible { outline: 3px solid var(--focus); outline-offset: -2px; }
-.match__comp .calbtn { margin: -14px -10px -14px auto; }
+.match__actions { display: flex; flex: none; margin: -14px -10px -14px auto; }
 .match__comp > span, .match__comp > .sicon { min-width: 0; }
 .hero__top .calbtn { margin: -8px -8px -8px 0; color: rgb(255 255 255 / .85); }
 .hero__top .calbtn:hover { background: rgb(255 255 255 / .14); color: #fff; }

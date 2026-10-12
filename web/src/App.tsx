@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import type { Sport } from '@sportradar/shared';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { Match, Sport } from '@sportradar/shared';
 import { Link2, RefreshCw, TriangleAlert, X } from 'lucide-react';
 import { FavoritesView } from './components/FavoritesView';
 import { Header, type Tab } from './components/Header';
@@ -17,6 +17,9 @@ import { selectMatches, selectResults } from './lib/schedule';
 import { defaultStandingsSport } from './lib/standings';
 import { dayKey, formatTime, isStale } from './lib/time';
 import { useData } from './useData';
+import { useDetailIndex } from './useDetail';
+import { DetailContext, type DetailInfo } from './components/DetailContext';
+import { MatchDetailPanel } from './components/MatchDetailPanel';
 
 const storage = (): Storage | undefined => { try { return window.localStorage; } catch { return undefined; } };
 
@@ -41,6 +44,10 @@ export default function App() {
   const [pickedStandings, setPickedStandings] = useState<Sport | null>(null); // null = podle oblíbených
   const [reminder, setReminder] = useState<number>(() => loadReminder(storage()));
   const [shareMsg, setShareMsg] = useState('');
+  const detailIds = useDetailIndex();
+  const [detailMatch, setDetailMatch] = useState<Match | null>(null);
+  const closeDetail = useCallback(() => setDetailMatch(null), []);
+  const detailInfo = useMemo<DetailInfo>(() => ({ ids: detailIds, open: setDetailMatch }), [detailIds]);
   const [incoming, setIncoming] = useState<string[] | null>(() => {
     const d = decodeShare(window.location.hash);
     return d && d.length ? d : null;
@@ -90,6 +97,7 @@ export default function App() {
   return (
     <TeamsContext.Provider value={teamsInfo}>
     <ReminderContext.Provider value={reminderInfo}>
+    <DetailContext.Provider value={detailInfo}>
       <div className="backdrop" aria-hidden="true"><SportArt kind="radar" /></div>
       <Header tab={tab} onTab={goTab} favCount={favs.length} />
       <main className="app" id="obsah">
@@ -139,6 +147,8 @@ export default function App() {
           <p className="foot__fine">Neoficiální fanouškovská stránka. Loga a názvy patří jejich vlastníkům.</p>
         </div>
       </footer>
+      {detailMatch && <MatchDetailPanel match={detailMatch} now={now} onClose={closeDetail} />}
+    </DetailContext.Provider>
     </ReminderContext.Provider>
     </TeamsContext.Provider>
   );
