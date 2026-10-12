@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Match, StandingsTable } from '@sportradar/shared';
 import { createFetcher, type DetailContext } from './common';
-import { FOOTBALL_NO_LINEUP, footballDetail, footballPos, parseFootballDetail } from './football';
+import { FOOTBALL_NO_LINEUP, footballDetail, footballPos, lastN, parseFootballDetail } from './football';
 import pre from './fixtures/football-summary-pre.json';
 import lineups from './fixtures/football-summary-lineups.json';
 
@@ -46,7 +46,8 @@ describe('parseFootballDetail – před zveřejněním sestav', () => {
     const b = blk(d, 'Vzájemné zápasy')!;
     expect(b.rows[0]).toMatchObject({ label: 'Výhry', home: 0, away: 4 });
     expect(b.rows[1]).toMatchObject({ label: '17. 2. 2010', home: 1, away: 4 });
-    expect(b.note).toMatch(/4 vzájemn/);
+    expect(b.note).toBe('Poslední 4 vzájemné zápasy ve všech soutěžích.');
+    expect([1, 3, 5].map(lastN)).toEqual(['Poslední vzájemný zápas', 'Poslední 3 vzájemné zápasy', 'Posledních 5 vzájemných zápasů']);
   });
   it('bez sestav → poznámka', () => {
     expect(d.lineups).toBeUndefined();

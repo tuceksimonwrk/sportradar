@@ -54,6 +54,9 @@ function lastFive(summary: any, home?: string, away?: string): DetailStatBlock[]
 
 const dateCs = (d: Date) => new Intl.DateTimeFormat('cs-CZ', { timeZone: 'Europe/Prague', day: 'numeric', month: 'numeric', year: 'numeric' }).format(d).replace(/\.\s*/g, '. ').trim();
 
+/** 'Poslední vzájemný zápas' / 'Poslední 4 vzájemné zápasy' / 'Posledních 5 vzájemných zápasů'. */
+export const lastN = (n: number) => (n === 1 ? 'Poslední vzájemný zápas' : n < 5 ? `Poslední ${n} vzájemné zápasy` : `Posledních ${n} vzájemných zápasů`);
+
 function headToHead(summary: any, home?: string, away?: string): DetailStatBlock[] {
   const series: any[] = Array.isArray(summary?.seasonseries) ? summary.seasonseries : [];
   const s = series[0];
@@ -71,7 +74,7 @@ function headToHead(summary: any, home?: string, away?: string): DetailStatBlock
   }
   if (!done.length) return [{ title: 'Vzájemné zápasy', rows: [], note: 'Spolu zatím nehráli (podle ESPN).' }];
   return [{ title: 'Vzájemné zápasy', rows: [{ label: 'Výhry', home: hw, away: aw, homeValue: hw, awayValue: aw }, ...done],
-    note: `Posledních ${done.length} vzájemných zápasů ve všech soutěžích${dr ? `, ${dr}× remíza` : ''}.` }];
+    note: `${lastN(done.length)} ve všech soutěžích${dr ? `, ${dr}× remíza` : ''}.` }];
 }
 
 /** Post z ESPN zkratky: B brankář, O obránce, Z záložník, Ú útočník; SUB/neznámé → undefined. */
