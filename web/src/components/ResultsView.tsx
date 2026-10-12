@@ -1,8 +1,12 @@
 import type { Match, Sport } from '@sportradar/shared';
+import { Trophy } from 'lucide-react';
 import { groupByDay } from '../lib/schedule';
 import { dayLabel } from '../lib/time';
+import { NoFavorites } from './ProgramView';
 import { ResultCard } from './ResultCard';
+import { artFor } from './SportArt';
 import { SportChips } from './SportChips';
+import { EmptyState, PageHead, enter } from './ui';
 
 interface Props {
   matches: Match[];            // už vyfiltrované (oblíbené + sport), nejnovější první
@@ -14,23 +18,27 @@ interface Props {
 }
 
 export function ResultsView({ matches, now, sport, onSport, hasFavorites, onGoFavorites }: Props) {
-  if (!hasFavorites) {
-    return (
-      <div className="empty">
-        <p>Zatím nemáš žádné oblíbené.</p>
-        <button className="btn" onClick={onGoFavorites}>Vybrat oblíbené</button>
-      </div>
-    );
-  }
+  const head = <PageHead icon={<Trophy size={22} strokeWidth={1.75} />} title="Výsledky" subtitle="Odehrané zápasy za posledních 14 dní" sport={sport} />;
+  if (!hasFavorites) return <>{head}<NoFavorites onGoFavorites={onGoFavorites} /></>;
   const groups = groupByDay(matches);
+  let n = 0;
   return (
     <>
+      {head}
       <SportChips sport={sport} onSport={onSport} />
-      {matches.length === 0 && <p className="muted pad">Za posledních 14 dní nemáš žádné odehrané zápasy.</p>}
+      {matches.length === 0 && (
+        <EmptyState art={artFor(sport)} icon={<Trophy size={26} strokeWidth={1.75} />}
+          title="Zatím bez výsledků"
+          text="Za posledních 14 dní nemáš žádné odehrané zápasy."
+          action={sport !== 'all' ? <button className="btn btn--ghost" onClick={() => onSport('all')}>Zobrazit všechny sporty</button> : undefined} />
+      )}
       {groups.map((g) => (
-        <section key={g.key}>
+        <section key={g.key} className="section">
           <h2 className="day">{dayLabel(g.key, now)}</h2>
-          {g.matches.map((m) => <ResultCard key={m.id} match={m} />)}
+          {g.matches.map((m) => {
+            const e = enter(n++);
+            return <ResultCard key={m.id} match={m} className={e.className} style={e.style} />;
+          })}
         </section>
       ))}
     </>

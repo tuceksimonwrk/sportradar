@@ -1,0 +1,52 @@
+/* ---------- Tabulky ---------- */
+.st { width: 100%; table-layout: fixed; border-collapse: collapse; margin: 0 0 6px; font-variant-numeric: tabular-nums; }
+.st caption.day { display: table-caption; caption-side: top; text-align: left; margin: 22px 0 8px; padding-bottom: 8px; border-bottom: 2px solid var(--line); }
+.st caption.day::after { content: none; }
+.codetag {
+  display: inline-grid; place-items: center; flex: none; width: 36px; height: 22px; border-radius: 5px;
+  color: #fff; font: 800 .8rem/1 var(--display); letter-spacing: .06em;
+}
+.st th, .st td { padding: 6px 0; border-top: 1px solid var(--line); font-size: .92rem; }
+.st thead th { border-top: 0; padding: 0 0 6px; color: var(--muted); font-size: .76rem; font-weight: 700; text-align: right; letter-spacing: .03em; }
+.st thead th.st__name { text-align: left; }
+.st thead th.st__pos { text-align: center; }
+.st abbr { text-decoration: none; cursor: help; }
+.st .st__pos { text-align: center; }
+.st .st__num { text-align: right; padding-left: 4px; }
+.st td.st__pts { font-weight: 800; }
+.st th:last-child, .st td:last-child { padding-right: 4px; }
+.st .st__name { padding-left: 8px; font-weight: 600; }
+.st__team { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.st__label { min-width: 0; line-height: 1.15; overflow-wrap: break-word; -webkit-hyphens: auto; hyphens: auto; }
+@media (max-width: 419px) {
+  .st th, .st td { font-size: .86rem; }
+  .st .st__num { padding-left: 2px; }
+  .st .st__name { padding-left: 4px; }
+  .st__team { gap: 6px; }
+}
+.st .st__sub { display: block; color: var(--muted); font-size: .76rem; font-weight: 400; }
+
+/* Pořadí: první tři jako medaile */
+.pos { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; font: 700 1rem/1 var(--display); color: var(--muted); }
+.pos--1, .pos--2, .pos--3 { color: #0d1a14; }
+.pos--1 { background: var(--gold); }
+.pos--2 { background: var(--silver); }
+.pos--3 { background: var(--bronze); }
+
+.st tbody tr { transition: background-color .15s; }
+.st tbody tr:not(.is-fav):hover td { background: color-mix(in srgb, var(--ink) 4%, transparent); }
+.st tr.is-leader td { background: color-mix(in srgb, var(--sport, var(--amber)) 7%, transparent); }
+.st tr.is-leader .st__label { font-weight: 800; }
+.st tr.is-fav td { background: color-mix(in srgb, var(--sport, var(--ink)) 16%, transparent); }
+.st tr.is-fav td.st__name { font-weight: 800; }
+.st tr.is-fav td:first-child { box-shadow: inset 4px 0 0 var(--sport, var(--ink)); }
+
+@media (min-width: 560px) {
+  .st th, .st td { padding: 8px 0; font-size: 1rem; }
+  .st thead th { font-size: .84rem; }
+  .st .st__name { padding-left: 12px; }
+  .st .st__num { padding-left: 8px; }
+  .st__team { gap: 10px; }
+  .st__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .st .st__sub { overflow: hidden; text-overflow: ellipsis; }
+}
