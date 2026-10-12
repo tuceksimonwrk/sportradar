@@ -43,8 +43,14 @@ async function main() {
   }));
 
   const merged = mergeDatasets(prev, outcomes, now);
-  const cfg = parseBroadcasters(await readFile(new URL('../broadcasters.yml', import.meta.url), 'utf8'));
-  const matches = applyBroadcasters(merged.matches, cfg);
+  let matches = merged.matches;
+  try {
+    const cfg = parseBroadcasters(await readFile(new URL('../broadcasters.yml', import.meta.url), 'utf8'));
+    matches = applyBroadcasters(merged.matches, cfg);
+  } catch (e) {
+    failed.push('broadcasters');
+    console.log(`::warning::broadcasters.yml neplatný: ${(e as Error).message}`);
+  }
 
   await mkdir(OUT, { recursive: true });
   const matchesFile: MatchesFile = { generatedAt: now.toISOString(), matches };
