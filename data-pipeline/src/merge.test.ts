@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { Match, Team } from '@sportradar/shared';
-import { isSuspiciousEmpty, mergeDatasets } from './merge';
+import { isSuspiciousEmpty, mergeDatasets, upcomingCount } from './merge';
 
 const now = new Date('2026-10-12T12:00:00Z');
 const m = (id: string, sport: Match['sport'], startsAt: string): Match =>
   ({ id, sport, competition: 'c', startsAt, title: id, teams: [], broadcasters: [] });
+const res = (id: string, sport: Match['sport'], startsAt: string, home = 1, away = 0): Match =>
+  ({ ...m(id, sport, startsAt), result: { home, away } });
 const t = (id: string, sport: Team['sport']): Team => ({ id, sport, name: id });
 
 const prev = {
@@ -33,6 +35,44 @@ describe('mergeDatasets', () => {
   });
 });
 
+describe('mergeDatasets – výsledky', () => {
+  const up = (id: string) => m(id, 'nhl', '2026-10-15T00:00:00.000Z');
+  it('výsledky z minula se přenesou, i když je v čerstvých datech nemáme', () => {
+    const p = { matches: [res('nhl:r1', 'nhl', '2026-10-10T00:00:00.000Z')], teams: [] };
+    const r = mergeDatasets(p, { nhl: { matches: [up('nhl:u')], teams: [] } }, now);
+    expect(r.matches.map((x) => x.id)).toEqual(['nhl:r1', 'nhl:u']);
+  });
+  it('při stejném id vyhrají čerstvá data', () => {
+    const p = { matches: [res('nhl:1', 'nhl', '2026-10-10T00:00:00.000Z', 1, 0)], teams: [] };
+    const r = mergeDatasets(p, { nhl: { matches: [res('nhl:1', 'nhl', '2026-10-10T00:00:00.000Z', 5, 4), up('nhl:u')], teams: [] } }, now);
+    expect(r.matches.find((x) => x.id === 'nhl:1')!.result).toEqual({ home: 5, away: 4 });
+  });
+  it('nepřenáší výsledky jiného sportu ani staré než 14 dní', () => {
+    const p = { matches: [res('f1:r', 'f1', '2026-10-10T00:00:00.000Z'), res('nhl:old', 'nhl', '2026-09-20T00:00:00.000Z')], teams: [] };
+    const r = mergeDatasets(p, { nhl: { matches: [up('nhl:u')], teams: [] } }, now);
+    expect(r.matches.map((x) => x.id)).toEqual(['f1:r', 'nhl:u']); // f1 nebylo čerstvé → zůstává z prev
+  });
+  it('retence: výsledek 13 d zůstává, 15 d zmizí; bez výsledku platí 6 h', () => {
+    const p = { matches: [
+      res('a', 'f1', '2026-09-29T11:00:00.000Z'), res('b', 'f1', '2026-09-27T11:00:00.000Z'),
+      m('c', 'f1', '2026-10-12T05:00:00.000Z'), m('d', 'f1', '2026-10-12T07:00:00.000Z'),
+    ], teams: [] };
+    expect(mergeDatasets(p, {}, now).matches.map((x) => x.id)).toEqual(['a', 'd']);
+  });
+  it('adaptér s jen výsledky: stará nadcházející data zůstanou, nové výsledky se přidají', () => {
+    const p = { matches: [up('nhl:old')], teams: [t('nhl:A', 'nhl')] };
+    const r = mergeDatasets(p, { nhl: { matches: [res('nhl:r', 'nhl', '2026-10-11T00:00:00.000Z')], teams: [t('nhl:B', 'nhl')] } }, now);
+    expect(r.matches.map((x) => x.id)).toEqual(['nhl:r', 'nhl:old']);
+    expect(r.teams.map((x) => x.id)).toEqual(['nhl:A']);
+  });
+});
+
+describe('upcomingCount', () => {
+  it('výsledky se nepočítají', () => {
+    expect(upcomingCount([res('a', 'nhl', '2026-10-11T00:00:00.000Z'), m('b', 'nhl', '2026-10-15T00:00:00.000Z')])).toBe(1);
+  });
+});
+
 describe('isSuspiciousEmpty', () => {
   const ds = (iso?: string) => ({ matches: iso ? [m('nhl:x', 'nhl', iso)] : [], teams: [] });
   it('zápas v příštích 7 dnech → podezřelé', () => {
@@ -40,6 +80,10 @@ describe('isSuspiciousEmpty', () => {
   });
   it('zápas až za 10 dní → v pořádku (mimo sezónu)', () => {
     expect(isSuspiciousEmpty(ds('2026-10-22T12:00:00.000Z'), 'nhl', now)).toBe(false);
+  });
+  it('výsledek v příštích 7 dnech se nepočítá jako nadcházející', () => {
+    const d = { matches: [res('nhl:x', 'nhl', '2026-10-15T12:00:00.000Z')], teams: [] };
+    expect(isSuspiciousEmpty(d, 'nhl', now)).toBe(false);
   });
   it('žádný zápas → v pořádku; jiný sport se nepočítá', () => {
     expect(isSuspiciousEmpty(ds(), 'nhl', now)).toBe(false);
