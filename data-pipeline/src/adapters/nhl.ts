@@ -1,14 +1,20 @@
-import type { Match, Team } from '@sportradar/shared';
+import type { Match, Team, Venue } from '@sportradar/shared';
 import type { Adapter, AdapterResult } from '../types';
 import { combine, getJson } from '../util';
 
 const ACTIVE = new Set(['FUT', 'PRE', 'LIVE', 'CRIT']);
 
 interface NhlTeam { abbrev: string; placeName: { default: string }; commonName: { default: string } }
-interface NhlGame { id: number; gameType: number; startTimeUTC: string; gameState: string; homeTeam: NhlTeam; awayTeam: NhlTeam }
+interface NhlGame { id: number; gameType: number; startTimeUTC: string; gameState: string; venue?: { default?: string }; homeTeam: NhlTeam; awayTeam: NhlTeam }
 interface NhlWeek { nextStartDate?: string; gameWeek?: { games?: NhlGame[] }[] }
 
 const name = (t: NhlTeam) => `${t.placeName.default} ${t.commonName.default}`;
+const venueOf = (g: NhlGame): Venue | undefined => {
+  const n = g.venue?.default?.trim();
+  if (!n) return undefined;
+  const city = g.homeTeam.placeName?.default;
+  return city ? { name: n, city } : { name: n };
+};
 const competition = (gameType: number) => (gameType === 1 ? 'NHL (přípravné)' : gameType === 3 ? 'NHL Playoffs' : 'NHL');
 
 export function parseNhl(json: unknown): AdapterResult {
@@ -20,11 +26,13 @@ export function parseNhl(json: unknown): AdapterResult {
     for (const g of day.games ?? []) {
       addTeam(g.homeTeam); addTeam(g.awayTeam);
       if (!ACTIVE.has(g.gameState)) continue;
+      const venue = venueOf(g);
       matches.push({
         id: `nhl:${g.id}`, sport: 'nhl', competition: competition(g.gameType),
         startsAt: new Date(g.startTimeUTC).toISOString(),
         title: `${name(g.homeTeam)} – ${name(g.awayTeam)}`,
         teams: [`nhl:${g.homeTeam.abbrev}`, `nhl:${g.awayTeam.abbrev}`], broadcasters: [],
+        ...(venue && { venue }),
       });
     }
   }

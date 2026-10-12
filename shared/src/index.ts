@@ -9,6 +9,7 @@ export const SPORT_LABELS: Record<Sport, string> = {
 };
 
 export interface Broadcaster { name: string; url?: string }
+export interface Venue { name: string; city?: string }
 
 export interface Match {
   id: string;            // globálně unikátní, např. "nhl:2026020084"
@@ -18,6 +19,7 @@ export interface Match {
   title: string;         // "Domácí – Hosté" / "GP Monaka – Závod"
   teams: string[];       // id týmů, např. ["nhl:PIT","nhl:WSH"]; F1: []
   broadcasters: Broadcaster[];
+  venue?: Venue;         // kde se hraje (volitelné)
 }
 
 export interface Team { id: string; sport: Sport; name: string }

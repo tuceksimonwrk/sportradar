@@ -1,11 +1,11 @@
-import type { Match, Team } from '@sportradar/shared';
+import type { Match, Team, Venue } from '@sportradar/shared';
 import type { Adapter, AdapterResult } from '../types';
 import { combine, getJson } from '../util';
 
 interface EspnTeam { abbreviation: string; displayName: string }
 interface EspnEvent {
   id: string; date: string; status?: { type?: { state?: string } }; season?: { type?: number };
-  competitions?: { competitors?: { homeAway: string; team: EspnTeam }[] }[];
+  competitions?: { venue?: { fullName?: string; address?: { city?: string } }; competitors?: { homeAway: string; team: EspnTeam }[] }[];
 }
 
 export function parseNba(json: unknown): AdapterResult {
@@ -20,6 +20,9 @@ export function parseNba(json: unknown): AdapterResult {
     for (const t of [home, away]) teams.set(`nba:${t.abbreviation}`, { id: `nba:${t.abbreviation}`, sport: 'nba', name: t.displayName });
     const state = e.status?.type?.state;
     if (state !== 'pre' && state !== 'in') continue;
+    const v = e.competitions?.[0]?.venue;
+    const vName = v?.fullName?.trim();
+    const venue: Venue | undefined = vName ? (v?.address?.city ? { name: vName, city: v.address.city } : { name: vName }) : undefined;
     const startsAt = new Date(e.date);
     if (Number.isNaN(startsAt.getTime())) continue;
     matches.push({
@@ -27,6 +30,7 @@ export function parseNba(json: unknown): AdapterResult {
       competition: e.season?.type === 1 ? 'NBA (přípravné)' : e.season?.type === 3 ? 'NBA Playoffs' : 'NBA',
       startsAt: startsAt.toISOString(), title: `${home.displayName} – ${away.displayName}`,
       teams: [`nba:${home.abbreviation}`, `nba:${away.abbreviation}`], broadcasters: [],
+      ...(venue && { venue }),
     });
   }
   return { matches, teams: [...teams.values()] };
