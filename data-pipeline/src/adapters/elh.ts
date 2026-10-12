@@ -1,9 +1,24 @@
 import * as cheerio from 'cheerio';
 import type { Match, StandingRow, StandingsColumn, StandingsTable, Team } from '@sportradar/shared';
 import type { Adapter, AdapterResult } from '../types';
-import { combine, getText, matchTeamId, pragueToUtcIso } from '../util';
+import { combine, getText, matchTeamId, pragueToUtcIso, safeLogoUrl } from '../util';
 
 const BASE = 'https://www.hokej.cz/tipsport-extraliga/zapasy';
+const LOGO_BASE = 'https://www.hokej.cz/';
+
+/** Logo z řádku zápasu; min.php umí větší rozměr (w=96&h=96), jinak ponecháme původní URL. */
+function elhLogo(src: string | undefined): string | undefined {
+  const url = safeLogoUrl(src, LOGO_BASE);
+  if (!url) return undefined;
+  try {
+    const u = new URL(url);
+    if (u.hostname === 'www.hokej.cz' && u.pathname === '/min.php' && u.searchParams.has('w') && u.searchParams.has('h')) {
+      u.searchParams.set('w', '96'); u.searchParams.set('h', '96');
+      return safeLogoUrl(u.href);
+    }
+  } catch { /* ponecháme původní */ }
+  return url;
+}
 
 function inferYear(month: number, day: number, now: Date): number {
   const y = now.getUTCFullYear();
@@ -37,7 +52,11 @@ export function parseElhRound(html: string, now: Date): AdapterResult {
     })).get();
     if (!id || sides.length < 2 || sides.some((s) => !s.long || !s.short)) return;
     const [home, away] = sides;
-    for (const s of sides) teams.set(`cz-hockey:${s.short}`, { id: `cz-hockey:${s.short}`, sport: 'cz-hockey', name: s.long });
+    const logos = $(tr).find('.preview__logo img').map((__, im) => elhLogo($(im).attr('src'))).get();
+    sides.forEach((s, i) => {
+      const logo = sides.length === 2 && logos.length === 2 ? logos[i] : undefined; // přiřadíme jen jednoznačně (domácí 1., hosté 2.)
+      teams.set(`cz-hockey:${s.short}`, { id: `cz-hockey:${s.short}`, sport: 'cz-hockey', name: s.long, ...(logo && { logo }) });
+    });
     const cells = $(tr).find('td.preview__desktop .col-1_3').map((__, c) => $(c).text().trim()).get();
     if (cells.length < 3) { // odehráno
       const scores = $(tr).find('.preview__score .blue').map((__, e) => $(e).text().trim()).get();

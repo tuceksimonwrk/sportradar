@@ -1,7 +1,7 @@
 import * as cheerio from 'cheerio';
 import type { Match, StandingRow, StandingsTable, Team } from '@sportradar/shared';
 import type { Adapter, AdapterResult } from '../types';
-import { getText, pragueToUtcIso, slugify } from '../util';
+import { getText, pragueToUtcIso, safeLogoUrl, slugify } from '../util';
 
 const RESULT_WINDOW_MS = 14 * 86400_000;
 const GAME_LENGTH_MS = 3 * 3600_000;
@@ -18,9 +18,11 @@ export function parseNbl(html: string, now: Date): AdapterResult {
     const names = $(tds[3]).find('div.d-flex > div').last().children('div').map((__, d) => $(d).text().trim()).get();
     if (!num || names.length < 2 || !names[0] || !names[1]) return;
     const [home, away] = names;
-    const ids = [home, away].map((n) => {
+    const imgs = $(tds[3]).find('div.d-flex > img').map((__, im) => safeLogoUrl($(im).attr('src'), 'https://www.nbl.basketball/')).get();
+    const ids = [home, away].map((n, i) => {
       const id = `cz-basket:${slugify(n)}`;
-      teams.set(id, { id, sport: 'cz-basket', name: n });
+      const logo = imgs.length === 2 ? imgs[i] : undefined; // domácí 1., hosté 2.
+      teams.set(id, { id, sport: 'cz-basket', name: n, ...(logo && { logo }) });
       return id;
     });
     const played = /[0-9]/.test($(tds[4]).text());

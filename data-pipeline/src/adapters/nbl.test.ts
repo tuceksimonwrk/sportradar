@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { nblAdapter, parseNbl, parseNblStandings } from './nbl';
 
+const logos = (home: string) => home === 'BK KVIS Pardubice'
+  ? '<img src="/min.php?exact&topcut&file=http://cbf.cz/files/AAA.png"><img src="/min.php?exact&topcut&file=http://cbf.cz/files/BBB.png">'
+  : '<img src="a.png">';
 const row = (num: string, sort: string, home: string, away: string, score: string, extra = '') => `
 <tr><td>6.</td><td>${num}</td><td data-sort="${sort}">10. 10. 2026<br>So 12:00</td>
-<td><div class="d-flex"><img src="a.png"><div><div class="">${home}</div><div class="">${away}</div></div></div></td>
+<td><div class="d-flex">${logos(home)}<div><div class="">${home}</div><div class="">${away}</div></div></div></td>
 <td>${score}</td><td></td><td>Základní část</td><td>${extra}</td><td></td></tr>`;
 
 const html = `<table><tbody>
@@ -31,6 +34,15 @@ describe('parseNbl', () => {
   });
   it('týmy zahrnou i odehrané řádky', () => {
     expect(r.teams.map((t) => t.name)).toContain('SK Slavia Praha ERA NBK');
+  });
+  it('logo: dva obrázky před jmény, domácí první; https přes same-origin proxy', () => {
+    const home = r.teams.find((t) => t.id === 'cz-basket:bk-kvis-pardubice')!;
+    const away = r.teams.find((t) => t.id === 'cz-basket:bk-olomoucko')!;
+    expect(home.logo).toBe('https://www.nbl.basketball/min.php?exact&topcut&file=http://cbf.cz/files/AAA.png');
+    expect(away.logo).toBe('https://www.nbl.basketball/min.php?exact&topcut&file=http://cbf.cz/files/BBB.png');
+  });
+  it('jediný obrázek (nelze přiřadit) → bez loga', () => {
+    expect(r.teams.find((t) => t.id === 'cz-basket:era-basketball-nymburk')).not.toHaveProperty('logo');
   });
   it('změněné HTML nepadne', () => { expect(parseNbl('<html></html>', now).matches).toEqual([]); });
   it('odehraný zápas má result se skórem (domácí první)', () => {

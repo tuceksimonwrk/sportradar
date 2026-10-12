@@ -3,14 +3,15 @@ import { elhAdapter, elhRoundNumbers, parseElhRound, parseElhStandings } from '.
 
 const side = (long: string, short: string) =>
   `<div class="preview__name__wrapper"><a href="#"><span class="preview__name--long">${long}</span><span class="preview__name--short">${short}</span></a></div>`;
+const logoTd = (short: string) => `<td class="preview__logo"><img src="https://www.hokej.cz/min.php?file=%2Ffiles%2Flogos%2F${short}.png&amp;w=30&amp;h=30&amp;exact=1" alt=""></td>`;
 const upcoming = (id: string, home: [string, string], away: [string, string], dow: string, date: string, time: string) => `
-<tr data-href="/zapas/${id}" class="js-preview__link"><td class="preview__name text-right">${side(...home)}</td>
+<tr data-href="/zapas/${id}" class="js-preview__link">${logoTd(home[1])}<td class="preview__name text-right">${side(...home)}</td>
 <td class="preview__center preview__desktop" colspan="3"><div class="box-snow row"><div class="col-1_3">${dow}</div><div class="col-1_3">${date}</div><div class="col-1_3">${time}</div></div></td>
-<td class="preview__name">${side(...away)}</td></tr>`;
+<td class="preview__name">${side(...away)}</td>${logoTd(away[1])}</tr>`;
 const played = (id: string, home: [string, string], away: [string, string], date = 'ÚT 22. 09.', hs: string | null = '4', as: string | null = '5') => `
-<tr data-href="/zapas/${id}" class="js-preview__link"><td class="preview__name text-right">${side(...home)}</td>
+<tr data-href="/zapas/${id}" class="js-preview__link">${logoTd(home[1])}<td class="preview__name text-right">${side(...home)}</td>
 <td class="preview__score">${hs === null ? '' : `<span class="blue">${hs}</span>`}</td><td class="preview__period"><span class="match-start-time">${date}</span></td>
-<td class="preview__score">${as === null ? '' : `<span class="blue">${as}</span>`}</td><td class="preview__name">${side(...away)}</td></tr>`;
+<td class="preview__score">${as === null ? '' : `<span class="blue">${as}</span>`}</td><td class="preview__name">${side(...away)}</td>${logoTd(away[1])}</tr>`;
 
 const PCE: [string, string] = ['HC Dynamo Pardubice', 'PCE'];
 const LIB: [string, string] = ['Bílí Tygři Liberec', 'LIB'];
@@ -32,6 +33,20 @@ describe('parseElhRound', () => {
   it('převede čas z Prahy do UTC a dopočítá rok (přes přelom roku)', () => {
     expect(r.matches[0].startsAt).toBe('2026-10-15T15:30:00.000Z');
     expect(r.matches[1].startsAt).toBe('2027-01-03T16:00:00.000Z'); // 3. 1. je > 90 dní v minulosti → příští rok
+  });
+  it('logo: první obrázek řádku = domácí, druhý = hosté; zvětšeno na 96×96, absolutní https', () => {
+    const pce = r.teams.find((t) => t.id === 'cz-hockey:PCE')!;
+    const lit = r.teams.find((t) => t.id === 'cz-hockey:LIT')!;
+    expect(pce.logo).toBe('https://www.hokej.cz/min.php?file=%2Ffiles%2Flogos%2FPCE.png&w=96&h=96&exact=1');
+    expect(lit.logo).toBe('https://www.hokej.cz/min.php?file=%2Ffiles%2Flogos%2FLIT.png&w=96&h=96&exact=1');
+  });
+  it('relativní logo se doplní na https://www.hokej.cz; nejednoznačný/neplatný počet log → bez loga', () => {
+    const rel0 = '<table><tr data-href="/zapas/9" class="js-preview__link"><td class="preview__logo"><img src="/min.php?file=a.png&amp;w=30&amp;h=30&amp;exact=1"></td><td>' + side('Alfa', 'ALF') + '</td><td class="preview__center preview__desktop"><div class="col-1_3">ČT</div><div class="col-1_3">15. 10.</div><div class="col-1_3">17:30</div></td><td>' + side('Beta', 'BET') + '</td><td class="preview__logo"><img src="/min.php?file=b.png&amp;w=30&amp;h=30&amp;exact=1"></td></tr></table>';
+    const rel = parseElhRound('<table><tr data-href="/zapas/9" class="js-preview__link"><td class="preview__logo"><img src="/min.php?file=a.png&amp;w=30&amp;h=30&amp;exact=1"></td><td>' + side('Alfa', 'ALF') + '</td><td class="preview__center preview__desktop"><div class="col-1_3">ČT</div><div class="col-1_3">15. 10.</div><div class="col-1_3">17:30</div></td><td>' + side('Beta', 'BET') + '</td><td class="preview__logo"><img src="javascript:alert(1)"></td></tr></table>', new Date('2026-10-12T12:00:00Z'));
+    expect(rel.teams.find((t) => t.id === 'cz-hockey:ALF')).not.toHaveProperty('logo'); // jen 1 platné logo ze 2 → nelze přiřadit
+    expect(rel.teams.find((t) => t.id === 'cz-hockey:BET')).not.toHaveProperty('logo');
+    const rel2 = parseElhRound(rel0, new Date('2026-10-12T12:00:00Z'));
+    expect(rel2.teams.find((t) => t.id === 'cz-hockey:ALF')!.logo).toBe('https://www.hokej.cz/min.php?file=a.png&w=96&h=96&exact=1');
   });
   it('mapuje týmy a titulek', () => {
     expect(r.matches[1]).toMatchObject({
