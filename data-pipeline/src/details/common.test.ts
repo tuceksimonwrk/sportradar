@@ -118,8 +118,8 @@ describe('requestsBySport', () => {
     expect(requestsBySport([
       'https://api-web.nhle.com/v1/gamecenter/1/landing', 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=1',
       'https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/summary?event=2', 'https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/teams/382/roster',
-      'https://www.hokej.cz/zapas/1', 'https://www.nbl.basketball/tabulka', 'https://api.jolpi.ca/ergast/f1/current', 'https://example.com/x',
-    ])).toEqual({ nhl: 1, nba: 1, football: 2, 'cz-hockey': 1, 'cz-basket': 1, f1: 1, other: 1 });
+      'https://www.hokej.cz/zapas/1', 'https://www.nbl.basketball/tabulka', 'https://api.jolpi.ca/ergast/f1/current', 'https://www.chanceliga.cz/klub/kadr/5-sk-slavia-praha', 'https://example.com/x',
+    ])).toEqual({ nhl: 1, nba: 1, football: 3, 'cz-hockey': 1, 'cz-basket': 1, f1: 1, other: 1 });
   });
   it('fetcher si pamatuje skutečně stažené URL (cache se nepočítá)', async () => {
     const f = createFetcher(async () => '{}');

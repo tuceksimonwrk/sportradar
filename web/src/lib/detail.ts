@@ -50,6 +50,13 @@ export function detailFooter(d: Pick<MatchDetail, 'source' | 'generatedAt'>, now
   return { text: `Data z ${d.source}, aktualizováno ${date}${formatTime(d.generatedAt, tz)}`, stale: now.getTime() - t > STALE_MS };
 }
 
+const COMPACT_SQUAD = 18;
+/** Třída sestav: dlouhé soupisky (fotbal: 25–35 hráčů na tým) se vykreslí kompaktně (hustší řádky, na širším mobilu 2 sloupce). */
+export function lineupsClass(l: NonNullable<MatchDetail['lineups']>): string {
+  const size = (t: typeof l.home) => t.groups.reduce((n, g) => n + g.players.length, 0);
+  return l.kind === 'roster' && Math.max(size(l.home), size(l.away)) > COMPACT_SQUAD ? 'dlineups dlineups--compact' : 'dlineups';
+}
+
 export function detailTabs(sport: Sport): [string, string] {
   return sport === 'f1' ? ['Pořadí', 'Rošt'] : ['Porovnání', 'Sestavy'];
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { MatchDetail } from '@sportradar/shared';
-import { detailFooter, detailTabs, hasDetail, rankingWidth, statBarWidths, statusTone, statSentence } from './detail';
+import { detailFooter, detailTabs, hasDetail, lineupsClass, rankingWidth, statBarWidths, statusTone, statSentence } from './detail';
 
 describe('statBarWidths', () => {
   it('vyšší je lepší: delší sloupek = větší hodnota', () => {
@@ -81,5 +81,14 @@ describe('detailTabs', () => {
 describe('statSentence', () => {
   it('text pro čtečky', () => {
     expect(statSentence({ label: 'Body', home: 2, away: 7 }, 'Chicago', 'Pittsburgh')).toBe('Body: Chicago 2, Pittsburgh 7');
+  });
+});
+
+describe('lineupsClass', () => {
+  const team = (n: number) => ({ name: 'T', groups: [{ title: 'Obránci', players: Array.from({ length: n }, (_, i) => ({ name: `P${i}` })) }] });
+  it('dlouhá soupiska (roster, > 18 hráčů) → kompaktní seznam; potvrzená sestava / krátká soupiska ne', () => {
+    expect(lineupsClass({ kind: 'roster', home: team(28), away: team(12) })).toBe('dlineups dlineups--compact');
+    expect(lineupsClass({ kind: 'roster', home: team(12), away: team(12) })).toBe('dlineups');
+    expect(lineupsClass({ kind: 'confirmed', home: team(20), away: team(20) })).toBe('dlineups');
   });
 });

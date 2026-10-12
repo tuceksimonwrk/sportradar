@@ -149,7 +149,7 @@ export const blockOf = (title: string, r: DetailStatRow[], note?: string): Detai
 
 const SOURCES: [RegExp, string][] = [
   [/nhle\.com/, 'nhl'], [/\/basketball\/nba\//, 'nba'], [/\/sports\/soccer\//, 'football'],
-  [/hokej\.cz/, 'cz-hockey'], [/nbl\.basketball/, 'cz-basket'], [/jolpi\.ca/, 'f1'],
+  [/hokej\.cz/, 'cz-hockey'], [/nbl\.basketball/, 'cz-basket'], [/jolpi\.ca/, 'f1'], [/chanceliga\.cz/, 'football'],
 ];
 /** Počty požadavků detailů podle sportu (odvozeno ze zdroje URL; neznámé → 'other'). */
 export function requestsBySport(urls: readonly string[]): Record<string, number> {

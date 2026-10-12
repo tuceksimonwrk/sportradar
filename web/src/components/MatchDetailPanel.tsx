@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import type { DetailStatBlock, GridEntry, LineupPlayer, Match, MatchDetail, RankingBlock, TeamLineup } from '@sportradar/shared';
 import { CircleAlert, Info, RefreshCw, TriangleAlert, X } from 'lucide-react';
-import { detailFooter, detailTabs, rankingWidth, statBarWidths, statSentence, statusTone } from '../lib/detail';
+import { detailFooter, detailTabs, lineupsClass, rankingWidth, statBarWidths, statSentence, statusTone } from '../lib/detail';
 import { competitionLine, venueLine } from '../lib/labels';
 import { matchSides, splitSession } from '../lib/sides';
 import { dayKey, dayLabel, formatTime } from '../lib/time';
@@ -198,7 +198,7 @@ function DetailBody({ detail, tab, homeName, awayName, match, now }: { detail: M
     <>
       {notes}
       {detail.lineups && (
-        <div className="dlineups">
+        <div className={lineupsClass(detail.lineups)}>
           <Lineup team={detail.lineups.home} side="home" />
           <Lineup team={detail.lineups.away} side="away" />
         </div>
