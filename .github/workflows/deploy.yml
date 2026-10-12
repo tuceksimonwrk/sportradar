@@ -26,12 +26,12 @@ jobs:
         with: { node-version: 22, cache: npm }
       - run: npm ci
       - run: npm test
+      - name: Derive previous data URL
+        run: echo "PREV_DATA_URL=https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/data/" >> "$GITHUB_ENV"
       - name: Fetch schedules
         id: pipeline
         continue-on-error: true
         run: npm run data
-        env:
-          PREV_DATA_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/data/
       - run: npm run build
       - name: Verify data files exist (never deploy a site without data)
         run: test -s web/public/data/matches.json && test -s web/public/data/teams.json

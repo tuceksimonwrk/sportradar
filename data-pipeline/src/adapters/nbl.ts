@@ -26,7 +26,7 @@ export function parseNbl(html: string): AdapterResult {
     const [y, mo, d, h, mi] = m.slice(1).map(Number);
     const tv = $(tr).find('a[href*="embed.tvcom.cz"]').first().attr('href');
     matches.push({
-      id: `cz-basket:${num}`, sport: 'cz-basket', competition: 'NBL',
+      id: `cz-basket:${num}-${slugify(home)}`, sport: 'cz-basket', competition: 'NBL',
       startsAt: pragueToUtcIso(y, mo, d, h, mi), title: `${home} – ${away}`, teams: ids,
       broadcasters: tv ? [{ name: 'TV Com', url: tv }] : [],
     });

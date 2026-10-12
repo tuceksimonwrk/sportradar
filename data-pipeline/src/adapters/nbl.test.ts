@@ -16,7 +16,7 @@ ${row('76', 'neplatne', 'A', 'B', '-')}
 describe('parseNbl', () => {
   const r = parseNbl(html);
   it('přeskočí odehrané a nevalidní řádky', () => {
-    expect(r.matches.map((m) => m.id)).toEqual(['cz-basket:74', 'cz-basket:75']);
+    expect(r.matches.map((m) => m.id)).toEqual(['cz-basket:74-bk-kvis-pardubice', 'cz-basket:75-era-basketball-nymburk']);
   });
   it('převede pražský čas na UTC, mapuje týmy a TV Com', () => {
     expect(r.matches[0]).toMatchObject({
