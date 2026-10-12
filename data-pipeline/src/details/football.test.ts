@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { Match, StandingsTable } from '@sportradar/shared';
 import { createFetcher, type DetailContext } from './common';
-import { FOOTBALL_NO_LINEUP, footballDetail, footballPos, lastN, parseFootballDetail } from './football';
+import { readFileSync } from 'node:fs';
+import { CZ_NO_LINEUP, CZ_SQUAD_NOTE, FOOTBALL_NO_LINEUP, FOOTBALL_SQUAD_NOTE, footballDetail, footballPos, lastN, parseCzSquad, parseEspnSquad, parseFootballDetail } from './football';
+import slaviaRoster from './fixtures/football-roster-slavia.json';
 import pre from './fixtures/football-summary-pre.json';
 import lineups from './fixtures/football-summary-lineups.json';
 
@@ -86,30 +88,92 @@ describe('footballPos', () => {
   });
 });
 
+const rosterUrl = (league: string, id: string) => `https://site.api.espn.com/apis/site/v2/sports/soccer/${league}/teams/${id}/roster`;
+const KADR = (slug: string) => `https://www.chanceliga.cz/klub/kadr/${slug}`;
+const rozpis = readFileSync(new URL('../adapters/fixtures/chanceliga-rozpis.html', import.meta.url), 'utf8');
+const kadr = readFileSync(new URL('./fixtures/chanceliga-kadr-slavia.html', import.meta.url), 'utf8');
+
+describe('parseEspnSquad (reálná soupiska ESPN)', () => {
+  const g = parseEspnSquad(slaviaRoster);
+  it('čtyři skupiny česky, čísla dresů, bez čísla jméno zůstane, řazení podle čísla', () => {
+    expect(g.map((x) => [x.title, x.players.length])).toEqual([['Brankáři', 4], ['Obránci', 15], ['Záložníci', 11], ['Útočníci', 5]]);
+    const all = g.flatMap((x) => x.players);
+    expect(all.find((p) => p.name === 'Adam Rezek')).toEqual({ name: 'Adam Rezek' });
+    expect(all.filter((p) => p.number).every((p) => /^\d+$/.test(String(p.number)))).toBe(true);
+    const n = g[1].players.map((p) => Number(p.number ?? 999));
+    expect(n).toEqual([...n].sort((a, b) => a - b));
+  });
+  it('neznámý post → Ostatní; zranění → štítek; prázdná/nesmyslná data → []', () => {
+    const x = structuredClone(slaviaRoster) as any;
+    x.athletes[0].position = { abbreviation: 'XX' };
+    x.athletes[1].injuries = [{ status: 'Out' }];
+    const gg = parseEspnSquad(x);
+    expect(gg.at(-1)).toMatchObject({ title: 'Ostatní', players: [{ name: x.athletes[0].displayName }] });
+    expect(gg.flatMap((q) => q.players).find((p) => p.name === x.athletes[1].displayName)?.status).toBe('Zraněn');
+    expect(parseEspnSquad({ athletes: [] })).toEqual([]);
+    expect(parseEspnSquad({})).toEqual([]);
+  });
+});
+
+describe('parseCzSquad (reálný kádr chanceliga.cz)', () => {
+  it('B/O/Z/U → Brankáři, Obránci, Záložníci, Útočníci', () => {
+    const g = parseCzSquad(kadr);
+    expect(g.map((x) => [x.title, x.players.length])).toEqual([['Brankáři', 3], ['Obránci', 11], ['Záložníci', 10], ['Útočníci', 5]]);
+    expect(g[0].players[0]).toEqual({ name: 'Ondřej Kolář', number: '1' });
+  });
+  it('změněné HTML → []', () => { expect(parseCzSquad('<table><thead><tr><th>x</th></tr></thead></table>')).toEqual([]); });
+});
+
 describe('footballDetail (builder)', () => {
-  const ctx = (urls: string[]): DetailContext => ({
-    get: createFetcher(async (u) => { urls.push(u); return JSON.stringify(pre); }), now, matches: [], teams: [], standings,
+  const ctxWith = (urls: string[], resp: (u: string) => unknown, extra: Partial<DetailContext> = {}): DetailContext => ({
+    get: createFetcher(async (u) => { urls.push(u); const v = resp(u); if (v instanceof Error) throw v; return typeof v === 'string' ? v : JSON.stringify(v); }),
+    now, matches: [], teams: [
+      { id: 'football:388', sport: 'football', name: 'Coventry City', league: 'eng.1' },
+      { id: 'football:361', sport: 'football', name: 'Newcastle United', league: 'eng.1' },
+    ], standings, ...extra,
   });
-  it('ESPN: summary dané soutěže', async () => {
+  it('bez potvrzených sestav: soupisky obou týmů z domácí ligy (kind roster) + poznámka', async () => {
     const urls: string[] = [];
-    const d = await footballDetail(covNew, ctx(urls));
-    expect(urls).toEqual(['https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/summary?event=401879267']);
-    expect(d.stats.length).toBeGreaterThan(0);
+    const d = await footballDetail(covNew, ctxWith(urls, (u) => (u.includes('/roster') ? slaviaRoster : pre)));
+    expect(urls).toEqual(['https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/summary?event=401879267', rosterUrl('eng.1', '388'), rosterUrl('eng.1', '361')]);
+    expect(d.lineups?.kind).toBe('roster');
+    expect(d.lineups!.home.groups.map((g) => g.title)).toEqual(['Brankáři', 'Obránci', 'Záložníci', 'Útočníci']);
+    expect(d.notes).toEqual([FOOTBALL_SQUAD_NOTE]);
   });
-  it('Chance Liga: jen tabulka, bez požadavků, poznámka o sestavách', async () => {
+  it('soupiska 404 v lize → zkusí další soutěž; nikde → bez sestav + poznámka', async () => {
     const urls: string[] = [];
-    const cz: Match = { ...covNew, id: 'football:cz-8409', competition: 'Chance Liga', competitionId: 'cze.1', title: 'FK Mladá Boleslav – FK Teplice', teams: ['football:cz_fk-mlada-boleslav', 'football:cz_fk-teplice'] };
+    const cl: Match = { ...covNew, competitionId: 'uefa.champions', competition: 'Liga mistrů' };
+    const d = await footballDetail(cl, ctxWith(urls, (u) => (u === rosterUrl('eng.1', '388') ? new Error('HTTP 404') : u.includes('/roster') ? slaviaRoster : pre)));
+    expect(urls).toContain(rosterUrl('uefa.champions', '388'));
+    expect(d.lineups?.kind).toBe('roster');
+    const none = await footballDetail(covNew, ctxWith([], (u) => (u.includes('/roster') ? new Error('HTTP 404') : pre)));
+    expect(none.lineups).toBeUndefined();
+    expect(none.notes).toContain(FOOTBALL_NO_LINEUP);
+  });
+  it('potvrzené sestavy → soupisky se nestahují', async () => {
+    const urls: string[] = [];
+    const d = await footballDetail(livMci, ctxWith(urls, () => lineups));
+    expect(d.lineups?.kind).toBe('confirmed');
+    expect(urls.filter((u) => u.includes('/roster'))).toEqual([]);
+  });
+  it('Chance Liga: tabulka + soupisky z chanceliga.cz (číslo klubu z rozpisu), jinak poznámka', async () => {
+    const cz: Match = { ...covNew, id: 'football:cz-8409', competition: 'Chance Liga', competitionId: 'cze.1', title: 'SK Slavia Praha – FK Teplice', teams: ['football:cz_sk-slavia-praha', 'football:cz_fk-teplice'] };
     const st: StandingsTable[] = [{ id: 'football-cze.1', sport: 'football', title: 'Chance Liga', columns: [], rows: [
-      row(4, 'football:cz_fk-mlada-boleslav', { z: 9, v: 5, r: 2, p: 2, skore: '17:12', rozdil: '+5', b: 17 }),
+      row(1, 'football:cz_sk-slavia-praha', { z: 10, v: 8, r: 2, p: 0, skore: '26:6', rozdil: '+20', b: 26 }),
       row(7, 'football:cz_fk-teplice', { z: 10, v: 5, r: 2, p: 3, skore: '18:16', rozdil: '+2', b: 17 }),
     ] }];
-    const d = await footballDetail(cz, { ...ctx(urls), standings: st });
-    expect(urls).toEqual([]);
+    const urls: string[] = [];
+    const d = await footballDetail(cz, ctxWith(urls, (u) => (u.endsWith('/rozpis-zapasu') ? rozpis : kadr), { standings: st }));
+    expect(urls).toEqual(['https://www.chanceliga.cz/rozpis-zapasu', KADR('5-sk-slavia-praha'), KADR('17-fk-teplice')]);
     expect(d.source).toBe('chanceliga.cz');
-    expect(r(d, 'Tabulka', 'Pořadí')).toMatchObject({ home: '4.', away: '7.' });
-    expect(d.notes).toEqual(['Sestavy nejsou k dispozici.']);
+    expect(r(d, 'Tabulka', 'Pořadí')).toMatchObject({ home: '1.', away: '7.' });
+    expect(d.lineups?.kind).toBe('roster');
+    expect(d.notes).toEqual([CZ_SQUAD_NOTE]);
+    const fail = await footballDetail(cz, ctxWith([], () => new Error('HTTP 503'), { standings: st }));
+    expect(fail.lineups).toBeUndefined();
+    expect(fail.notes).toEqual([CZ_NO_LINEUP]);
   });
   it('neplatné id → výjimka', async () => {
-    await expect(footballDetail({ ...covNew, id: 'football:x' }, ctx([]))).rejects.toThrow();
+    await expect(footballDetail({ ...covNew, id: 'football:x' }, ctxWith([], () => pre))).rejects.toThrow();
   });
 });
