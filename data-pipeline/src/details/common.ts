@@ -50,7 +50,7 @@ export type DetailBuilder = (match: Match, ctx: DetailContext) => Promise<MatchD
 const ONGOING_MS = 3 * 3600_000;
 
 /** Zápasy bez výsledku se startem v [now − 3 h, now + hours] (probíhající si detail nechají), nejbližší první, max `cap`. */
-export function selectDetailMatches(matches: Match[], now: Date, hours = DETAIL_WINDOW_HOURS, cap = 80): Match[] {
+export function selectDetailMatches(matches: Match[], now: Date, hours = DETAIL_WINDOW_HOURS, cap = 140): Match[] {
   const from = now.getTime() - ONGOING_MS;
   const to = now.getTime() + hours * 3600_000;
   return matches

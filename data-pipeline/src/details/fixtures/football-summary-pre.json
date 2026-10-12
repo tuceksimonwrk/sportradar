@@ -1,0 +1,393 @@
+{
+ "header": {
+  "id": "401879267",
+  "competitions": [
+   {
+    "competitors": [
+     {
+      "id": "388",
+      "homeAway": "home",
+      "form": "WLLLL",
+      "record": [
+       {
+        "type": "total",
+        "summary": "1-0-4",
+        "displayValue": "1-0-4"
+       },
+       {
+        "type": "points",
+        "summary": "3",
+        "displayValue": "3"
+       }
+      ],
+      "team": {
+       "id": "388",
+       "abbreviation": "COV",
+       "displayName": "Coventry City"
+      }
+     },
+     {
+      "id": "361",
+      "homeAway": "away",
+      "form": "WLWDW",
+      "record": [
+       {
+        "type": "total",
+        "summary": "2-2-1",
+        "displayValue": "2-2-1"
+       },
+       {
+        "type": "points",
+        "summary": "8",
+        "displayValue": "8"
+       }
+      ],
+      "team": {
+       "id": "361",
+       "abbreviation": "NEW",
+       "displayName": "Newcastle United"
+      }
+     }
+    ]
+   }
+  ]
+ },
+ "lastFiveGames": [
+  {
+   "team": {
+    "id": "388",
+    "displayName": "Coventry City"
+   },
+   "events": [
+    {
+     "id": "401879316",
+     "gameDate": "2026-08-29T14:00Z",
+     "atVs": "vs",
+     "score": "1-0",
+     "homeTeamId": "388",
+     "awayTeamId": "306",
+     "homeTeamScore": "0",
+     "awayTeamScore": "1",
+     "gameResult": "L",
+     "leagueAbbreviation": "Premier League",
+     "opponent": {
+      "id": "306",
+      "displayName": "Hull City"
+     }
+    },
+    {
+     "id": "401879287",
+     "gameDate": "2026-09-05T14:00Z",
+     "atVs": "@",
+     "score": "1-0",
+     "homeTeamId": "382",
+     "awayTeamId": "388",
+     "homeTeamScore": "1",
+     "awayTeamScore": "0",
+     "gameResult": "L",
+     "leagueAbbreviation": "Premier League",
+     "opponent": {
+      "id": "382",
+      "displayName": "Manchester City"
+     }
+    },
+    {
+     "id": "401879282",
+     "gameDate": "2026-09-13T13:00Z",
+     "atVs": "vs",
+     "score": "5-0",
+     "homeTeamId": "388",
+     "awayTeamId": "331",
+     "homeTeamScore": "0",
+     "awayTeamScore": "5",
+     "gameResult": "L",
+     "leagueAbbreviation": "Premier League",
+     "opponent": {
+      "id": "331",
+      "displayName": "Brighton & Hove Albion"
+     }
+    },
+    {
+     "id": "401914258",
+     "gameDate": "2026-09-16T19:00Z",
+     "atVs": "vs",
+     "score": "3-1",
+     "homeTeamId": "388",
+     "awayTeamId": "362",
+     "homeTeamScore": "1",
+     "awayTeamScore": "3",
+     "gameResult": "L",
+     "leagueAbbreviation": "Carabao Cup",
+     "opponent": {
+      "id": "362",
+      "displayName": "Aston Villa"
+     }
+    },
+    {
+     "id": "401879270",
+     "gameDate": "2026-09-19T16:30Z",
+     "atVs": "@",
+     "score": "1-0",
+     "homeTeamId": "393",
+     "awayTeamId": "388",
+     "homeTeamScore": "0",
+     "awayTeamScore": "1",
+     "gameResult": "W",
+     "leagueAbbreviation": "Premier League",
+     "opponent": {
+      "id": "393",
+      "displayName": "Nottingham Forest"
+     }
+    }
+   ]
+  },
+  {
+   "team": {
+    "id": "361",
+    "displayName": "Newcastle United"
+   },
+   "events": [
+    {
+     "id": "401879312",
+     "gameDate": "2026-08-29T16:30Z",
+     "atVs": "@",
+     "score": "2-0",
+     "homeTeamId": "367",
+     "awayTeamId": "361",
+     "homeTeamScore": "0",
+     "awayTeamScore": "2",
+     "gameResult": "W",
+     "leagueAbbreviation": "Premier League",
+     "opponent": {
+      "id": "367",
+      "displayName": "Tottenham Hotspur"
+     }
+    },
+    {
+     "id": "401879286",
+     "gameDate": "2026-09-05T11:30Z",
+     "atVs": "vs",
+     "score": "2-2",
+     "homeTeamId": "361",
+     "awayTeamId": "349",
+     "homeTeamScore": "2",
+     "awayTeamScore": "2",
+     "gameResult": "D",
+     "leagueAbbreviation": "Premier League",
+     "opponent": {
+      "id": "349",
+      "displayName": "AFC Bournemouth"
+     }
+    },
+    {
+     "id": "401914255",
+     "gameDate": "2026-09-08T19:00Z",
+     "atVs": "@",
+     "score": "1-0",
+     "homeTeamId": "391",
+     "awayTeamId": "361",
+     "homeTeamScore": "0",
+     "awayTeamScore": "1",
+     "gameResult": "W",
+     "leagueAbbreviation": "Carabao Cup",
+     "opponent": {
+      "id": "391",
+      "displayName": "Millwall"
+     }
+    },
+    {
+     "id": "401879280",
+     "gameDate": "2026-09-14T19:00Z",
+     "atVs": "@",
+     "score": "4-1",
+     "homeTeamId": "357",
+     "awayTeamId": "361",
+     "homeTeamScore": "4",
+     "awayTeamScore": "1",
+     "gameResult": "L",
+     "leagueAbbreviation": "Premier League",
+     "opponent": {
+      "id": "357",
+      "displayName": "Leeds United"
+     }
+    },
+    {
+     "id": "401879271",
+     "gameDate": "2026-09-19T14:00Z",
+     "atVs": "vs",
+     "score": "2-1",
+     "homeTeamId": "361",
+     "awayTeamId": "306",
+     "homeTeamScore": "2",
+     "awayTeamScore": "1",
+     "gameResult": "W",
+     "leagueAbbreviation": "Premier League",
+     "opponent": {
+      "id": "306",
+      "displayName": "Hull City"
+     }
+    }
+   ]
+  }
+ ],
+ "seasonseries": [
+  {
+   "type": "head-to-head",
+   "title": "Coventry City vs. Newcastle United",
+   "summary": "NEW leads series 4-0",
+   "totalCompetitions": 4,
+   "events": [
+    {
+     "id": "268484",
+     "date": "2010-02-17T19:45:00Z",
+     "statusType": {
+      "id": "28",
+      "name": "STATUS_FULL_TIME",
+      "state": "post",
+      "completed": true,
+      "description": "Full Time",
+      "detail": "FT",
+      "shortDetail": "FT"
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "winner": true,
+       "score": "4",
+       "team": {
+        "id": "361",
+        "displayName": "Newcastle United"
+       }
+      },
+      {
+       "homeAway": "away",
+       "winner": false,
+       "score": "1",
+       "team": {
+        "id": "388",
+        "displayName": "Coventry City"
+       }
+      }
+     ]
+    },
+    {
+     "id": "284382",
+     "date": "2009-12-09T19:45:00Z",
+     "statusType": {
+      "id": "28",
+      "name": "STATUS_FULL_TIME",
+      "state": "post",
+      "completed": true,
+      "description": "Full Time",
+      "detail": "FT",
+      "shortDetail": "FT"
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "winner": false,
+       "score": "0",
+       "team": {
+        "id": "388",
+        "displayName": "Coventry City"
+       }
+      },
+      {
+       "homeAway": "away",
+       "winner": true,
+       "score": "2",
+       "team": {
+        "id": "361",
+        "displayName": "Newcastle United"
+       }
+      }
+     ]
+    },
+    {
+     "id": "253177",
+     "date": "2008-08-26T18:45:00Z",
+     "statusType": {
+      "id": "28",
+      "name": "STATUS_FULL_TIME",
+      "state": "post",
+      "completed": true,
+      "description": "Full Time",
+      "detail": "FT",
+      "shortDetail": "FT"
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "winner": false,
+       "score": "2",
+       "team": {
+        "id": "388",
+        "displayName": "Coventry City"
+       }
+      },
+      {
+       "homeAway": "away",
+       "winner": true,
+       "score": "3",
+       "team": {
+        "id": "361",
+        "displayName": "Newcastle United"
+       }
+      }
+     ]
+    },
+    {
+     "id": "170023",
+     "date": "2005-01-29T15:00:00Z",
+     "statusType": {
+      "id": "28",
+      "name": "STATUS_FULL_TIME",
+      "state": "post",
+      "completed": true,
+      "description": "Full Time",
+      "detail": "FT",
+      "shortDetail": "FT"
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "winner": true,
+       "score": "3",
+       "team": {
+        "id": "361",
+        "displayName": "Newcastle United"
+       }
+      },
+      {
+       "homeAway": "away",
+       "winner": false,
+       "score": "1",
+       "team": {
+        "id": "388",
+        "displayName": "Coventry City"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "rosters": [
+  {
+   "homeAway": "home",
+   "team": {
+    "id": "388",
+    "displayName": "Coventry City"
+   },
+   "roster": []
+  },
+  {
+   "homeAway": "away",
+   "team": {
+    "id": "361",
+    "displayName": "Newcastle United"
+   },
+   "roster": []
+  }
+ ]
+}

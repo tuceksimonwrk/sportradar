@@ -27,6 +27,10 @@ describe('selectDetailMatches', () => {
     expect(sel).toHaveLength(80);
     expect(sel[0].id).toBe('nba:99');
   });
+  it('výchozí strop 140 (víkend s fotbalem: ~60 fotbalových zápasů navíc)', () => {
+    const list = Array.from({ length: 200 }, (_, i) => m(`nba:${i}`, new Date(now.getTime() + i * 60_000).toISOString()));
+    expect(selectDetailMatches(list, now)).toHaveLength(140);
+  });
   it('neplatné datum se přeskočí', () => {
     expect(selectDetailMatches([m('nhl:x', 'nonsense')], now)).toEqual([]);
   });

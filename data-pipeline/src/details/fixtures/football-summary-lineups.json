@@ -1,0 +1,948 @@
+{
+ "header": {
+  "id": "401879264",
+  "competitions": [
+   {
+    "competitors": [
+     {
+      "id": "364",
+      "homeAway": "home",
+      "record": [
+       {
+        "type": "total",
+        "summary": "2-3-1",
+        "displayValue": "2-3-1"
+       },
+       {
+        "type": "points",
+        "summary": "9",
+        "displayValue": "9"
+       }
+      ],
+      "team": {
+       "id": "364",
+       "abbreviation": "LIV",
+       "displayName": "Liverpool"
+      }
+     },
+     {
+      "id": "382",
+      "homeAway": "away",
+      "record": [
+       {
+        "type": "total",
+        "summary": "6-0-0",
+        "displayValue": "6-0-0"
+       },
+       {
+        "type": "points",
+        "summary": "18",
+        "displayValue": "18"
+       }
+      ],
+      "team": {
+       "id": "382",
+       "abbreviation": "MNC",
+       "displayName": "Manchester City"
+      }
+     }
+    ]
+   }
+  ]
+ },
+ "lastFiveGames": [
+  {
+   "team": {
+    "id": "364",
+    "displayName": "Liverpool"
+   },
+   "events": [
+    {
+     "id": "401879288",
+     "gameDate": "2026-09-04T19:00Z",
+     "atVs": "@",
+     "score": "2-0",
+     "homeTeamId": "373",
+     "awayTeamId": "364",
+     "homeTeamScore": "0",
+     "awayTeamScore": "2",
+     "gameResult": "W",
+     "leagueAbbreviation": "Premier League",
+     "opponent": {
+      "id": "373",
+      "displayName": "Ipswich Town"
+     }
+    },
+    {
+     "id": "401915446",
+     "gameDate": "2026-09-09T19:00Z",
+     "atVs": "vs",
+     "score": "2-1",
+     "homeTeamId": "364",
+     "awayTeamId": "1068",
+     "homeTeamScore": "2",
+     "awayTeamScore": "1",
+     "gameResult": "W",
+     "leagueAbbreviation": "UEFA Champions League",
+     "opponent": {
+      "id": "1068",
+      "displayName": "Atlético Madrid"
+     }
+    },
+    {
+     "id": "401879279",
+     "gameDate": "2026-09-12T14:00Z",
+     "atVs": "vs",
+     "score": "0-0",
+     "homeTeamId": "364",
+     "awayTeamId": "370",
+     "homeTeamScore": "0",
+     "awayTeamScore": "0",
+     "gameResult": "D",
+     "leagueAbbreviation": "Premier League",
+     "opponent": {
+      "id": "370",
+      "displayName": "Fulham"
+     }
+    },
+    {
+     "id": "401914257",
+     "gameDate": "2026-09-15T19:00Z",
+     "atVs": "vs",
+     "score": "3-1",
+     "homeTeamId": "364",
+     "awayTeamId": "367",
+     "homeTeamScore": "3",
+     "awayTeamScore": "1",
+     "gameResult": "W",
+     "leagueAbbreviation": "Carabao Cup",
+     "opponent": {
+      "id": "367",
+      "displayName": "Tottenham Hotspur"
+     }
+    },
+    {
+     "id": "401879276",
+     "gameDate": "2026-09-20T13:00Z",
+     "atVs": "@",
+     "score": "1-0",
+     "homeTeamId": "349",
+     "awayTeamId": "364",
+     "homeTeamScore": "0",
+     "awayTeamScore": "1",
+     "gameResult": "W",
+     "leagueAbbreviation": "Premier League",
+     "opponent": {
+      "id": "349",
+      "displayName": "AFC Bournemouth"
+     }
+    }
+   ]
+  },
+  {
+   "team": {
+    "id": "382",
+    "displayName": "Manchester City"
+   },
+   "events": [
+    {
+     "id": "401879287",
+     "gameDate": "2026-09-05T14:00Z",
+     "atVs": "vs",
+     "score": "1-0",
+     "homeTeamId": "382",
+     "awayTeamId": "388",
+     "homeTeamScore": "1",
+     "awayTeamScore": "0",
+     "gameResult": "W",
+     "leagueAbbreviation": "Premier League",
+     "opponent": {
+      "id": "388",
+      "displayName": "Coventry City"
+     }
+    },
+    {
+     "id": "401915425",
+     "gameDate": "2026-09-08T19:00Z",
+     "atVs": "@",
+     "score": "2-0",
+     "homeTeamId": "437",
+     "awayTeamId": "382",
+     "homeTeamScore": "0",
+     "awayTeamScore": "2",
+     "gameResult": "W",
+     "leagueAbbreviation": "UEFA Champions League",
+     "opponent": {
+      "id": "437",
+      "displayName": "FC Porto"
+     }
+    },
+    {
+     "id": "401879278",
+     "gameDate": "2026-09-13T15:30Z",
+     "atVs": "@",
+     "score": "1-0",
+     "homeTeamId": "360",
+     "awayTeamId": "382",
+     "homeTeamScore": "0",
+     "awayTeamScore": "1",
+     "gameResult": "W",
+     "leagueAbbreviation": "Premier League",
+     "opponent": {
+      "id": "360",
+      "displayName": "Manchester United"
+     }
+    },
+    {
+     "id": "401914260",
+     "gameDate": "2026-09-17T18:30Z",
+     "atVs": "vs",
+     "score": "5-0",
+     "homeTeamId": "382",
+     "awayTeamId": "381",
+     "homeTeamScore": "5",
+     "awayTeamScore": "0",
+     "gameResult": "W",
+     "leagueAbbreviation": "Carabao Cup",
+     "opponent": {
+      "id": "381",
+      "displayName": "Norwich City"
+     }
+    },
+    {
+     "id": "401879272",
+     "gameDate": "2026-09-20T13:00Z",
+     "atVs": "vs",
+     "score": "5-3",
+     "homeTeamId": "382",
+     "awayTeamId": "366",
+     "homeTeamScore": "5",
+     "awayTeamScore": "3",
+     "gameResult": "W",
+     "leagueAbbreviation": "Premier League",
+     "opponent": {
+      "id": "366",
+      "displayName": "Sunderland"
+     }
+    }
+   ]
+  }
+ ],
+ "seasonseries": [
+  {
+   "type": "head-to-head",
+   "title": "Liverpool vs. Manchester City",
+   "summary": "MNC leads series 3-2",
+   "totalCompetitions": 5,
+   "events": [
+    {
+     "id": "401864077",
+     "date": "2026-04-04T11:45:00Z",
+     "statusType": {
+      "id": "28",
+      "name": "STATUS_FULL_TIME",
+      "state": "post",
+      "completed": true,
+      "description": "Full Time",
+      "detail": "FT",
+      "shortDetail": "FT"
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "winner": true,
+       "score": "4",
+       "team": {
+        "id": "382",
+        "displayName": "Manchester City"
+       }
+      },
+      {
+       "homeAway": "away",
+       "winner": false,
+       "score": "0",
+       "team": {
+        "id": "364",
+        "displayName": "Liverpool"
+       }
+      }
+     ]
+    },
+    {
+     "id": "740845",
+     "date": "2026-02-08T16:30:00Z",
+     "statusType": {
+      "id": "28",
+      "name": "STATUS_FULL_TIME",
+      "state": "post",
+      "completed": true,
+      "description": "Full Time",
+      "detail": "FT",
+      "shortDetail": "FT"
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "winner": false,
+       "score": "1",
+       "team": {
+        "id": "364",
+        "displayName": "Liverpool"
+       }
+      },
+      {
+       "homeAway": "away",
+       "winner": true,
+       "score": "2",
+       "team": {
+        "id": "382",
+        "displayName": "Manchester City"
+       }
+      }
+     ]
+    },
+    {
+     "id": "740702",
+     "date": "2025-11-09T16:30:00Z",
+     "statusType": {
+      "id": "28",
+      "name": "STATUS_FULL_TIME",
+      "state": "post",
+      "completed": true,
+      "description": "Full Time",
+      "detail": "FT",
+      "shortDetail": "FT"
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "winner": true,
+       "score": "3",
+       "team": {
+        "id": "382",
+        "displayName": "Manchester City"
+       }
+      },
+      {
+       "homeAway": "away",
+       "winner": false,
+       "score": "0",
+       "team": {
+        "id": "364",
+        "displayName": "Liverpool"
+       }
+      }
+     ]
+    },
+    {
+     "id": "704534",
+     "date": "2025-02-23T16:30:00Z",
+     "statusType": {
+      "id": "28",
+      "name": "STATUS_FULL_TIME",
+      "state": "post",
+      "completed": true,
+      "description": "Full Time",
+      "detail": "FT",
+      "shortDetail": "FT"
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "winner": false,
+       "score": "0",
+       "team": {
+        "id": "382",
+        "displayName": "Manchester City"
+       }
+      },
+      {
+       "homeAway": "away",
+       "winner": true,
+       "score": "2",
+       "team": {
+        "id": "364",
+        "displayName": "Liverpool"
+       }
+      }
+     ]
+    },
+    {
+     "id": "704406",
+     "date": "2024-12-01T16:00:00Z",
+     "statusType": {
+      "id": "28",
+      "name": "STATUS_FULL_TIME",
+      "state": "post",
+      "completed": true,
+      "description": "Full Time",
+      "detail": "FT",
+      "shortDetail": "FT"
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "winner": true,
+       "score": "2",
+       "team": {
+        "id": "364",
+        "displayName": "Liverpool"
+       }
+      },
+      {
+       "homeAway": "away",
+       "winner": false,
+       "score": "0",
+       "team": {
+        "id": "382",
+        "displayName": "Manchester City"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "rosters": [
+  {
+   "homeAway": "home",
+   "team": {
+    "id": "364",
+    "displayName": "Liverpool"
+   },
+   "formation": "4-2-3-1",
+   "roster": [
+    {
+     "starter": true,
+     "jersey": "1",
+     "athlete": {
+      "id": "196876",
+      "displayName": "Alisson Becker"
+     },
+     "position": {
+      "abbreviation": "G"
+     },
+     "formationPlace": "1",
+     "subbedIn": false
+    },
+    {
+     "starter": true,
+     "jersey": "4",
+     "athlete": {
+      "id": "157892",
+      "displayName": "Virgil van Dijk"
+     },
+     "position": {
+      "abbreviation": "CD-L"
+     },
+     "formationPlace": "6",
+     "subbedIn": false
+    },
+    {
+     "starter": true,
+     "jersey": "5",
+     "athlete": {
+      "id": "355980",
+      "displayName": "Jérémy Jacquet"
+     },
+     "position": {
+      "abbreviation": "CD-R"
+     },
+     "formationPlace": "5",
+     "subbedIn": false
+    },
+    {
+     "starter": true,
+     "jersey": "6",
+     "athlete": {
+      "id": "323110",
+      "displayName": "Milos Kerkez"
+     },
+     "position": {
+      "abbreviation": "LB"
+     },
+     "formationPlace": "3",
+     "subbedIn": false
+    },
+    {
+     "starter": true,
+     "jersey": "33",
+     "athlete": {
+      "id": "270821",
+      "displayName": "Ronald Araújo"
+     },
+     "position": {
+      "abbreviation": "RB"
+     },
+     "formationPlace": "2",
+     "subbedIn": false
+    },
+    {
+     "starter": true,
+     "jersey": "7",
+     "athlete": {
+      "id": "303748",
+      "displayName": "Florian Wirtz"
+     },
+     "position": {
+      "abbreviation": "AM"
+     },
+     "formationPlace": "10",
+     "subbedIn": false
+    },
+    {
+     "starter": true,
+     "jersey": "10",
+     "athlete": {
+      "id": "249299",
+      "displayName": "Alexis Mac Allister"
+     },
+     "position": {
+      "abbreviation": "LM"
+     },
+     "formationPlace": "4",
+     "subbedIn": false
+    },
+    {
+     "starter": true,
+     "jersey": "38",
+     "athlete": {
+      "id": "274632",
+      "displayName": "Ryan Gravenberch"
+     },
+     "position": {
+      "abbreviation": "RM"
+     },
+     "formationPlace": "8",
+     "subbedIn": false
+    },
+    {
+     "starter": true,
+     "jersey": "67",
+     "athlete": {
+      "id": "350661",
+      "displayName": "Lewis Koumas"
+     },
+     "position": {
+      "abbreviation": "F"
+     },
+     "formationPlace": "9",
+     "subbedIn": false
+    },
+    {
+     "starter": true,
+     "jersey": "29",
+     "athlete": {
+      "id": "328238",
+      "displayName": "Bradley Barcola"
+     },
+     "position": {
+      "abbreviation": "AM-L"
+     },
+     "formationPlace": "11",
+     "subbedIn": false
+    },
+    {
+     "starter": true,
+     "jersey": "23",
+     "athlete": {
+      "id": "397545",
+      "displayName": "Víctor Muñoz"
+     },
+     "position": {
+      "abbreviation": "AM-R"
+     },
+     "formationPlace": "7",
+     "subbedIn": false
+    },
+    {
+     "starter": false,
+     "jersey": "73",
+     "athlete": {
+      "id": "379588",
+      "displayName": "Rio Ngumoha"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     },
+     "formationPlace": "0",
+     "subbedIn": true
+    },
+    {
+     "starter": false,
+     "jersey": "42",
+     "athlete": {
+      "id": "356075",
+      "displayName": "Trey Nyoni"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     },
+     "formationPlace": "0",
+     "subbedIn": true
+    },
+    {
+     "starter": false,
+     "jersey": "30",
+     "athlete": {
+      "id": "281119",
+      "displayName": "Jeremie Frimpong"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     },
+     "formationPlace": "0",
+     "subbedIn": true
+    },
+    {
+     "starter": false,
+     "jersey": "14",
+     "athlete": {
+      "id": "234306",
+      "displayName": "Federico Chiesa"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     },
+     "formationPlace": "0",
+     "subbedIn": true
+    },
+    {
+     "starter": false,
+     "jersey": "3",
+     "athlete": {
+      "id": "152479",
+      "displayName": "Wataru Endo"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     },
+     "formationPlace": "0",
+     "subbedIn": false
+    },
+    {
+     "starter": false,
+     "jersey": "21",
+     "athlete": {
+      "id": "226177",
+      "displayName": "Kostas Tsimikas"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     },
+     "formationPlace": "0",
+     "subbedIn": false
+    },
+    {
+     "starter": false,
+     "jersey": "2",
+     "athlete": {
+      "id": "102053",
+      "displayName": "Joe Gomez"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     },
+     "formationPlace": "0",
+     "subbedIn": true
+    },
+    {
+     "starter": false,
+     "jersey": "53",
+     "athlete": {
+      "id": "326230",
+      "displayName": "James McConnell"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     },
+     "formationPlace": "0",
+     "subbedIn": false
+    },
+    {
+     "starter": false,
+     "jersey": "25",
+     "athlete": {
+      "id": "274742",
+      "displayName": "Giorgi Mamardashvili"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     },
+     "formationPlace": "0",
+     "subbedIn": false
+    }
+   ]
+  },
+  {
+   "homeAway": "away",
+   "team": {
+    "id": "382",
+    "displayName": "Manchester City"
+   },
+   "formation": "4-2-3-1",
+   "roster": [
+    {
+     "starter": true,
+     "jersey": "1",
+     "athlete": {
+      "id": "217092",
+      "displayName": "Gianluigi Donnarumma"
+     },
+     "position": {
+      "abbreviation": "G"
+     },
+     "formationPlace": "1",
+     "subbedIn": false
+    },
+    {
+     "starter": true,
+     "jersey": "6",
+     "athlete": {
+      "id": "265907",
+      "displayName": "Marc Guéhi"
+     },
+     "position": {
+      "abbreviation": "CD-L"
+     },
+     "formationPlace": "6",
+     "subbedIn": false
+    },
+    {
+     "starter": true,
+     "jersey": "3",
+     "athlete": {
+      "id": "234878",
+      "displayName": "Rúben Dias"
+     },
+     "position": {
+      "abbreviation": "CD-R"
+     },
+     "formationPlace": "5",
+     "subbedIn": false
+    },
+    {
+     "starter": true,
+     "jersey": "33",
+     "athlete": {
+      "id": "328464",
+      "displayName": "Nico O'Reilly"
+     },
+     "position": {
+      "abbreviation": "LB"
+     },
+     "formationPlace": "3",
+     "subbedIn": false
+    },
+    {
+     "starter": true,
+     "jersey": "27",
+     "athlete": {
+      "id": "303785",
+      "displayName": "Matheus Nunes"
+     },
+     "position": {
+      "abbreviation": "RB"
+     },
+     "formationPlace": "2",
+     "subbedIn": false
+    },
+    {
+     "starter": true,
+     "jersey": "10",
+     "athlete": {
+      "id": "298008",
+      "displayName": "Rayan Cherki"
+     },
+     "position": {
+      "abbreviation": "AM"
+     },
+     "formationPlace": "10",
+     "subbedIn": false
+    },
+    {
+     "starter": true,
+     "jersey": "17",
+     "athlete": {
+      "id": "285450",
+      "displayName": "Enzo Fernández"
+     },
+     "position": {
+      "abbreviation": "LM"
+     },
+     "formationPlace": "4",
+     "subbedIn": false
+    },
+    {
+     "starter": true,
+     "jersey": "5",
+     "athlete": {
+      "id": "238472",
+      "displayName": "Elliot Anderson"
+     },
+     "position": {
+      "abbreviation": "RM"
+     },
+     "formationPlace": "8",
+     "subbedIn": false
+    },
+    {
+     "starter": true,
+     "jersey": "9",
+     "athlete": {
+      "id": "253989",
+      "displayName": "Erling Haaland"
+     },
+     "position": {
+      "abbreviation": "F"
+     },
+     "formationPlace": "9",
+     "subbedIn": false
+    },
+    {
+     "starter": true,
+     "jersey": "42",
+     "athlete": {
+      "id": "273292",
+      "displayName": "Antoine Semenyo"
+     },
+     "position": {
+      "abbreviation": "AM-L"
+     },
+     "formationPlace": "11",
+     "subbedIn": false
+    },
+    {
+     "starter": true,
+     "jersey": "7",
+     "athlete": {
+      "id": "268641",
+      "displayName": "Iliman Ndiaye"
+     },
+     "position": {
+      "abbreviation": "AM-R"
+     },
+     "formationPlace": "7",
+     "subbedIn": false
+    },
+    {
+     "starter": false,
+     "jersey": "8",
+     "athlete": {
+      "id": "154595",
+      "displayName": "Mateo Kovacic"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     },
+     "formationPlace": "0",
+     "subbedIn": false
+    },
+    {
+     "starter": false,
+     "jersey": "32",
+     "athlete": {
+      "id": "373927",
+      "displayName": "Ayyoub Bouaddi"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     },
+     "formationPlace": "0",
+     "subbedIn": true
+    },
+    {
+     "starter": false,
+     "jersey": "22",
+     "athlete": {
+      "id": "361434",
+      "displayName": "Vitor Reis"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     },
+     "formationPlace": "0",
+     "subbedIn": false
+    },
+    {
+     "starter": false,
+     "jersey": "45",
+     "athlete": {
+      "id": "362211",
+      "displayName": "Abdukodir Khusanov"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     },
+     "formationPlace": "0",
+     "subbedIn": false
+    },
+    {
+     "starter": false,
+     "jersey": "11",
+     "athlete": {
+      "id": "283672",
+      "displayName": "Jérémy Doku"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     },
+     "formationPlace": "0",
+     "subbedIn": true
+    },
+    {
+     "starter": false,
+     "jersey": "24",
+     "athlete": {
+      "id": "299910",
+      "displayName": "Josko Gvardiol"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     },
+     "formationPlace": "0",
+     "subbedIn": true
+    },
+    {
+     "starter": false,
+     "jersey": "37",
+     "athlete": {
+      "id": "382966",
+      "displayName": "Allan Elias"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     },
+     "formationPlace": "0",
+     "subbedIn": true
+    },
+    {
+     "starter": false,
+     "jersey": "82",
+     "athlete": {
+      "id": "325564",
+      "displayName": "Rico Lewis"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     },
+     "formationPlace": "0",
+     "subbedIn": false
+    },
+    {
+     "starter": false,
+     "jersey": "28",
+     "athlete": {
+      "id": "167192",
+      "displayName": "Gerónimo Rulli"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     },
+     "formationPlace": "0",
+     "subbedIn": false
+    }
+   ]
+  }
+ ]
+}
