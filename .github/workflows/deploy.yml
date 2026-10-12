@@ -28,6 +28,8 @@ jobs:
       - run: npm test
       - name: Derive previous data URL
         run: echo "PREV_DATA_URL=https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/data/" >> "$GITHUB_ENV"
+      - name: Derive site URL (absolute links in calendar feeds)
+        run: echo "SITE_URL=https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/" >> "$GITHUB_ENV"
       - name: Fetch schedules
         id: pipeline
         continue-on-error: true

@@ -12,6 +12,17 @@ npm test       # testy všech balíčků
 npm run build  # produkční build do web/dist
 ```
 
+## Připomínky v kalendáři
+
+Každý nadcházející zápas jde přidat do kalendáře tlačítkem u karty (stáhne se `.ics`). Záložka **Oblíbené → Připomínky v kalendáři** nabízí navíc:
+
+- **Odebírat** – otevře `webcal://` odkaz na feed oblíbeného týmu / sportu (aktualizuje se sám), nebo **Kopírovat odkaz** a vložit ručně („Přidat kalendář z URL“).
+- **Stáhnout všechny nadcházející zápasy (.ics)** – jednorázový soubor se všemi zápasy oblíbených.
+
+Každá událost má upozornění **1 hodinu před začátkem** (`VALARM`, `TRIGGER:-PT60M`). Apple Kalendář a většina aplikací ho vezme ze souboru; **Google Kalendář** připomínky z odebíraných kalendářů nepřebírá – v nastavení odebíraného kalendáře je nutné zapnout výchozí upozornění 1 hodinu předem.
+
+Feedy (`web/public/data/cal/<tým>.ics`, `<sport>.ics`; `:` v id týmu se mění na `_`) generuje pipeline při každém hodinovém běhu (jen zápasy bez výsledku, start ≥ teď − 3 h) a smaže ty, které už nevznikly. Absolutní odkaz na web do popisu bere z proměnné `SITE_URL` (nastavuje workflow).
+
 ## Kde vysílá (broadcasters)
 
 Vysílací stanice se editují v `data-pipeline/broadcasters.yml`. Pravidlo: zapisujeme jen ověřené údaje, každý záznam musí mít `checked` (datum ověření) a `source` (odkud je to ověřeno) – vynucuje to test.

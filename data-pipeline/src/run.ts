@@ -1,7 +1,8 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import type { MatchesFile, Sport, StandingsFile, TeamsFile } from '@sportradar/shared';
 import { applyBroadcasters, parseBroadcasters } from './broadcasters';
 import { isSuspiciousEmpty, mergeDatasets, mergeStandings, resolveStandingsTeamIds, upcomingCount, type Dataset, type SportOutcome } from './merge';
+import { buildCalendarFiles } from './calendar';
 import { applyVenues, parseVenues } from './venues';
 import type { Adapter } from './types';
 import { f1Adapter } from './adapters/f1';
@@ -81,6 +82,20 @@ async function main() {
   await writeFile(new URL('teams.json', OUT), JSON.stringify(teamsFile));
   const standingsFile: StandingsFile = { generatedAt: now.toISOString(), tables };
   await writeFile(new URL('standings.json', OUT), JSON.stringify(standingsFile));
+  try {
+    const cal = buildCalendarFiles(matches, merged.teams, now, process.env.SITE_URL || undefined);
+    const calDir = new URL('cal/', OUT);
+    await mkdir(calDir, { recursive: true });
+    for (const [file, ics] of cal) await writeFile(new URL(file, calDir), ics);
+    let removed = 0;
+    for (const f of await readdir(calDir)) { // zastaralé feedy (odebrané týmy) mažeme až po úspěšném zápisu všech nových
+      if (f.endsWith('.ics') && !cal.has(f)) { await rm(new URL(f, calDir)); removed++; }
+    }
+    console.log(`[ok]   kalendáře: ${cal.size} souborů${removed ? `, ${removed} zastaralých smazáno` : ''}`);
+  } catch (e) {
+    failed.push('kalendáře');
+    console.log(`::warning::kalendáře: ${(e as Error).message}`);
+  }
   console.log(`Zapsáno: ${matches.length} zápasů, ${merged.teams.length} týmů, ${tables.length} tabulek`);
   process.exitCode = failed.length ? 2 : 0;
 }
