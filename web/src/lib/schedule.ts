@@ -1,4 +1,5 @@
 import { competitionById, leagueFavoriteId, type Match, type Sport } from '@sportradar/shared';
+import { LIVE_AFTER_MS } from './live';
 import { dayKey } from './time';
 
 const ONGOING_WINDOW_MS = 3 * 3600_000;
@@ -21,12 +22,17 @@ function inView(m: Match, sport: Sport | 'all', competition: string): boolean {
   return comp === 'all' || m.competitionId === comp;
 }
 
-export interface SelectOptions { showAll?: boolean }
+export interface SelectOptions {
+  showAll?: boolean;
+  windowMs?: number;               // jak dlouho po začátku zápas ještě bereme jako probíhající (výchozí 3 h)
+  liveIds?: ReadonlySet<string>;   // zápasy živě hlášené zdrojem: zůstávají viditelné až do LIVE_AFTER_MS
+}
 
 export function selectMatches(matches: Match[], favs: ReadonlySet<string>, now: Date, sport: Sport | 'all' = 'all', competition = 'all', opts: SelectOptions = {}): Match[] {
-  const cutoff = now.getTime() - ONGOING_WINDOW_MS;
+  const cutoff = now.getTime() - (opts.windowMs ?? ONGOING_WINDOW_MS);
+  const liveCutoff = now.getTime() - Math.max(opts.windowMs ?? 0, LIVE_AFTER_MS);
   return matches
-    .filter((m) => Date.parse(m.startsAt) >= cutoff && inView(m, sport, competition) && (opts.showAll || isFavorite(m, favs)) && !m.result)
+    .filter((m) => Date.parse(m.startsAt) >= (opts.liveIds?.has(m.id) ? liveCutoff : cutoff) && inView(m, sport, competition) && (opts.showAll || isFavorite(m, favs)) && !m.result)
     .sort((a, b) => a.startsAt.localeCompare(b.startsAt) || a.id.localeCompare(b.id));
 }
 

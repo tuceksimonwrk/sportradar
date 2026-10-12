@@ -29,6 +29,16 @@ describe('isFavorite', () => {
 });
 
 describe('selectMatches', () => {
+  it('živý zápas zůstává i po 3 h okně (nejdéle 4 h od začátku)', () => {
+    const list = [m('a', 'nba', '2026-10-12T08:30:00Z'), m('b', 'nba', '2026-10-12T07:30:00Z'), m('c', 'nba', '2026-10-12T08:45:00Z')];
+    const r = selectMatches(list, new Set(), now, 'all', 'all', { showAll: true, liveIds: new Set(['a', 'b']) });
+    expect(r.map((x) => x.id)).toEqual(['a']);
+    expect(selectMatches(list, new Set(), now, 'all', 'all', { showAll: true }).map((x) => x.id)).toEqual([]);
+  });
+  it('windowMs rozšíří okno (pro výběr kandidátů živého skóre)', () => {
+    const list = [m('a', 'nba', '2026-10-12T08:30:00Z'), m('b', 'nba', '2026-10-12T07:30:00Z')];
+    expect(selectMatches(list, new Set(), now, 'all', 'all', { showAll: true, windowMs: 4 * 3600_000 }).map((x) => x.id)).toEqual(['a']);
+  });
   it('jen oblíbené, bez zápasů starších než 3 h, seřazené', () => {
     const r = selectMatches(all, new Set(['nhl:PIT', 'cz-hockey:PCE', 'f1']), now);
     expect(r.map((x) => x.id)).toEqual(['live', 'pce', 'f1']);
