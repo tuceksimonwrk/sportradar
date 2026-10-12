@@ -1,7 +1,27 @@
 import type { Match } from './index';
 
-/** Upozornění před začátkem zápasu (minuty). */
+/** Výchozí upozornění před začátkem zápasu (minuty). */
 export const REMINDER_MINUTES = 60;
+/** Nabízené předstihy v minutách; 0 = bez připomínky (událost bez VALARM). */
+export const REMINDER_OPTIONS = [0, 15, 30, 60, 120] as const;
+export type ReminderOption = (typeof REMINDER_OPTIONS)[number];
+
+export function isReminderOption(n: unknown): n is ReminderOption {
+  return typeof n === 'number' && (REMINDER_OPTIONS as readonly number[]).includes(n);
+}
+
+/** Česky: 'Bez připomínky', '15 minut', '30 minut', '1 hodinu', '2 hodiny'. */
+export function reminderLabel(min: number): string {
+  if (min === 0) return 'Bez připomínky';
+  if (min === 60) return '1 hodinu';
+  if (min === 120) return '2 hodiny';
+  return `${min} minut`;
+}
+
+/** Text upozornění: '<název> začíná za 15 minut'. */
+export function reminderText(title: string, min: number): string {
+  return `${title} začíná za ${reminderLabel(min)}`;
+}
 
 /**
  * Název souboru kalendáře BEZ přípony (`.ics` přidávají volající, viz `calendarPath`).
@@ -79,13 +99,17 @@ function eventLines(m: Match, stamp: string, siteUrl: string | undefined, remind
     `DESCRIPTION:${escapeIcsText(desc.join('\n'))}`,
     'STATUS:CONFIRMED',
     'TRANSP:OPAQUE',
-    'BEGIN:VALARM',
-    'ACTION:DISPLAY',
-    `DESCRIPTION:${escapeIcsText(`${m.title} začíná za ${reminder === 60 ? '1 hodinu' : `${reminder} min`}`)}`,
-    `TRIGGER:-PT${reminder}M`,
-    'END:VALARM',
-    'END:VEVENT',
   );
+  if (reminder > 0) {
+    l.push(
+      'BEGIN:VALARM',
+      'ACTION:DISPLAY',
+      `DESCRIPTION:${escapeIcsText(reminderText(m.title, reminder))}`,
+      `TRIGGER:-PT${reminder}M`,
+      'END:VALARM',
+    );
+  }
+  l.push('END:VEVENT');
   return l;
 }
 

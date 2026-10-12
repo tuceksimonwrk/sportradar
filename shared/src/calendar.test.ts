@@ -1,7 +1,7 @@
 import ICAL from 'ical.js';
 import { describe, expect, it } from 'vitest';
 import type { Match } from './index';
-import { buildIcs, calendarFileName, calendarPath, escapeIcsText, foldLine, matchDurationMinutes, REMINDER_MINUTES } from './calendar';
+import { buildIcs, calendarFileName, calendarPath, escapeIcsText, foldLine, isReminderOption, matchDurationMinutes, REMINDER_MINUTES, REMINDER_OPTIONS, reminderLabel, reminderText } from './calendar';
 
 const NOW = new Date('2026-10-12T10:00:00Z');
 const base: Match = {
@@ -125,5 +125,31 @@ describe('RFC validita (ical.js)', () => {
     const alarm = events[0].getFirstSubcomponent('valarm')!;
     expect(alarm.getFirstPropertyValue('action')).toBe('DISPLAY');
     expect(String(alarm.getFirstPropertyValue('trigger'))).toBe('-PT60M');
+  });
+});
+
+describe('možnosti předstihu', () => {
+  it('REMINDER_OPTIONS a výchozí hodnota', () => {
+    expect([...REMINDER_OPTIONS]).toEqual([0, 15, 30, 60, 120]);
+    expect(isReminderOption(REMINDER_MINUTES)).toBe(true);
+  });
+  it('isReminderOption', () => {
+    for (const n of [0, 15, 30, 60, 120]) expect(isReminderOption(n)).toBe(true);
+    for (const n of [-1, 10, 45, 61, NaN, '60', null, undefined]) expect(isReminderOption(n)).toBe(false);
+  });
+  it('reminderLabel česky', () => {
+    expect(REMINDER_OPTIONS.map(reminderLabel)).toEqual(['Bez připomínky', '15 minut', '30 minut', '1 hodinu', '2 hodiny']);
+  });
+  it('reminderText pro VALARM', () => {
+    expect(reminderText('A – B', 15)).toBe('A – B začíná za 15 minut');
+    expect(reminderText('A – B', 120)).toBe('A – B začíná za 2 hodiny');
+  });
+  it('0 → žádný VALARM; ostatní → správný TRIGGER a popis', () => {
+    expect(buildIcs([base], { ...opts, reminderMinutes: 0 })).not.toContain('VALARM');
+    expect(buildIcs([base], { ...opts, reminderMinutes: 0 })).not.toContain('TRIGGER');
+    const t = unfold(buildIcs([base], { ...opts, reminderMinutes: 120 }));
+    expect(t).toContain('TRIGGER:-PT120M');
+    expect(t).toContain('začíná za 2 hodiny');
+    expect(buildIcs([base], { ...opts, reminderMinutes: 30 })).toContain('TRIGGER:-PT30M');
   });
 });
