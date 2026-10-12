@@ -1,0 +1,27 @@
+/* ---------- Oblíbené ---------- */
+.toolbar { display: flex; gap: 8px; padding: 14px 0 12px; }
+.search {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px;
+  min-height: 44px; padding: 0 12px; border-radius: 10px;
+  border: 1.5px solid var(--line); background: var(--card); color: var(--muted);
+}
+.search:focus-within { outline: 3px solid var(--focus); outline-offset: 2px; }
+.search input { flex: 1; min-width: 0; height: 40px; border: 0; background: transparent; color: var(--ink); outline: 0; }
+.share-msg { overflow-wrap: anywhere; }
+
+.sport {
+  position: relative; overflow: hidden; min-width: 0;
+  margin: 0 0 12px; padding: 4px 14px 6px 20px;
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+}
+.sport::before { content: ''; position: absolute; inset: 0 auto 0 0; width: 5px; background: var(--sport, var(--line)); }
+.sport legend {
+  display: flex; align-items: center; gap: 8px; padding: 0 6px;
+  font: 800 1.3rem/1 var(--display); letter-spacing: .03em; text-transform: uppercase;
+}
+.sport legend .sicon { color: var(--sport); }
+.row { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 6px 0; border-top: 1px solid var(--line); cursor: pointer; }
+.row:first-of-type { border-top: 0; }
+.row--all { font-weight: 600; }
+.row input { flex: none; width: 20px; height: 20px; margin: 0; accent-color: var(--sport, var(--ink)); }
+.row:hover > span:last-child { text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
