@@ -4,8 +4,8 @@ import { nbaAdapter, nbaDateRange, nbaPastRange, parseNba, parseNbaStandings } f
 const comp = (home: [string, string], away: [string, string], venue?: object, score?: [unknown, unknown]) => ({
   ...(venue ? { venue } : {}),
   competitors: [
-    { homeAway: 'home', team: { abbreviation: home[0], displayName: home[1] }, ...(score ? { score: score[0] } : {}) },
-    { homeAway: 'away', team: { abbreviation: away[0], displayName: away[1] }, ...(score ? { score: score[1] } : {}) },
+    { homeAway: 'home', team: { abbreviation: home[0], displayName: home[1], logo: `https://a.espncdn.com/i/teamlogos/nba/500/scoreboard/${home[0].toLowerCase()}.png`, logoDark: 'https://a.espncdn.com/dark.png' }, ...(score ? { score: score[0] } : {}) },
+    { homeAway: 'away', team: { abbreviation: away[0], displayName: away[1], logo: away[0] === 'ATL' ? 'http://insecure.example/atl.png' : `https://a.espncdn.com/i/teamlogos/nba/500/scoreboard/${away[0].toLowerCase()}.png` }, ...(score ? { score: score[1] } : {}) },
   ],
 });
 const json = { events: [
@@ -27,6 +27,8 @@ describe('parseNba', () => {
     });
     expect(r.matches[1].competition).toBe('NBA (přípravné)');
     expect(r.teams).toHaveLength(6);
+    expect(r.teams.find((t) => t.id === 'nba:ORL')!.logo).toBe('https://a.espncdn.com/i/teamlogos/nba/500/scoreboard/orl.png');
+    expect(r.teams.find((t) => t.id === 'nba:ATL')).not.toHaveProperty('logo'); // http se zahodí
   });
   it('doplní venue; bez venue klíč chybí', () => {
     expect(r.matches[0].venue).toEqual({ name: 'Kia Center', city: 'Orlando' });

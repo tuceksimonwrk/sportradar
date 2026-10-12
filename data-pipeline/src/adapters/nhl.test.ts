@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { nhlAdapter, parseNhl, parseNhlStandings } from './nhl';
 
 const team = (abbrev: string, place: string, name: string) =>
-  ({ abbrev, placeName: { default: place }, commonName: { default: name } });
+  ({ abbrev, placeName: { default: place }, commonName: { default: name }, logo: `https://assets.nhle.com/logos/nhl/svg/${abbrev}_secondary_light.svg`, darkLogo: `https://assets.nhle.com/logos/nhl/svg/${abbrev}_secondary_dark.svg` });
 const withVenue = (g: any, venue?: string) => (venue ? { ...g, venue: { default: venue } } : g);
 const now = new Date('2026-10-12T12:00:00Z');
 const json = { gameWeek: [{ date: '2026-10-14', games: [
@@ -28,6 +28,12 @@ describe('parseNhl', () => {
   it('doplní venue z hry; bez venue klíč chybí', () => {
     expect(r.matches[0].venue).toEqual({ name: 'Capital One Arena', city: 'Washington' });
     expect(r.matches[1]).not.toHaveProperty('venue');
+  });
+  it('logo týmu = světlá varianta; neplatné logo se zahodí', () => {
+    expect(r.teams.find((t) => t.id === 'nhl:SEA')!.logo).toBe('https://assets.nhle.com/logos/nhl/svg/SEA_secondary_light.svg');
+    const bad = parseNhl({ gameWeek: [{ games: [{ id: 1, gameType: 2, startTimeUTC: '2026-10-14T23:00:00Z', gameState: 'FUT',
+      homeTeam: { ...team('AAA', 'A', 'a'), logo: 'http://x.cz/a.svg' }, awayTeam: { ...team('BBB', 'B', 'b'), logo: undefined } }] }] }, now);
+    expect(bad.teams.every((t) => !('logo' in t))).toBe(true);
   });
   it('prázdný vstup nepadne', () => { expect(parseNhl({}, now).matches).toEqual([]); });
   it('odehraný zápas bez skóre se nevydá', () => {

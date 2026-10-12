@@ -1,12 +1,12 @@
 import type { Match, StandingRow, StandingsTable, Team, Venue } from '@sportradar/shared';
 import type { Adapter, AdapterResult } from '../types';
-import { combine, getJson } from '../util';
+import { combine, getJson, safeLogoUrl } from '../util';
 
 const ACTIVE = new Set(['FUT', 'PRE', 'LIVE', 'CRIT']);
 const FINISHED = new Set(['OFF', 'FINAL']);
 const RESULT_WINDOW_MS = 14 * 86400_000;
 
-interface NhlTeam { abbrev: string; score?: number; placeName: { default: string }; commonName: { default: string } }
+interface NhlTeam { abbrev: string; logo?: string; score?: number; placeName: { default: string }; commonName: { default: string } }
 interface NhlGame { id: number; gameType: number; startTimeUTC: string; gameState: string; gameOutcome?: { lastPeriodType?: string }; venue?: { default?: string }; homeTeam: NhlTeam; awayTeam: NhlTeam }
 interface NhlWeek { nextStartDate?: string; previousStartDate?: string; gameWeek?: { games?: NhlGame[] }[] }
 
@@ -23,7 +23,10 @@ export function parseNhl(json: unknown, now: Date): AdapterResult {
   const week = json as NhlWeek;
   const matches: Match[] = [];
   const teams = new Map<string, Team>();
-  const addTeam = (t: NhlTeam) => teams.set(`nhl:${t.abbrev}`, { id: `nhl:${t.abbrev}`, sport: 'nhl', name: name(t) });
+  const addTeam = (t: NhlTeam) => {
+    const logo = safeLogoUrl(t.logo);
+    teams.set(`nhl:${t.abbrev}`, { id: `nhl:${t.abbrev}`, sport: 'nhl', name: name(t), ...(logo && { logo }) });
+  };
   for (const day of week.gameWeek ?? []) {
     for (const g of day.games ?? []) {
       addTeam(g.homeTeam); addTeam(g.awayTeam);

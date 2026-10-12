@@ -1,8 +1,8 @@
 import type { Match, StandingRow, StandingsTable, Team, Venue } from '@sportradar/shared';
 import type { Adapter, AdapterResult } from '../types';
-import { combine, getJson } from '../util';
+import { combine, getJson, safeLogoUrl } from '../util';
 
-interface EspnTeam { abbreviation: string; displayName: string }
+interface EspnTeam { abbreviation: string; displayName: string; logo?: string }
 interface EspnEvent {
   id: string; date: string; status?: { type?: { state?: string; name?: string; completed?: boolean; shortDetail?: string } }; season?: { type?: number };
   competitions?: { venue?: { fullName?: string; address?: { city?: string } }; competitors?: { homeAway: string; team: EspnTeam; score?: unknown }[] }[];
@@ -26,7 +26,10 @@ export function parseNba(json: unknown, now: Date, opts: { resultsOnly?: boolean
     const home = homeC?.team;
     const away = awayC?.team;
     if (!home || !away) continue;
-    for (const t of [home, away]) teams.set(`nba:${t.abbreviation}`, { id: `nba:${t.abbreviation}`, sport: 'nba', name: t.displayName });
+    for (const t of [home, away]) {
+      const logo = safeLogoUrl(t.logo);
+      teams.set(`nba:${t.abbreviation}`, { id: `nba:${t.abbreviation}`, sport: 'nba', name: t.displayName, ...(logo && { logo }) });
+    }
     const state = e.status?.type?.state;
     const isPost = state === 'post';
     if (isPost && !(e.status?.type?.completed === true || e.status?.type?.name === 'STATUS_FINAL')) continue; // odložený/zrušený
