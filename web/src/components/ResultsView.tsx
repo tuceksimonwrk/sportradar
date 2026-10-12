@@ -1,11 +1,12 @@
 import type { Match, Sport } from '@sportradar/shared';
 import { Trophy } from 'lucide-react';
-import { groupByDay } from '../lib/schedule';
+import { useState } from 'react';
+import { CHUNK_SIZE, chunkMatches, groupByDay } from '../lib/schedule';
 import { dayLabel } from '../lib/time';
-import { NoFavorites } from './ProgramView';
 import { ResultCard } from './ResultCard';
 import { artFor } from './SportArt';
 import { CompetitionChips } from './CompetitionChips';
+import { ShowAllBar, MoreButton } from './ShowAll';
 import { SportChips } from './SportChips';
 import { EmptyState, PageHead, enter } from './ui';
 
@@ -17,23 +18,27 @@ interface Props {
   competition: string;         // id soutěže nebo 'all' (jen u fotbalu)
   onCompetition: (c: string) => void;
   hasFavorites: boolean;
+  showAll: boolean;            // ruční vypnutí filtru oblíbených
+  onToggleAll: () => void;
   onGoFavorites: () => void;
 }
 
-export function ResultsView({ matches, now, sport, onSport, competition, onCompetition, hasFavorites, onGoFavorites }: Props) {
+export function ResultsView({ matches, now, sport, onSport, competition, onCompetition, hasFavorites, showAll, onToggleAll, onGoFavorites }: Props) {
   const head = <PageHead icon={<Trophy size={22} strokeWidth={1.75} />} title="Výsledky" subtitle="Odehrané zápasy za posledních 14 dní" sport={sport} />;
-  if (!hasFavorites) return <>{head}<NoFavorites onGoFavorites={onGoFavorites} /></>;
-  const groups = groupByDay(matches);
+  const [limit, setLimit] = useState(CHUNK_SIZE); // view se remountuje při změně filtru (key v App)
+  const { shown, remaining } = chunkMatches(matches, limit);
+  const groups = groupByDay(shown);
   let n = 0;
   return (
     <>
       {head}
+      <ShowAllBar hasFavorites={hasFavorites} showAll={showAll} onToggleAll={onToggleAll} onGoFavorites={onGoFavorites} />
       <SportChips sport={sport} onSport={onSport} />
       {sport === 'football' && <CompetitionChips competition={competition} onCompetition={onCompetition} />}
       {matches.length === 0 && (
         <EmptyState art={artFor(sport)} icon={<Trophy size={26} strokeWidth={1.75} />}
           title="Zatím bez výsledků"
-          text="Za posledních 14 dní nemáš žádné odehrané zápasy."
+          text={hasFavorites && !showAll ? 'Za posledních 14 dní nemáš žádné odehrané zápasy.' : 'Za posledních 14 dní nejsou žádné odehrané zápasy.'}
           action={sport === 'football' && competition !== 'all'
             ? <button className="btn btn--ghost" onClick={() => onCompetition('all')}>Zobrazit všechny soutěže</button>
             : sport !== 'all' ? <button className="btn btn--ghost" onClick={() => onSport('all')}>Zobrazit všechny sporty</button> : undefined} />
@@ -47,6 +52,7 @@ export function ResultsView({ matches, now, sport, onSport, competition, onCompe
           })}
         </section>
       ))}
+      <MoreButton remaining={remaining} step={CHUNK_SIZE} onMore={() => setLimit((l) => l + CHUNK_SIZE)} />
     </>
   );
 }

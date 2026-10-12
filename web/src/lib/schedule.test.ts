@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Match } from '@sportradar/shared';
-import { competitionForSport, groupByDay, isFavorite, selectMatches, selectResults } from './schedule';
+import { chunkMatches, competitionForSport, groupByDay, isFavorite, selectMatches, selectResults } from './schedule';
 
 const m = (id: string, sport: Match['sport'], startsAt: string, teams: string[] = []): Match =>
   ({ id, sport, competition: 'c', startsAt, title: id, teams, broadcasters: [] });
@@ -75,6 +75,32 @@ describe('selectResults', () => {
   it('při stejném čase deterministicky podle id', () => {
     const a = r('a', 'f1', '2026-10-10T10:00:00Z'); const b = r('b', 'f1', '2026-10-10T10:00:00Z');
     expect(selectResults([a, b], new Set(['f1']), now).map((x) => x.id)).toEqual(['a', 'b']);
+  });
+});
+
+describe('showAll', () => {
+  it('Program: showAll ignoruje oblíbené, ale drží okno, výsledky a filtr sportu', () => {
+    expect(selectMatches(all, new Set(), now, 'all', 'all', { showAll: true }).map((x) => x.id)).toEqual(['live', 'pce', 'other', 'f1']);
+    expect(selectMatches(all, new Set(['f1']), now, 'cz-hockey', 'all', { showAll: true }).map((x) => x.id)).toEqual(['pce', 'other']);
+    expect(selectMatches(all, new Set(['f1']), now).map((x) => x.id)).toEqual(['f1']);
+  });
+  it('Výsledky: showAll vrátí i výsledky neoblíbených', () => {
+    const list = [r('a', 'nhl', '2026-10-11T10:00:00Z', ['nhl:BOS']), r('b', 'f1', '2026-10-10T10:00:00Z')];
+    expect(selectResults(list, new Set(), now, 'all', 'all', { showAll: true }).map((x) => x.id)).toEqual(['a', 'b']);
+    expect(selectResults(list, new Set(), now).map((x) => x.id)).toEqual([]);
+  });
+});
+
+describe('chunkMatches', () => {
+  const ms = Array.from({ length: 70 }, (_, i) => m('m' + i, 'nhl', '2026-10-13T10:00:00Z'));
+  it('vrátí prvních N a počet zbývajících', () => {
+    const c = chunkMatches(ms, 30);
+    expect(c.shown).toHaveLength(30); expect(c.remaining).toBe(40);
+    expect(chunkMatches(ms, 90)).toEqual({ shown: ms, remaining: 0 });
+  });
+  it('ošetří nesmyslný limit', () => {
+    expect(chunkMatches(ms, 0).shown).toHaveLength(0);
+    expect(chunkMatches([], 30)).toEqual({ shown: [], remaining: 0 });
   });
 });
 

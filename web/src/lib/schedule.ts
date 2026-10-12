@@ -21,18 +21,20 @@ function inView(m: Match, sport: Sport | 'all', competition: string): boolean {
   return comp === 'all' || m.competitionId === comp;
 }
 
-export function selectMatches(matches: Match[], favs: ReadonlySet<string>, now: Date, sport: Sport | 'all' = 'all', competition = 'all'): Match[] {
+export interface SelectOptions { showAll?: boolean }
+
+export function selectMatches(matches: Match[], favs: ReadonlySet<string>, now: Date, sport: Sport | 'all' = 'all', competition = 'all', opts: SelectOptions = {}): Match[] {
   const cutoff = now.getTime() - ONGOING_WINDOW_MS;
   return matches
-    .filter((m) => Date.parse(m.startsAt) >= cutoff && inView(m, sport, competition) && isFavorite(m, favs) && !m.result)
+    .filter((m) => Date.parse(m.startsAt) >= cutoff && inView(m, sport, competition) && (opts.showAll || isFavorite(m, favs)) && !m.result)
     .sort((a, b) => a.startsAt.localeCompare(b.startsAt) || a.id.localeCompare(b.id));
 }
 
 /** Odehrané zápasy oblíbených za posledních 14 dní, nejnovější první. */
-export function selectResults(matches: Match[], favs: ReadonlySet<string>, now: Date, sport: Sport | 'all' = 'all', competition = 'all'): Match[] {
+export function selectResults(matches: Match[], favs: ReadonlySet<string>, now: Date, sport: Sport | 'all' = 'all', competition = 'all', opts: SelectOptions = {}): Match[] {
   const cutoff = now.getTime() - RESULTS_WINDOW_MS;
   return matches
-    .filter((m) => m.result && Date.parse(m.startsAt) >= cutoff && inView(m, sport, competition) && isFavorite(m, favs))
+    .filter((m) => m.result && Date.parse(m.startsAt) >= cutoff && inView(m, sport, competition) && (opts.showAll || isFavorite(m, favs)))
     .sort((a, b) => b.startsAt.localeCompare(a.startsAt) || a.id.localeCompare(b.id));
 }
 
@@ -44,4 +46,12 @@ export function groupByDay(matches: Match[], tz?: string): { key: string; matche
     if (last?.key === key) last.matches.push(m); else groups.push({ key, matches: [m] });
   }
   return groups;
+}
+
+export const CHUNK_SIZE = 30;
+
+/** Prvních `count` zápasů (hero Programu se počítá jako první) a počet skrytých; dny se skládají až z `shown`. */
+export function chunkMatches(matches: Match[], count: number): { shown: Match[]; remaining: number } {
+  const n = Math.max(0, Math.floor(count));
+  return { shown: matches.slice(0, n), remaining: Math.max(0, matches.length - n) };
 }

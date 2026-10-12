@@ -97,3 +97,9 @@
 .chips--sub .chip--on { background: var(--sport, var(--ink)); border-color: var(--sport, var(--ink)); color: #fff; }
 @media (prefers-color-scheme: dark) { .chips--sub .chip--on { color: var(--board); } }
 @media (min-width: 768px) { .chips { flex-wrap: wrap; } }
+
+/* ---------- Přepínač „všechny sporty“ a dávkování seznamu ---------- */
+.allbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 14px 0 0; }
+.allbar__note { font-size: .9rem; }
+.more { display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 22px 0 8px; }
+.more .muted { font-size: .9rem; }

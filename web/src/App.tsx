@@ -39,7 +39,8 @@ export default function App() {
   const data = useData();
   const now = useNow(60_000);
   const [favs, setFavs] = useState<string[]>(() => loadFavorites(storage()));
-  const [tab, setTab] = useState<Tab>(() => (loadFavorites(storage()).length ? 'program' : 'favs'));
+  const [tab, setTab] = useState<Tab>('program');
+  const [allToggled, setAllToggled] = useState(false); // ruční „zobrazit všechny sporty“ (jen pohled, neukládá se)
   const [sport, setSport] = useState<Sport | 'all'>('all');
   const [competition, setCompetition] = useState('all'); // fotbal: id soutěže nebo 'all'
   const [pickedStandings, setPickedStandings] = useState<Sport | null>(null); // null = podle oblíbených
@@ -73,9 +74,11 @@ export default function App() {
   };
 
   const favSet = useMemo(() => new Set(favs), [favs]);
+  const showAll = favs.length === 0 || allToggled; // bez oblíbených se ukazuje vše
+  const viewKey = `${sport}|${competition}|${showAll}`; // změna filtru vrací seznamy na první dávku
   const selected = useMemo(
-    () => (data.status === 'ready' ? selectMatches(data.matches.matches, favSet, now, sport, competition) : []),
-    [data, favSet, now, sport, competition],
+    () => (data.status === 'ready' ? selectMatches(data.matches.matches, favSet, now, sport, competition, { showAll }) : []),
+    [data, favSet, now, sport, competition, showAll],
   );
 
   const calendarMatches = useMemo(
@@ -86,8 +89,8 @@ export default function App() {
   const standingsSport = pickedStandings ?? defaultStandingsSport(favs);
 
   const results = useMemo(
-    () => (data.status === 'ready' ? selectResults(data.matches.matches, favSet, now, sport, competition) : []),
-    [data, favSet, now, sport, competition],
+    () => (data.status === 'ready' ? selectResults(data.matches.matches, favSet, now, sport, competition, { showAll }) : []),
+    [data, favSet, now, sport, competition, showAll],
   );
 
   const teamsInfo = useMemo<TeamsInfo>(() => (data.status === 'ready'
@@ -135,11 +138,11 @@ export default function App() {
                 Data nemusí být aktuální (poslední aktualizace {new Date(data.matches.generatedAt).toLocaleString('cs-CZ')}).</div>
             )}
             {tab === 'program' ? (
-              <ProgramView matches={selected} now={now} sport={sport} onSport={pickSport} competition={competition} onCompetition={setCompetition}
-                hasFavorites={favs.length > 0} onGoFavorites={() => goTab('favs')} />
+              <ProgramView key={viewKey} matches={selected} now={now} sport={sport} onSport={pickSport} competition={competition} onCompetition={setCompetition}
+                hasFavorites={favs.length > 0} showAll={allToggled} onToggleAll={() => setAllToggled((v) => !v)} onGoFavorites={() => goTab('favs')} />
             ) : tab === 'results' ? (
-              <ResultsView matches={results} now={now} sport={sport} onSport={pickSport} competition={competition} onCompetition={setCompetition}
-                hasFavorites={favs.length > 0} onGoFavorites={() => goTab('favs')} />
+              <ResultsView key={viewKey} matches={results} now={now} sport={sport} onSport={pickSport} competition={competition} onCompetition={setCompetition}
+                hasFavorites={favs.length > 0} showAll={allToggled} onToggleAll={() => setAllToggled((v) => !v)} onGoFavorites={() => goTab('favs')} />
             ) : tab === 'standings' ? (
               <StandingsView standings={data.standings} sport={standingsSport} onSport={pickStandings}
                 tableId={tableId} onTable={setPickedTable} favs={favs} now={now} />
