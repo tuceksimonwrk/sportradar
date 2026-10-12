@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { nbaAdapter, nbaDateRange, parseNba } from './nba';
+import { nbaAdapter, nbaDateRange, nbaPastRange, parseNba } from './nba';
 
-const comp = (home: [string, string], away: [string, string], venue?: object) => ({
+const comp = (home: [string, string], away: [string, string], venue?: object, score?: [unknown, unknown]) => ({
   ...(venue ? { venue } : {}),
   competitors: [
-    { homeAway: 'home', team: { abbreviation: home[0], displayName: home[1] } },
-    { homeAway: 'away', team: { abbreviation: away[0], displayName: away[1] } },
+    { homeAway: 'home', team: { abbreviation: home[0], displayName: home[1] }, ...(score ? { score: score[0] } : {}) },
+    { homeAway: 'away', team: { abbreviation: away[0], displayName: away[1] }, ...(score ? { score: score[1] } : {}) },
   ],
 });
 const json = { events: [
@@ -14,8 +14,9 @@ const json = { events: [
   { id: '3', date: '2026-10-22T01:00Z', status: { type: { state: 'pre' } }, season: { type: 1 }, competitions: [comp(['LAL', 'Los Angeles Lakers'], ['GSW', 'Golden State Warriors'])] },
 ] };
 
+const now0 = new Date('2026-10-22T12:00:00Z');
 describe('parseNba', () => {
-  const r = parseNba(json);
+  const r = parseNba(json, now0);
   it('vezme jen nezačaté/probíhající', () => {
     expect(r.matches.map((m) => m.id)).toEqual(['nba:1', 'nba:3']);
   });
@@ -31,7 +32,35 @@ describe('parseNba', () => {
     expect(r.matches[0].venue).toEqual({ name: 'Kia Center', city: 'Orlando' });
     expect(r.matches[1]).not.toHaveProperty('venue');
   });
-  it('prázdný vstup nepadne', () => { expect(parseNba({}).matches).toEqual([]); });
+  it('prázdný vstup nepadne', () => { expect(parseNba({}, now0).matches).toEqual([]); });
+});
+
+describe('parseNba – výsledky', () => {
+  const ev = (id: string, date: string, state: string, score?: [unknown, unknown], shortDetail = 'Final') => ({
+    id, date, status: { type: { state, shortDetail } }, season: { type: 2 },
+    competitions: [comp(['BOS', 'Boston Celtics'], ['NYK', 'New York Knicks'], undefined, score)],
+  });
+  it('post se skóre → result (skóre je string)', () => {
+    const r = parseNba({ events: [ev('9', '2026-10-21T23:00Z', 'post', ['110', '104'])] }, now0);
+    expect(r.matches[0].result).toEqual({ home: 110, away: 104, homeName: 'Boston Celtics', awayName: 'New York Knicks' });
+  });
+  it('prodloužení → note', () => {
+    const r = parseNba({ events: [ev('9', '2026-10-21T23:00Z', 'post', [110, 104], 'Final/OT')] }, now0);
+    expect(r.matches[0].result?.note).toBe('po prodloužení');
+  });
+  it('bez/neplatné skóre a starší než 14 dní se přeskočí', () => {
+    const r = parseNba({ events: [ev('1', '2026-10-21T23:00Z', 'post'), ev('2', '2026-10-21T23:00Z', 'post', ['x', '3']), ev('3', '2026-10-01T23:00Z', 'post', [1, 2])] }, now0);
+    expect(r.matches).toEqual([]);
+  });
+});
+
+describe('nbaPastRange', () => {
+  it('4 dny před začátkem hlavního rozsahu', () => {
+    const now = new Date('2026-10-12T01:00:00Z');
+    expect(nbaPastRange(now)).toEqual(['20261007', '20261008', '20261009', '20261010']);
+    expect(nbaPastRange(now, 2)).toEqual(['20261009', '20261010']);
+    expect(nbaDateRange(now)[0]).toBe('20261011');
+  });
 });
 
 describe('nbaDateRange', () => {
@@ -53,5 +82,18 @@ describe('nbaAdapter.fetch', () => {
   it('vše OK vrátí data', async () => {
     const r = await nbaAdapter.fetch(now, (async () => json) as any);
     expect(r.matches.length).toBeGreaterThan(0);
+  });
+  it('selhání minulého dne se ignoruje, výsledky se přidají', async () => {
+    const past = new Set(nbaPastRange(now));
+    const done = { events: [{ id: '77', date: '2026-10-10T23:00Z', status: { type: { state: 'post', shortDetail: 'Final' } }, season: { type: 2 }, competitions: [comp(['BOS', 'Boston Celtics'], ['NYK', 'New York Knicks'], undefined, [100, 90])] }] };
+    let n = 0;
+    const get = async (url: string) => {
+      const d = /dates=([0-9]+)/.exec(url)![1];
+      if (past.has(d)) { if (++n === 1) throw new Error('past boom'); return done; }
+      return json;
+    };
+    const r = await nbaAdapter.fetch(now, get as any);
+    expect(r.matches.filter((m) => m.result)).toHaveLength(1);
+    expect(r.matches.filter((m) => !m.result).length).toBeGreaterThan(0);
   });
 });

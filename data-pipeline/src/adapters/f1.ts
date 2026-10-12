@@ -42,9 +42,51 @@ export function parseF1(json: unknown): AdapterResult {
   return { matches, teams: [] };
 }
 
-export const f1Adapter: Adapter = {
-  sport: 'f1',
-  async fetch() {
-    return parseF1(await getJson('https://api.jolpi.ca/ergast/f1/current.json'));
+const RESULT_WINDOW_MS = 14 * 86400_000;
+const RACE_ID = /^f1:[0-9]+-([0-9]+)-Race$/;
+
+/** Kola, jejichž závod začal v posledních 14 dnech (pro ně chceme podium). */
+export function f1RacesNeedingPodium(matches: Match[], now: Date): string[] {
+  const rounds = new Set<string>();
+  for (const m of matches) {
+    const round = RACE_ID.exec(m.id)?.[1];
+    const t = Date.parse(m.startsAt);
+    if (round && t <= now.getTime() && t >= now.getTime() - RESULT_WINDOW_MS) rounds.add(round);
+  }
+  return [...rounds];
+}
+
+function podiumOf(json: unknown): { pos: number; name: string }[] {
+  const results = (json as any)?.MRData?.RaceTable?.Races?.[0]?.Results;
+  if (!Array.isArray(results)) return [];
+  const out: { pos: number; name: string }[] = [];
+  for (const r of results.slice(0, 3)) {
+    const pos = Number(r?.position);
+    const name = [r?.Driver?.givenName, r?.Driver?.familyName].filter((x) => typeof x === 'string' && x.trim()).join(' ');
+    if (!Number.isFinite(pos) || !name) return [];
+    out.push({ pos, name });
+  }
+  return out;
+}
+
+/** Závodním relacím kol z `resultsByRound` doplní podium (první tři). */
+export function attachF1Podium(matches: Match[], resultsByRound: Record<string, unknown>): Match[] {
+  return matches.map((m) => {
+    const round = RACE_ID.exec(m.id)?.[1];
+    if (!round || !(round in resultsByRound)) return m;
+    const podium = podiumOf(resultsByRound[round]);
+    return podium.length ? { ...m, result: { podium } } : m;
+  });
+}
+
+export const f1Adapter = {
+  sport: 'f1' as const,
+  async fetch(now, get: (url: string) => Promise<unknown> = getJson) {
+    const base = parseF1(await get('https://api.jolpi.ca/ergast/f1/current.json'));
+    const rounds = f1RacesNeedingPodium(base.matches, now);
+    const settled = await Promise.allSettled(rounds.map((r) => get(`https://api.jolpi.ca/ergast/f1/current/${r}/results.json`)));
+    const byRound: Record<string, unknown> = {};
+    settled.forEach((s, i) => { if (s.status === 'fulfilled') byRound[rounds[i]] = s.value; });
+    return { matches: attachF1Podium(base.matches, byRound), teams: base.teams };
   },
-};
+} satisfies Adapter;

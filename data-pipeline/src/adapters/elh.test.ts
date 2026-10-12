@@ -7,10 +7,10 @@ const upcoming = (id: string, home: [string, string], away: [string, string], do
 <tr data-href="/zapas/${id}" class="js-preview__link"><td class="preview__name text-right">${side(...home)}</td>
 <td class="preview__center preview__desktop" colspan="3"><div class="box-snow row"><div class="col-1_3">${dow}</div><div class="col-1_3">${date}</div><div class="col-1_3">${time}</div></div></td>
 <td class="preview__name">${side(...away)}</td></tr>`;
-const played = (id: string, home: [string, string], away: [string, string]) => `
+const played = (id: string, home: [string, string], away: [string, string], date = 'ÚT 22. 09.', hs: string | null = '4', as: string | null = '5') => `
 <tr data-href="/zapas/${id}" class="js-preview__link"><td class="preview__name text-right">${side(...home)}</td>
-<td class="preview__score"><span class="blue">4</span></td><td class="preview__period"><span class="match-start-time">ÚT 22. 09.</span></td>
-<td class="preview__score"><span class="blue">5</span></td><td class="preview__name">${side(...away)}</td></tr>`;
+<td class="preview__score">${hs === null ? '' : `<span class="blue">${hs}</span>`}</td><td class="preview__period"><span class="match-start-time">${date}</span></td>
+<td class="preview__score">${as === null ? '' : `<span class="blue">${as}</span>`}</td><td class="preview__name">${side(...away)}</td></tr>`;
 
 const PCE: [string, string] = ['HC Dynamo Pardubice', 'PCE'];
 const LIB: [string, string] = ['Bílí Tygři Liberec', 'LIB'];
@@ -46,6 +46,38 @@ describe('parseElhRound', () => {
     expect(r2.matches[1].startsAt).toBe('2027-01-03T16:00:00.000Z');
   });
   it('změněné HTML nepadne', () => { expect(parseElhRound('<html></html>', new Date()).matches).toEqual([]); });
+});
+
+describe('parseElhRound – výsledky', () => {
+  const now = new Date('2026-09-25T10:00:00Z'); // pá 25. 9.
+  const parse = (rows: string, n = now) => parseElhRound(`<table>${rows}</table>`, n);
+  it('odehraný zápas → result, dateOnly, 12:00 Praha', () => {
+    const r = parse(played('1', PCE, LIB));
+    expect(r.matches).toHaveLength(1);
+    expect(r.matches[0]).toMatchObject({
+      id: 'cz-hockey:1', startsAt: '2026-09-22T10:00:00.000Z', title: 'HC Dynamo Pardubice – Bílí Tygři Liberec',
+      teams: ['cz-hockey:PCE', 'cz-hockey:LIB'],
+      result: { home: 4, away: 5, homeName: 'HC Dynamo Pardubice', awayName: 'Bílí Tygři Liberec', dateOnly: true },
+    });
+  });
+  it('starší než 14 dní se neemituje', () => {
+    expect(parse(played('1', PCE, LIB), new Date('2026-10-10T10:00:00Z')).matches).toEqual([]);
+  });
+  it('dnešní řádek (Praha) se neemituje, včerejší ano', () => {
+    expect(parse(played('1', PCE, LIB, 'ÚT 22. 09.'), new Date('2026-09-22T09:00:00Z')).matches).toEqual([]);
+    expect(parse(played('1', PCE, LIB, 'ÚT 22. 09.'), new Date('2026-09-23T09:00:00Z')).matches).toHaveLength(1);
+  });
+  it('chybějící skóre se přeskočí', () => {
+    expect(parse(played('1', PCE, LIB, 'ÚT 22. 09.', null, '5')).matches).toEqual([]);
+    expect(parse(played('2', PCE, LIB, 'ÚT 22. 09.', '3', null)).matches).toEqual([]);
+  });
+  it('rok: leden po prosinci → loňský rok pro odehrané', () => {
+    const r = parse(played('1', PCE, LIB, 'ÚT 30. 12.'), new Date('2027-01-02T10:00:00Z'));
+    expect(r.matches[0].startsAt).toBe('2026-12-30T11:00:00.000Z');
+  });
+  it('rok: datum >2 dny v budoucnosti → loňský rok (a tedy příliš staré)', () => {
+    expect(parse(played('1', PCE, LIB, 'ÚT 30. 12.'), new Date('2026-10-12T10:00:00Z')).matches).toEqual([]);
+  });
 });
 
 describe('elhRoundNumbers', () => {

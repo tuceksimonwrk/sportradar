@@ -10,6 +10,16 @@ function inferYear(month: number, day: number, now: Date): number {
   return Date.UTC(y, month - 1, day) < now.getTime() - 90 * 86400_000 ? y + 1 : y;
 }
 
+const RESULT_WINDOW_MS = 14 * 86400_000;
+const pragueDay = (ts: number) =>
+  new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Prague', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(ts));
+
+/** Odehrané řádky nemají rok: bereme letošní, a je-li datum o víc než 2 dny v budoucnu, loňský. */
+function inferPlayedYear(month: number, day: number, now: Date): number {
+  const y = now.getUTCFullYear();
+  return Date.UTC(y, month - 1, day, 12) > now.getTime() + 2 * 86400_000 ? y - 1 : y;
+}
+
 export function elhRoundNumbers(html: string): number[] {
   const nums = [...html.matchAll(/matchList-view-round-round=(\d+)/g)].map((m) => Number(m[1]));
   return [...new Set(nums)].sort((a, b) => a - b);
@@ -29,7 +39,21 @@ export function parseElhRound(html: string, now: Date): AdapterResult {
     const [home, away] = sides;
     for (const s of sides) teams.set(`cz-hockey:${s.short}`, { id: `cz-hockey:${s.short}`, sport: 'cz-hockey', name: s.long });
     const cells = $(tr).find('td.preview__desktop .col-1_3').map((__, c) => $(c).text().trim()).get();
-    if (cells.length < 3) return; // odehráno
+    if (cells.length < 3) { // odehráno
+      const scores = $(tr).find('.preview__score .blue').map((__, e) => $(e).text().trim()).get();
+      const pd = /(\d{1,2})\.\s*(\d{1,2})\.\s*$/.exec($(tr).find('.match-start-time').first().text().trim());
+      if (scores.length < 2 || !pd || !/^[0-9]+$/.test(scores[0]) || !/^[0-9]+$/.test(scores[1])) return;
+      const [pday, pmonth] = [Number(pd[1]), Number(pd[2])];
+      const startsAt = pragueToUtcIso(inferPlayedYear(pmonth, pday, now), pmonth, pday, 12, 0);
+      const ts = Date.parse(startsAt);
+      if (pragueDay(ts) >= pragueDay(now.getTime()) || ts < now.getTime() - RESULT_WINDOW_MS) return;
+      matches.push({
+        id: `cz-hockey:${id}`, sport: 'cz-hockey', competition: 'Tipsport extraliga', startsAt,
+        title: `${home.long} – ${away.long}`, teams: [`cz-hockey:${home.short}`, `cz-hockey:${away.short}`], broadcasters: [],
+        result: { home: Number(scores[0]), away: Number(scores[1]), homeName: home.long, awayName: away.long, dateOnly: true },
+      });
+      return;
+    }
     const d = /^(\d{1,2})\.\s*(\d{1,2})\.$/.exec(cells[1]);
     const t = /^(\d{1,2}):(\d{2})$/.exec(cells[2]);
     if (!d || !t) return; // odložený zápas bez data/času

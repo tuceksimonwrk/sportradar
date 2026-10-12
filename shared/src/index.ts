@@ -11,6 +11,14 @@ export const SPORT_LABELS: Record<Sport, string> = {
 export interface Broadcaster { name: string; url?: string }
 export interface Venue { name: string; city?: string }
 
+export interface MatchResult {
+  home?: number; away?: number;          // skóre domácí/hosté (týmové sporty)
+  homeName?: string; awayName?: string;  // jména týmů pro kartu výsledku
+  note?: string;                         // např. 'po prodloužení', 'po nájezdech'
+  dateOnly?: boolean;                    // čas začátku neznáme (jen datum) → UI čas nezobrazí
+  podium?: { pos: number; name: string }[]; // F1: první tři
+}
+
 export interface Match {
   id: string;            // globálně unikátní, např. "nhl:2026020084"
   sport: Sport;
@@ -20,6 +28,7 @@ export interface Match {
   teams: string[];       // id týmů, např. ["nhl:PIT","nhl:WSH"]; F1: []
   broadcasters: Broadcaster[];
   venue?: Venue;         // kde se hraje (volitelné)
+  result?: MatchResult;  // výsledek odehraného zápasu (volitelné)
 }
 
 export interface Team { id: string; sport: Sport; name: string }
