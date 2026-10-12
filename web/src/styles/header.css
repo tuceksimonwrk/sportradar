@@ -1,0 +1,73 @@
+/* ---------- Hlavička: značka + záložky ----------
+   Lepí se se záporným `top`: řádek se značkou při rolování odjede, záložky zůstanou (bez skoku rozvržení). */
+.top-sentinel { height: 1px; margin-bottom: -1px; }
+.top {
+  --brand-h: 54px;
+  position: sticky; top: calc(-1 * var(--brand-h)); z-index: 5;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / .03), transparent 60%),
+    var(--board);
+  color: var(--board-ink);
+  border-bottom: 1px solid rgb(255 194 26 / .18);
+  transition: box-shadow .25s var(--ease-out);
+}
+.top--compact { box-shadow: 0 8px 24px -10px rgb(0 0 0 / .55); }
+.top__inner { max-width: 720px; margin: 0 auto; padding: 0 16px 10px; }
+
+.brand {
+  display: flex; align-items: center; gap: 10px; height: var(--brand-h);
+  font: 800 1.55rem/1 var(--display); letter-spacing: .06em; text-transform: uppercase;
+  transition: opacity .25s var(--ease-out), transform .25s var(--ease-out);
+}
+.top--compact .brand { opacity: 0; transform: translateY(-8px); }
+.logomark { flex: none; display: block; }
+.logomark__sweep { transform-origin: 16px 16px; transform-box: view-box; }
+
+/* Záložky: rovnoměrná mřížka, jantarový indikátor jede pod aktivní záložku (jen transform). */
+.tabs {
+  --gap: 4px;
+  position: relative;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--gap);
+  padding: 4px; border-radius: 12px; background: rgb(255 255 255 / .08);
+}
+.tabs__ind {
+  position: absolute; top: 4px; bottom: 4px; left: 4px;
+  width: calc((100% - 8px - 3 * var(--gap)) / 4);
+  border-radius: 9px; background: var(--amber);
+  box-shadow: 0 4px 14px -4px rgb(255 194 26 / .55);
+  transform: translateX(calc(var(--tab, 0) * (100% + var(--gap))));
+  transition: transform .34s var(--ease-out);
+}
+.tab {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  min-width: 0; min-height: 52px; padding: 6px 2px; border: 0; border-radius: 9px; cursor: pointer;
+  background: transparent; color: rgb(255 255 255 / .8);
+  font: 700 .8rem/1.1 var(--text); letter-spacing: .01em;
+  transition: color .2s var(--ease-out);
+}
+.tab:hover { color: #fff; }
+.tab.on { color: #0d1a14; }
+.tab:focus-visible { outline-color: var(--amber); outline-offset: 1px; }
+.tab__icon { position: relative; display: inline-flex; }
+.tab__label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tab__badge {
+  position: absolute; top: -6px; left: calc(100% - 6px);
+  min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
+  display: inline-grid; place-items: center;
+  background: #fff; color: #0d1a14; font: 800 .72rem/1 var(--display);
+  box-shadow: 0 0 0 2px var(--board);
+}
+.tab.on .tab__badge { background: #0d1a14; color: var(--amber); box-shadow: 0 0 0 2px var(--amber); }
+
+@media (min-width: 560px) {
+  .tab { flex-direction: row; gap: 8px; min-height: 44px; font-size: .98rem; }
+  .tab__badge { position: static; margin-left: 6px; box-shadow: none; }
+  .tab.on .tab__badge { box-shadow: none; }
+}
+
+/* ---------- Patička ---------- */
+.foot { border-top: 1px solid var(--line); background: var(--chalk); }
+.foot__inner { max-width: 720px; margin: 0 auto; padding: 18px 16px 28px; color: var(--muted); font-size: .84rem; }
+.foot p { margin: 0 0 4px; }
+.foot__fine { font-size: .78rem; }

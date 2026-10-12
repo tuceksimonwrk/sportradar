@@ -1,0 +1,14 @@
+{
+  "name": "Sportradar – zápasy oblíbených týmů",
+  "short_name": "Sportradar",
+  "description": "Zápasy, výsledky a tabulky tvých oblíbených týmů v tvém čase.",
+  "lang": "cs",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f2f5f1",
+  "theme_color": "#0d1a14",
+  "icons": [
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
