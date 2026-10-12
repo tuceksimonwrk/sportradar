@@ -50,3 +50,7 @@
   .st__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .st .st__sub { overflow: hidden; text-overflow: ellipsis; }
 }
+/* Fotbal na úzkém displeji: bez sloupce Skóre (zůstává rozdíl +/−), ať mají názvy klubů místo */
+@media (max-width: 419px) {
+  .st[data-sport='football'] .st__c-skore { display: none; }
+}

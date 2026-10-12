@@ -13,8 +13,8 @@ import { ReminderContext } from './components/ReminderContext';
 import { loadReminder, saveReminder } from './lib/reminder';
 import { decodeShare, encodeShare, loadFavorites, saveFavorites } from './lib/favorites';
 import { driverTeamMap } from './lib/podium';
-import { selectMatches, selectResults } from './lib/schedule';
-import { defaultStandingsSport } from './lib/standings';
+import { competitionForSport, selectMatches, selectResults } from './lib/schedule';
+import { defaultStandingsSport, defaultTableId, tablesForSport } from './lib/standings';
 import { dayKey, formatTime, isStale } from './lib/time';
 import { useData } from './useData';
 import { useDetailIndex } from './useDetail';
@@ -41,7 +41,9 @@ export default function App() {
   const [favs, setFavs] = useState<string[]>(() => loadFavorites(storage()));
   const [tab, setTab] = useState<Tab>(() => (loadFavorites(storage()).length ? 'program' : 'favs'));
   const [sport, setSport] = useState<Sport | 'all'>('all');
+  const [competition, setCompetition] = useState('all'); // fotbal: id soutěže nebo 'all'
   const [pickedStandings, setPickedStandings] = useState<Sport | null>(null); // null = podle oblíbených
+  const [pickedTable, setPickedTable] = useState<string | null>(null);        // null = podle oblíbených
   const [reminder, setReminder] = useState<number>(() => loadReminder(storage()));
   const [shareMsg, setShareMsg] = useState('');
   const detailIds = useDetailIndex();
@@ -72,8 +74,8 @@ export default function App() {
 
   const favSet = useMemo(() => new Set(favs), [favs]);
   const selected = useMemo(
-    () => (data.status === 'ready' ? selectMatches(data.matches.matches, favSet, now, sport) : []),
-    [data, favSet, now, sport],
+    () => (data.status === 'ready' ? selectMatches(data.matches.matches, favSet, now, sport, competition) : []),
+    [data, favSet, now, sport, competition],
   );
 
   const calendarMatches = useMemo(
@@ -84,13 +86,19 @@ export default function App() {
   const standingsSport = pickedStandings ?? defaultStandingsSport(favs);
 
   const results = useMemo(
-    () => (data.status === 'ready' ? selectResults(data.matches.matches, favSet, now, sport) : []),
-    [data, favSet, now, sport],
+    () => (data.status === 'ready' ? selectResults(data.matches.matches, favSet, now, sport, competition) : []),
+    [data, favSet, now, sport, competition],
   );
 
   const teamsInfo = useMemo<TeamsInfo>(() => (data.status === 'ready'
     ? { teams: new Map(data.teams.teams.map((t) => [t.id, t])), driverTeams: driverTeamMap(data.standings) }
     : { teams: new Map(), driverTeams: new Map() }), [data]);
+
+  const pickSport = (s: Sport | 'all') => { setSport(s); setCompetition((c) => competitionForSport(s, c)); };
+  const pickStandings = (s: Sport) => { setPickedStandings(s); setPickedTable(null); };
+  const standingsTables = data.status === 'ready' ? tablesForSport(data.standings, standingsSport) : [];
+  const tableId = pickedTable && standingsTables.some((t) => t.id === pickedTable)
+    ? pickedTable : defaultTableId(standingsTables, favs, teamsInfo.teams);
 
   const goTab = (t: Tab) => { setTab(t); window.scrollTo({ top: 0 }); };
 
@@ -127,13 +135,14 @@ export default function App() {
                 Data nemusí být aktuální (poslední aktualizace {new Date(data.matches.generatedAt).toLocaleString('cs-CZ')}).</div>
             )}
             {tab === 'program' ? (
-              <ProgramView matches={selected} now={now} sport={sport} onSport={setSport}
+              <ProgramView matches={selected} now={now} sport={sport} onSport={pickSport} competition={competition} onCompetition={setCompetition}
                 hasFavorites={favs.length > 0} onGoFavorites={() => goTab('favs')} />
             ) : tab === 'results' ? (
-              <ResultsView matches={results} now={now} sport={sport} onSport={setSport}
+              <ResultsView matches={results} now={now} sport={sport} onSport={pickSport} competition={competition} onCompetition={setCompetition}
                 hasFavorites={favs.length > 0} onGoFavorites={() => goTab('favs')} />
             ) : tab === 'standings' ? (
-              <StandingsView standings={data.standings} sport={standingsSport} onSport={setPickedStandings} favs={favs} now={now} />
+              <StandingsView standings={data.standings} sport={standingsSport} onSport={pickStandings}
+                tableId={tableId} onTable={setPickedTable} favs={favs} now={now} />
             ) : <FavoritesView teams={data.teams.teams} favs={favs} matches={calendarMatches} onToggle={toggle} onShare={share} shareMsg={shareMsg} />}
           </div>
         )}
@@ -141,7 +150,7 @@ export default function App() {
       <footer className="foot">
         <div className="foot__inner">
           <p>
-            Data: NHL, ESPN, Jolpica, hokej.cz, nbl.basketball
+            Data: NHL, ESPN, Jolpica, hokej.cz, nbl.basketball, chanceliga.cz
             {data.status === 'ready' && <> · aktualizováno {updatedLabel(data.matches.generatedAt, now)}</>}
           </p>
           <p className="foot__fine">Neoficiální fanouškovská stránka. Loga a názvy patří jejich vlastníkům.</p>

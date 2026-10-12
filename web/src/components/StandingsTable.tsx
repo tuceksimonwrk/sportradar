@@ -33,14 +33,14 @@ export function StandingsTable({ table, sport, favs, startIndex = 0 }: { table: 
       <colgroup>
         <col style={{ width: '30px' }} />
         <col />
-        {table.columns.map((c) => <col key={c.key} style={{ width: colWidth(table, c.key, c.label) }} />)}
+        {table.columns.map((c) => <col key={c.key} className={`st__c-${c.key}`} style={{ width: colWidth(table, c.key, c.label) }} />)}
       </colgroup>
       <thead>
         <tr>
           <th scope="col" className="st__pos"><abbr title="Pořadí">#</abbr></th>
           <th scope="col" className="st__name">{nameHead}</th>
           {table.columns.map((c) => (
-            <th key={c.key} scope="col" className="st__num"><abbr title={c.title ?? c.label}>{c.label}</abbr></th>
+            <th key={c.key} scope="col" className={`st__num st__c-${c.key}`}><abbr title={c.title ?? c.label}>{c.label}</abbr></th>
           ))}
         </tr>
       </thead>
@@ -60,7 +60,7 @@ export function StandingsTable({ table, sport, favs, startIndex = 0 }: { table: 
                   </span>
                 </span>
               </td>
-              {table.columns.map((c) => <td key={c.key} className={c.key === 'b' ? 'st__num st__pts' : 'st__num'}>{r.values[c.key] ?? '–'}</td>)}
+              {table.columns.map((c) => <td key={c.key} className={`st__num st__c-${c.key}${c.key === 'b' ? ' st__pts' : ''}`}>{r.values[c.key] ?? '–'}</td>)}
             </tr>
           );
         })}

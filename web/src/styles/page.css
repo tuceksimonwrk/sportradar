@@ -90,3 +90,10 @@
   .pagehead__icon, .empty__icon { background: rgb(255 194 26 / .12); box-shadow: inset 0 0 0 1px rgb(255 194 26 / .2); }
   .empty__icon { box-shadow: inset 0 0 0 1px rgb(255 194 26 / .2), 0 0 0 6px var(--chalk); }
 }
+
+/* Druhá řada čipů (soutěže fotbalu, výběr tabulky): menší, zapnutý čip v barvě sportu */
+.chips--sub { padding-top: 8px; gap: 6px; }
+.chip--sub { min-height: 36px; padding: 0 13px; font-size: .86rem; font-weight: 600; }
+.chips--sub .chip--on { background: var(--sport, var(--ink)); border-color: var(--sport, var(--ink)); color: #fff; }
+@media (prefers-color-scheme: dark) { .chips--sub .chip--on { color: var(--board); } }
+@media (min-width: 768px) { .chips { flex-wrap: wrap; } }
