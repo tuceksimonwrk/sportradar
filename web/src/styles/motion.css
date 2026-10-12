@@ -21,6 +21,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .enter, .logomark__sweep, .hero--power .led__on, .sk, .live::before, .livebadge::before { animation: none; }
-  .tabs__ind, .tab, .brand, .top, .btn, .calbtn, .chip, .match, .result, .st tbody tr { transition: none; }
+  .tabs__ind, .tab, .brand, .top, .btn, .calbtn, .seg__opt, .chip, .match, .result, .st tbody tr { transition: none; }
   .match:hover, .match:focus-within, .result:hover, .btn:hover:not(:disabled) { transform: none; }
 }

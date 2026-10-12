@@ -9,6 +9,8 @@ import { SportArt } from './components/SportArt';
 import { StandingsView } from './components/StandingsView';
 import { TeamsContext, type TeamsInfo } from './components/TeamsContext';
 import { EmptyState, Skeleton } from './components/ui';
+import { ReminderContext } from './components/ReminderContext';
+import { loadReminder, saveReminder } from './lib/reminder';
 import { decodeShare, encodeShare, loadFavorites, saveFavorites } from './lib/favorites';
 import { driverTeamMap } from './lib/podium';
 import { selectMatches, selectResults } from './lib/schedule';
@@ -37,6 +39,7 @@ export default function App() {
   const [tab, setTab] = useState<Tab>(() => (loadFavorites(storage()).length ? 'program' : 'favs'));
   const [sport, setSport] = useState<Sport | 'all'>('all');
   const [pickedStandings, setPickedStandings] = useState<Sport | null>(null); // null = podle oblíbených
+  const [reminder, setReminder] = useState<number>(() => loadReminder(storage()));
   const [shareMsg, setShareMsg] = useState('');
   const [incoming, setIncoming] = useState<string[] | null>(() => {
     const d = decodeShare(window.location.hash);
@@ -44,6 +47,8 @@ export default function App() {
   });
 
   useEffect(() => saveFavorites(storage(), favs), [favs]);
+  useEffect(() => saveReminder(storage(), reminder), [reminder]);
+  const reminderInfo = useMemo(() => ({ minutes: reminder, setMinutes: setReminder }), [reminder]);
 
   const toggle = (id: string) => setFavs((f) => (f.includes(id) ? f.filter((x) => x !== id) : [...f, id]));
   const clearHash = () => window.history.replaceState(null, '', window.location.pathname + window.location.search);
@@ -84,6 +89,7 @@ export default function App() {
 
   return (
     <TeamsContext.Provider value={teamsInfo}>
+    <ReminderContext.Provider value={reminderInfo}>
       <div className="backdrop" aria-hidden="true"><SportArt kind="radar" /></div>
       <Header tab={tab} onTab={goTab} favCount={favs.length} />
       <main className="app" id="obsah">
@@ -133,6 +139,7 @@ export default function App() {
           <p className="foot__fine">Neoficiální fanouškovská stránka. Loga a názvy patří jejich vlastníkům.</p>
         </div>
       </footer>
+    </ReminderContext.Provider>
     </TeamsContext.Provider>
   );
 }
