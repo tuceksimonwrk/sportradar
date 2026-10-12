@@ -67,3 +67,11 @@ Scrapery (hokej.cz, nbl.basketball, chanceliga.cz) jsou křehké – změna HTML
 1. Settings → Pages → Source: **GitHub Actions**.
 2. Workflow `.github/workflows/deploy.yml` běží při pushi na `main`, ručně i každou hodinu (cron).
 3. Při selhání adaptéru workflow skončí červeně (po nasazení sloučených dat) a stačí výchozí notifikace GitHub Actions – přijde e-mail.
+
+## Živé skóre
+
+- NBA a fotbal (PL, LaLiga, Serie A, Bundesliga, Ligue 1, Liga mistrů) čte prohlížeč přímo z veřejného scoreboardu ESPN.
+- NHL, Tipsport extraliga a NBL jsou z prohlížeče blokované CORS, proto je čte volitelný vlastní Cloudflare Worker
+  ve složce `live-proxy/` (zdarma). Návod k nasazení: [`live-proxy/README.md`](live-proxy/README.md).
+  Po nasazení vlož adresu Workeru do `web/public/live-config.json` (`{ "proxyUrl": "https://sportradar-live.<subdomena>.workers.dev" }`)
+  a commitni; prázdné `proxyUrl` funkci vypne (žádné dotazy). Worker se v GitHub Actions nenasazuje.
