@@ -4,7 +4,7 @@ import { isFavoriteRow } from '../lib/standings';
 /** Šířka sloupce podle nejdelšího obsahu (popisek i hodnoty), v „ch“. */
 function colWidth(t: Table, key: string, label: string): string {
   const len = Math.max(label.length, ...t.rows.map((r) => String(r.values[key] ?? '–').length));
-  return `calc(${Math.max(len, 2)}ch + 6px)`;
+  return `calc(${Math.max(len, 2)}ch + 8px)`;
 }
 
 export function StandingsTable({ table, sport, favs }: { table: Table; sport: Sport; favs: string[] }) {
@@ -31,7 +31,7 @@ export function StandingsTable({ table, sport, favs }: { table: Table; sport: Sp
           <tr key={`${r.pos}-${r.name}`} className={isFavoriteRow(r, sport, favs) ? 'is-fav' : undefined}>
             <td className="st__pos">{r.pos}</td>
             <td className="st__name" title={r.sub ? `${r.name} (${r.sub})` : r.name}>
-              {r.name}{r.sub && <small className="st__sub">{r.sub}</small>}
+              {r.name}{isFavoriteRow(r, sport, favs) && <span className="sr-only"> (oblíbený)</span>}{r.sub && <small className="st__sub">{r.sub}</small>}
             </td>
             {table.columns.map((c) => <td key={c.key} className={c.key === 'b' ? 'st__num st__pts' : 'st__num'}>{r.values[c.key] ?? '–'}</td>)}
           </tr>

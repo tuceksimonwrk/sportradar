@@ -1,5 +1,5 @@
 import type { Sport, StandingsFile } from '@sportradar/shared';
-import { tablesForSport } from '../lib/standings';
+import { oldestUpdatedAt, tablesForSport } from '../lib/standings';
 import { isStale } from '../lib/time';
 import { SportChips } from './SportChips';
 import { StandingsTable } from './StandingsTable';
@@ -14,7 +14,8 @@ interface Props {
 
 export function StandingsView({ standings, sport, onSport, favs, now }: Props) {
   const tables = tablesForSport(standings, sport);
-  const stale = standings ? isStale(standings.generatedAt, now) : false;
+  const updated = standings ? oldestUpdatedAt(tables, standings.generatedAt ?? "") : "";
+  const stale = standings ? isStale(updated, now) : false;
   return (
     <>
       <SportChips sport={sport} onSport={(s) => s !== 'all' && onSport(s)} withAll={false} />
@@ -26,7 +27,7 @@ export function StandingsView({ standings, sport, onSport, favs, now }: Props) {
       {tables.map((t) => <StandingsTable key={t.id} table={t} sport={sport} favs={favs} />)}
       {standings && tables.length > 0 && (
         <p className="muted pad">
-          Aktualizováno: {Number.isNaN(Date.parse(standings.generatedAt)) ? 'neznámo' : new Date(standings.generatedAt).toLocaleString('cs-CZ')}
+          Aktualizováno: {Number.isNaN(Date.parse(updated)) ? 'neznámo' : new Date(updated).toLocaleString('cs-CZ')}
         </p>
       )}
     </>

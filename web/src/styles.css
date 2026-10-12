@@ -241,3 +241,13 @@ a.badge:hover { background: var(--ink); color: var(--chalk); }
   .st .st__num { padding-left: 8px; }
   .tabs button { padding: 9px 10px; font-size: 1rem; }
 }
+
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.st th:last-child, .st td:last-child { padding-right: 2px; }
+@media (max-width: 559px) {
+  .st .st__name { white-space: normal; line-height: 1.15; overflow-wrap: anywhere; }
+}
+@media (max-width: 380px) {
+  .tabs { gap: 2px; padding: 3px; }
+  .tabs button { font-size: .8rem; padding: 9px 0; }
+}

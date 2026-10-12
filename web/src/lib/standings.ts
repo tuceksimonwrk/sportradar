@@ -20,3 +20,13 @@ export function isFavoriteRow(row: StandingRow, sport: Sport, favs: string[]): b
 export function tablesForSport(file: StandingsFile | null, sport: Sport): StandingsTable[] {
   return file ? file.tables.filter((t) => t.sport === sport) : [];
 }
+
+/** Nejstarší platné updatedAt z tabulek (nejpesimističtější stáří); bez platné hodnoty `fallback`. */
+export function oldestUpdatedAt(tables: StandingsTable[], fallback: string): string {
+  let best: string | undefined;
+  for (const t of tables) {
+    const ms = t.updatedAt ? Date.parse(t.updatedAt) : NaN;
+    if (!Number.isNaN(ms) && (best === undefined || ms < Date.parse(best))) best = t.updatedAt;
+  }
+  return best ?? fallback;
+}

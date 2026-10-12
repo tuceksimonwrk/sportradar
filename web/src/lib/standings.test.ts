@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { StandingRow, StandingsFile, StandingsTable } from '@sportradar/shared';
-import { defaultStandingsSport, isFavoriteRow, tablesForSport } from './standings';
+import { defaultStandingsSport, isFavoriteRow, oldestUpdatedAt, tablesForSport } from './standings';
 
 describe('defaultStandingsSport', () => {
   it('bez oblíbených nhl', () => { expect(defaultStandingsSport([])).toBe('nhl'); });
@@ -39,4 +39,17 @@ describe('tablesForSport', () => {
     expect(tablesForSport(file, 'f1')).toEqual([]);
   });
   it('chybějící soubor → []', () => { expect(tablesForSport(null, 'nhl')).toEqual([]); });
+});
+
+describe('oldestUpdatedAt', () => {
+  const t = (updatedAt?: string): StandingsTable => ({ id: 'x', sport: 'nhl', title: 't', columns: [], rows: [], ...(updatedAt && { updatedAt }) });
+  const FB = '2026-10-12T10:00:00.000Z';
+  it('nejstarší updatedAt z tabulek', () => {
+    expect(oldestUpdatedAt([t('2026-10-12T09:00:00.000Z'), t('2026-10-01T00:00:00.000Z')], FB)).toBe('2026-10-01T00:00:00.000Z');
+  });
+  it('chybějící nebo neplatné hodnoty se ignorují, jinak fallback', () => {
+    expect(oldestUpdatedAt([t(), t('nesmysl'), t('2026-10-05T00:00:00.000Z')], FB)).toBe('2026-10-05T00:00:00.000Z');
+    expect(oldestUpdatedAt([t(), t('nesmysl')], FB)).toBe(FB);
+    expect(oldestUpdatedAt([], FB)).toBe(FB);
+  });
 });
