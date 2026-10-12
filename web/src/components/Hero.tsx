@@ -40,7 +40,7 @@ export function Hero({ match, now }: { match: Match; now: Date }) {
   const wide = !!live && ((live.home ?? 0) >= 100 || (live.away ?? 0) >= 100);
   const led = (
     <span className={`led${live ? ' led--score' : ''}${wide ? ' led--wide' : ''}`} aria-hidden="true">
-      <span className="led__ghost">{wide ? '888:888' : '88:88'}</span>
+      <span className="led__ghost">{live ? `${live.home ?? 8}:${live.away ?? 8}`.replace(/\d/g, '8') : '88:88'}</span>
       <span className="led__on" onAnimationEnd={() => setPower(false)}>
         {live ? <><ScoreNum value={live.home} />:<ScoreNum value={live.away} /></> : time}
       </span>
@@ -91,7 +91,9 @@ export function Hero({ match, now }: { match: Match; now: Date }) {
       {live ? (
         <div className="hero__live">
           <LiveBadge live={live} />
-          <span className="hero__clock">{live.phase === 'live' ? formatLiveClock(live) : live.detail}</span>
+          {(live.phase === 'live' ? formatLiveClock(live) : live.detail !== 'Konec' && live.detail) && (
+            <span className="hero__clock">{live.phase === 'live' ? formatLiveClock(live) : live.detail}</span>
+          )}
         </div>
       ) : notStarted ? (
         <div className="hero__live"><span>Zápas ještě nezačal</span></div>
