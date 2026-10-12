@@ -35,8 +35,8 @@ describe('ELH', () => {
   it('soupiska: útočníci, obránci, brankáři s čísly', () => {
     const g = parseElhRoster(fx('elh-soupiska.html'));
     expect(g.map((x) => x.title)).toEqual(['Útočníci', 'Obránci', 'Brankáři']);
-    expect(g[2].players[0]).toEqual({ name: 'Pavel Čajan', number: '30', pos: 'B' });
-    expect(g[1].players[0]).toMatchObject({ name: 'Adam Polášek', number: '3', pos: 'O' });
+    expect(g[2].players[0]).toEqual({ name: 'Pavel Čajan', number: '30' });
+    expect(g[1].players[0]).toEqual({ name: 'Adam Polášek', number: '3' });
   });
   it('soupiska bez brankářů / bez tabulek = nespolehlivá → []', () => {
     expect(parseElhRoster('<h3>Útočníci</h3><table><thead><tr><th>#</th><th>Hráč</th></tr></thead><tbody><tr><td>1</td><td>A</td></tr></tbody></table>')).toEqual([]);
@@ -96,6 +96,15 @@ describe('NBL', () => {
     expect(r.groups.map((g) => g.title)).toEqual(['Rozehrávači', 'Křídla', 'Pivoti'].filter((t) => r.groups.some((g) => g.title === t)));
     expect(r.groups[0].players[0]).toEqual({ name: 'Robert Lee Bonham', number: '3', pos: 'PG' });
     expect(r.leaders.points).toEqual({ name: 'Robert Lee Bonham', value: 20.7 });
+  });
+  it('kombinovaný post a chybějící post', () => {
+    const html = '<table><thead><tr><th>číslo</th><th>jméno a příjmení</th><th>post</th></tr></thead><tbody>'
+      + '<tr><td>2</td><td>Tomáš Mlčoch</td><td>3/4</td></tr><tr><td>1</td><td>Asa Williams</td><td></td></tr></tbody></table>';
+    const r = parseNblRoster(html);
+    expect(r.groups).toEqual([
+      { title: 'Křídla', players: [{ name: 'Tomáš Mlčoch', number: '2', pos: 'SF/PF' }] },
+      { title: 'Post neuveden', players: [{ name: 'Asa Williams', number: '1' }] },
+    ]);
   });
   it('detail: Tabulka + Nejlepší hráči + soupisky', () => {
     const r = parseNblRoster(fx('nbl-team.html'));

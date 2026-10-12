@@ -25,14 +25,14 @@ export function parseElhClubs(html: string): { home?: ElhClub; away?: ElhClub } 
   return { ...(home && { home }), ...(away && { away }) };
 }
 
-const ELH_GROUPS: [heading: string, title: string, pos: string][] = [['Útočníci', 'Útočníci', 'Ú'], ['Obránci', 'Obránci', 'O'], ['Brankáři', 'Brankáři', 'B']];
+const ELH_GROUPS = ['Útočníci', 'Obránci', 'Brankáři'];  // soupiska neuvádí post přesněji než skupina
 
 /** Soupiska klubu (stránka /soupiska): tabulky pod nadpisy Brankáři / Obránci / Útočníci. Chybí-li kterákoli skupina → [] (nespolehlivé). */
 export function parseElhRoster(html: string): LineupGroup[] {
   const $ = cheerio.load(html);
   const groups: LineupGroup[] = [];
-  for (const [heading, title, pos] of ELH_GROUPS) {
-    const h = $('h1,h2,h3,h4').filter((_, e) => norm($(e).text()) === heading).first();
+  for (const title of ELH_GROUPS) {
+    const h = $('h1,h2,h3,h4').filter((_, e) => norm($(e).text()) === title).first();
     const table = h.nextAll('table').first();
     const heads = table.find('thead th').map((_, th) => norm($(th).text()).toLowerCase()).get();
     if (!h.length || heads[0] !== '#' || heads[1] !== 'hráč') return [];
@@ -42,7 +42,7 @@ export function parseElhRoster(html: string): LineupGroup[] {
       const num = norm($(tds[0]).text());
       const name = norm($(tds[1]).text());
       if (!name) return;
-      players.push({ name, ...(/^\d{1,2}$/.test(num) && { number: num }), pos });
+      players.push({ name, ...(/^\d{1,2}$/.test(num) && { number: num }) });
     });
     if (!players.length) return [];
     groups.push({ title, players: players.sort((a, b) => Number(a.number ?? 999) - Number(b.number ?? 999)) });
@@ -74,7 +74,8 @@ export interface NblLeaders { points?: Leader; rebounds?: Leader; assists?: Lead
 const POST: Record<string, [group: string, pos: string]> = {
   1: ['Rozehrávači', 'PG'], 2: ['Křídla', 'SG'], 3: ['Křídla', 'SF'], 4: ['Pivoti', 'PF'], 5: ['Pivoti', 'C'],
 };
-const NBL_ORDER = ['Rozehrávači', 'Křídla', 'Pivoti', 'Ostatní'];
+const NBL_OTHER = 'Post neuveden';
+const NBL_ORDER = ['Rozehrávači', 'Křídla', 'Pivoti', NBL_OTHER];
 
 /** Stránka týmu: soupiska (číslo | jméno a příjmení | post) a průměrné statistiky hráčů (B, DC, AS, VAL). */
 export function parseNblRoster(html: string): { groups: LineupGroup[]; leaders: NblLeaders } {
@@ -87,9 +88,11 @@ export function parseNblRoster(html: string): { groups: LineupGroup[]; leaders: 
       const tds = $(tr).children('td');
       const num = norm($(tds[0]).text());
       const name = norm($(tds[1]).text());
-      const post = /^([1-5])/.exec(norm($(tds[2]).text()))?.[1];
+      const raw = norm($(tds[2]).text());
+      const post = /^([1-5])/.exec(raw)?.[1];
       if (!name) return;
-      const [group, pos] = post ? POST[post] : ['Ostatní', ''];
+      const group = post ? POST[post][0] : NBL_OTHER;
+      const pos = post ? raw.split(/\s*\/\s*/).map((d) => POST[d]?.[1]).filter(Boolean).join('/') : ''; // '3/4' → 'SF/PF'
       const list = by.get(group) ?? by.set(group, []).get(group)!;
       list.push({ name, ...(/^\d{1,2}$/.test(num) && { number: num }), ...(pos && { pos }) });
     });
