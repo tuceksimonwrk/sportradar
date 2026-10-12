@@ -1,4 +1,4 @@
-import { mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, rm, rmdir, writeFile } from 'node:fs/promises';
 import type { MatchesFile, Sport, StandingsFile, TeamsFile } from '@sportradar/shared';
 import { applyBroadcasters, parseBroadcasters } from './broadcasters';
 import { isSuspiciousEmpty, mergeDatasets, mergeStandings, resolveStandingsTeamIds, upcomingCount, type Dataset, type SportOutcome } from './merge';
@@ -86,10 +86,18 @@ async function main() {
     const cal = buildCalendarFiles(matches, merged.teams, now, process.env.SITE_URL || undefined);
     const calDir = new URL('cal/', OUT);
     await mkdir(calDir, { recursive: true });
-    for (const [file, ics] of cal) await writeFile(new URL(file, calDir), ics);
+    for (const [file, ics] of cal) {
+      await mkdir(new URL('.', new URL(file, calDir)), { recursive: true });
+      await writeFile(new URL(file, calDir), ics);
+    }
     let removed = 0;
-    for (const f of await readdir(calDir)) { // zastaralé feedy (odebrané týmy) mažeme až po úspěšném zápisu všech nových
-      if (f.endsWith('.ics') && !cal.has(f)) { await rm(new URL(f, calDir)); removed++; }
+    // zastaralé feedy (odebrané týmy) mažeme až po úspěšném zápisu všech nových; poté i prázdné podsložky
+    for (const f of await readdir(calDir, { recursive: true })) {
+      const rel = f.replaceAll('\\', '/');
+      if (rel.endsWith('.ics') && !cal.has(rel)) { await rm(new URL(rel, calDir)); removed++; }
+    }
+    for (const d of await readdir(calDir, { withFileTypes: true })) {
+      if (d.isDirectory() && (await readdir(new URL(`${d.name}/`, calDir))).length === 0) await rmdir(new URL(`${d.name}/`, calDir));
     }
     console.log(`[ok]   kalendáře: ${cal.size} souborů${removed ? `, ${removed} zastaralých smazáno` : ''}`);
   } catch (e) {

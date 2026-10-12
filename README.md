@@ -16,12 +16,15 @@ npm run build  # produkční build do web/dist
 
 Každý nadcházející zápas jde přidat do kalendáře tlačítkem u karty (stáhne se `.ics`). Záložka **Oblíbené → Připomínky v kalendáři** nabízí navíc:
 
+- **Upozornit** – nastavitelný předstih: bez připomínky, 15 min, 30 min, 1 h (výchozí) nebo 2 h; volba se pamatuje v prohlížeči.
 - **Odebírat** – otevře `webcal://` odkaz na feed oblíbeného týmu / sportu (aktualizuje se sám), nebo **Kopírovat odkaz** a vložit ručně („Přidat kalendář z URL“).
 - **Stáhnout všechny nadcházející zápasy (.ics)** – jednorázový soubor se všemi zápasy oblíbených.
 
-Každá událost má upozornění **1 hodinu před začátkem** (`VALARM`, `TRIGGER:-PT60M`). Apple Kalendář a většina aplikací ho vezme ze souboru; **Google Kalendář** připomínky z odebíraných kalendářů nepřebírá – v nastavení odebíraného kalendáře je nutné zapnout výchozí upozornění 1 hodinu předem.
+Upozornění je v souboru jako `VALARM` (`TRIGGER:-PT<min>M`; u „bez připomínky“ se `VALARM` neemituje). Apple Kalendář a většina aplikací ho vezme ze souboru; **Google Kalendář** připomínky z odebíraných kalendářů nepřebírá – v nastavení odebíraného kalendáře je nutné zapnout výchozí upozornění.
 
-Feedy (`web/public/data/cal/<tým>.ics`, `<sport>.ics`; `:` v id týmu se mění na `_`) generuje pipeline při každém hodinovém běhu (jen zápasy bez výsledku, start ≥ teď − 3 h) a smaže ty, které už nevznikly. Absolutní odkaz na web do popisu bere z proměnné `SITE_URL` (nastavuje workflow).
+Protože je web statický, pipeline generuje feed pro každý předstih: `web/public/data/cal/<minuty>/<tým>.ics` a `<sport>.ics` (minuty 0, 15, 30, 60, 120; `:` v id týmu se mění na `_`). Stará cesta `cal/<název>.ics` zůstává a odpovídá variantě 60 min, takže dřívější odběry fungují dál. **Změna předstihu znamená odebírat odpovídající feed znovu**, protože připomínka je uložená přímo v souboru.
+
+Feedy se generují při každém hodinovém běhu (jen zápasy bez výsledku, start ≥ teď − 3 h); soubory, které už nevznikly, se po úspěšném zápisu všech nových smažou (i prázdné složky). Absolutní odkaz na web do popisu bere z proměnné `SITE_URL` (nastavuje workflow).
 
 ## Kde vysílá (broadcasters)
 
