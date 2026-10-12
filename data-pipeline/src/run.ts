@@ -1,5 +1,5 @@
 import { mkdir, readdir, readFile, rm, rmdir, writeFile } from 'node:fs/promises';
-import type { MatchesFile, Sport, StandingsFile, TeamsFile } from '@sportradar/shared';
+import { isMatchDetail, type MatchDetail, type MatchesFile, type Sport, type StandingsFile, type TeamsFile } from '@sportradar/shared';
 import { applyBroadcasters, parseBroadcasters } from './broadcasters';
 import { isSuspiciousEmpty, mergeDatasets, mergeStandings, resolveStandingsTeamIds, upcomingCount, type Dataset, type SportOutcome } from './merge';
 import { buildCalendarFiles } from './calendar';
@@ -10,7 +10,8 @@ import { nhlAdapter } from './adapters/nhl';
 import { nbaAdapter } from './adapters/nba';
 import { elhAdapter } from './adapters/elh';
 import { nblAdapter } from './adapters/nbl';
-import { getJson } from './util';
+import { buildDetailIndex, createFetcher, generateDetails, selectDetailMatches, staleDetailFiles } from './details';
+import { getJson, getText } from './util';
 
 const OUT = new URL('../../web/public/data/', import.meta.url);
 const adapters: Adapter[] = [f1Adapter, nhlAdapter, nbaAdapter, elhAdapter, nblAdapter];
@@ -103,6 +104,29 @@ async function main() {
   } catch (e) {
     failed.push('kalendáře');
     console.log(`::warning::kalendáře: ${(e as Error).message}`);
+  }
+  try {
+    // detail zápasu (statistiky + sestavy) pro zápasy v příštích 36 h; selhání jednoho detailu běh neshodí
+    const selected = selectDetailMatches(matches, now);
+    const get = createFetcher((url) => getText(url));
+    const run = await generateDetails(selected, { get, now, matches, teams: knownTeams, standings: tables },
+      async (file) => { const d = await readPrev<MatchDetail>(`detail/${file}`); return d && isMatchDetail(d) ? d : null; });
+    const detailDir = new URL('detail/', OUT);
+    await mkdir(detailDir, { recursive: true });
+    let bytes = 0;
+    for (const [file, d] of run.files) { const json = JSON.stringify(d); bytes += Buffer.byteLength(json); await writeFile(new URL(file, detailDir), json); }
+    await writeFile(new URL('index.json', detailDir), JSON.stringify(buildDetailIndex([...run.files.values()].map((d) => d.matchId), now)));
+    // zastaralé detaily (zápasy mimo okno) mažeme až po zápisu všech nových
+    const stale = staleDetailFiles(await readdir(detailDir), new Set(run.files.keys()));
+    for (const f of stale) await rm(new URL(f, detailDir));
+    for (const w of run.warnings) console.log(`::warning::${w}`);
+    for (const s of run.failedSports) failed.push(`detail-${s}`);
+    const per = Object.entries(run.counts).map(([s, c]) => `${s} ${c.ok}/${c.total}`).join(', ');
+    console.log(`[ok]   detaily: ${run.files.size} souborů, ${Math.round(bytes / 1024)} kB${per ? ` (${per})` : ''}`
+      + `${run.kept ? `, ${run.kept} ponecháno z minula` : ''}, ${get.count} HTTP požadavků${stale.length ? `, ${stale.length} zastaralých smazáno` : ''}`);
+  } catch (e) {
+    failed.push('detaily');
+    console.log(`::warning::detaily: ${(e as Error).message}`);
   }
   console.log(`Zapsáno: ${matches.length} zápasů, ${merged.teams.length} týmů, ${tables.length} tabulek`);
   process.exitCode = failed.length ? 2 : 0;
