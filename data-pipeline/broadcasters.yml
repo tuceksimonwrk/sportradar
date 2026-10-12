@@ -1,0 +1,17 @@
+# Kde sledovat. Zapisuj jen ověřené údaje: každý záznam musí mít name, checked (YYYY-MM-DD) a source (URL zdroje).
+bySport:
+  f1:
+    - { name: Nova Sport 5, url: "https://tn.nova.cz/sport", checked: "2026-10-12", source: "https://www.arecenze.cz/clanky/letosni-formule-1-je-jeste-zabavnejsi-porovnal-jsem-vsechny/" }
+  nba: []
+  nhl:
+    - { name: "Nova Sport (Nova Sport 1/2, Oneplay)", url: "https://tn.nova.cz/sport", checked: "2026-10-12", source: "https://www.nhl.com/cs/news/nova-a-prima-maji-novou-dohodu-pro-cesko-i-pro-slovensko" }
+    - { name: Prima Sport, url: "https://www.iprima.cz", checked: "2026-10-12", source: "https://www.nhl.com/cs/news/jak-sledovat-nhl-v-sezone-2026-27-z-ceska-a-ze-slovenska" }
+    - { name: NHL.tv na DAZN, url: "https://www.dazn.com", checked: "2026-10-12", source: "https://www.nhl.com/cs/news/jak-sledovat-nhl-v-sezone-2026-27-z-ceska-a-ze-slovenska" }
+  cz-hockey:
+    - { name: Oneplay Sport, url: "https://www.oneplay.cz", checked: "2026-10-12", source: "https://www.mediaguru.cz/hokejova-tipsport-liga-startuje-prinesou-ji-oneplay-ct-i-tipsport-tv" }
+    - { name: ČT sport, url: "https://sport.ceskatelevize.cz", checked: "2026-10-12", source: "https://www.mediaguru.cz/hokejova-tipsport-liga-startuje-prinesou-ji-oneplay-ct-i-tipsport-tv" }
+    - { name: TV Tipsport, url: "https://www.tvtipsport.cz", checked: "2026-10-12", source: "https://www.mediaguru.cz/hokejova-tipsport-liga-startuje-prinesou-ji-oneplay-ct-i-tipsport-tv" }
+  cz-basket:
+    - { name: Prima Sport, url: "https://www.iprima.cz", checked: "2026-10-12", source: "https://cnn.iprima.cz/zacina-nova-era-ceske-basketbalove-elity-maxa-nbl-prinasi-obri-zmeny-523173" }
+# Výjimky pro konkrétní zápas: "id zápasu": [ { name, url, checked, source } ]
+byMatch: {}
