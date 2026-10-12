@@ -4,7 +4,7 @@ import { isFavoriteRow } from '../lib/standings';
 /** Šířka sloupce podle nejdelšího obsahu (popisek i hodnoty), v „ch“. */
 function colWidth(t: Table, key: string, label: string): string {
   const len = Math.max(label.length, ...t.rows.map((r) => String(r.values[key] ?? '–').length));
-  return `calc(${Math.max(len, 2)}ch + 10px)`;
+  return `calc(${Math.max(len, 2)}ch + 6px)`;
 }
 
 export function StandingsTable({ table, sport, favs }: { table: Table; sport: Sport; favs: string[] }) {

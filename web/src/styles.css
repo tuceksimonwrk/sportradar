@@ -80,7 +80,7 @@ button, input { font: inherit; color: inherit; }
 }
 .tabs { display: flex; gap: 4px; padding: 4px; border-radius: 12px; background: rgba(255, 255, 255, .12); }
 .tabs button {
-  flex: 1; min-width: 0; padding: 9px 4px; border: 0; border-radius: 9px; cursor: pointer; font-size: .92rem;
+  flex: 1; min-width: 0; padding: 9px 2px; border: 0; border-radius: 9px; cursor: pointer; font-size: .84rem; white-space: nowrap;
   background: transparent; color: var(--board-ink); font-weight: 600;
 }
 .tabs button.on { background: var(--amber); color: #0d1a14; }
@@ -219,7 +219,8 @@ a.badge:hover { background: var(--ink); color: var(--chalk); }
 
 /* ---------- Tabulky (za media query výše, ať ji nepřebije) ---------- */
 .st { width: 100%; table-layout: fixed; border-collapse: collapse; margin: 0 0 6px; font-variant-numeric: tabular-nums; }
-.st caption { caption-side: top; text-align: left; }
+.st caption { display: table-caption; caption-side: top; text-align: left; margin: 22px 0 8px; padding-bottom: 6px; border-bottom: 2px solid var(--line); }
+.st caption::after { content: none; }
 .st th, .st td { padding: 7px 0; border-top: 1px solid var(--line); font-size: .92rem; }
 .st thead th { border-top: 0; padding: 0 0 6px; color: var(--muted); font-size: .78rem; font-weight: 600; text-align: right; }
 .st thead th.st__name { text-align: left; }
