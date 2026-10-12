@@ -4,3 +4,5 @@ web/public/data
 *.log
 .superpowers
 .playwright-mcp
+.wrangler
+.dev.vars

@@ -1,0 +1,201 @@
+{
+ "prevDate": "2026-10-11",
+ "currentDate": "2026-10-12",
+ "nextDate": "2026-10-13",
+ "games": [
+  {
+   "id": 2026020087,
+   "season": 20262027,
+   "gameType": 2,
+   "gameDate": "2026-10-12",
+   "startTimeUTC": "2026-10-12T17:00:00Z",
+   "gameState": "LIVE",
+   "gameScheduleState": "OK",
+   "awayTeam": {
+    "id": 13,
+    "name": {
+     "default": "Panthers"
+    },
+    "abbrev": "FLA",
+    "score": 1,
+    "sog": 7
+   },
+   "homeTeam": {
+    "id": 7,
+    "name": {
+     "default": "Sabres"
+    },
+    "abbrev": "BUF",
+    "score": 2,
+    "sog": 11
+   },
+   "clock": {
+    "timeRemaining": "19:55",
+    "secondsRemaining": 1195,
+    "running": true,
+    "inIntermission": false
+   },
+   "period": 2,
+   "periodDescriptor": {
+    "number": 2,
+    "periodType": "REG",
+    "maxRegulationPeriods": 3
+   }
+  },
+  {
+   "id": 2026020088,
+   "season": 20262027,
+   "gameType": 2,
+   "gameDate": "2026-10-12",
+   "startTimeUTC": "2026-10-12T23:00:00Z",
+   "gameState": "FUT",
+   "gameScheduleState": "OK",
+   "awayTeam": {
+    "id": 9,
+    "name": {
+     "default": "Senators",
+     "fr": "Sénateurs"
+    },
+    "abbrev": "OTT",
+    "record": "4-1-0",
+    "odds": [
+     {
+      "providerId": 6,
+      "value": "1.80"
+     },
+     {
+      "providerId": 3,
+      "value": "2.00"
+     },
+     {
+      "providerId": 7,
+      "value": "+100"
+     },
+     {
+      "providerId": 8,
+      "value": "-101"
+     },
+     {
+      "providerId": 9,
+      "value": "+102"
+     },
+     {
+      "providerId": 10,
+      "value": "2.60"
+     }
+    ]
+   },
+   "homeTeam": {
+    "id": 1,
+    "name": {
+     "default": "Devils"
+    },
+    "abbrev": "NJD",
+    "record": "2-2-0",
+    "odds": [
+     {
+      "providerId": 6,
+      "value": "2.02"
+     },
+     {
+      "providerId": 3,
+      "value": "1.85"
+     },
+     {
+      "providerId": 7,
+      "value": "-120"
+     },
+     {
+      "providerId": 8,
+      "value": "-121"
+     },
+     {
+      "providerId": 9,
+      "value": "-122"
+     },
+     {
+      "providerId": 10,
+      "value": "2.40"
+     }
+    ]
+   }
+  },
+  {
+   "id": 2026020089,
+   "season": 20262027,
+   "gameType": 2,
+   "gameDate": "2026-10-12",
+   "startTimeUTC": "2026-10-13T00:00:00Z",
+   "gameState": "FUT",
+   "gameScheduleState": "OK",
+   "awayTeam": {
+    "id": 54,
+    "name": {
+     "default": "Golden Knights"
+    },
+    "abbrev": "VGK",
+    "record": "5-1-0",
+    "odds": [
+     {
+      "providerId": 8,
+      "value": "-110"
+     },
+     {
+      "providerId": 9,
+      "value": "-108"
+     },
+     {
+      "providerId": 7,
+      "value": "-110"
+     },
+     {
+      "providerId": 6,
+      "value": "1.92"
+     },
+     {
+      "providerId": 3,
+      "value": "1.90"
+     },
+     {
+      "providerId": 10,
+      "value": "2.45"
+     }
+    ]
+   },
+   "homeTeam": {
+    "id": 30,
+    "name": {
+     "default": "Wild"
+    },
+    "abbrev": "MIN",
+    "record": "3-1-1",
+    "odds": [
+     {
+      "providerId": 8,
+      "value": "-112"
+     },
+     {
+      "providerId": 9,
+      "value": "-112"
+     },
+     {
+      "providerId": 7,
+      "value": "-110"
+     },
+     {
+      "providerId": 6,
+      "value": "1.88"
+     },
+     {
+      "providerId": 3,
+      "value": "1.94"
+     },
+     {
+      "providerId": 10,
+      "value": "2.50"
+     }
+    ]
+   }
+  }
+ ]
+}

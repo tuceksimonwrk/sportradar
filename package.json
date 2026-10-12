@@ -2,7 +2,7 @@
   "name": "sportradar",
   "private": true,
   "type": "module",
-  "workspaces": ["shared", "data-pipeline", "web"],
+  "workspaces": ["shared", "data-pipeline", "web", "live-proxy"],
   "scripts": {
     "test": "npm test --workspaces --if-present",
     "data": "npm run build:data -w data-pipeline",

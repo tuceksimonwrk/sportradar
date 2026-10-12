@@ -1,0 +1,9 @@
+# Cloudflare Worker: živé skóre NHL, extraligy a NBL pro web Sportradar (viz README.md).
+name = "sportradar-live"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+[vars]
+# Čárkami oddělené originy, kterým Worker povolí CORS (jen ty smí odpověď číst z prohlížeče).
+ALLOWED_ORIGINS = "https://tuceksimonwrk.github.io,http://localhost:5173,http://localhost:5199"

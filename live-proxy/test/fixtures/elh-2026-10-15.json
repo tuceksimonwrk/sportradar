@@ -1,0 +1,38 @@
+{
+ "101": {
+  "league_name": "Tipsport extraliga",
+  "matches": [
+   {
+    "hokejcz_id": 2928329,
+    "onlajny_id": 532988,
+    "date": "15-10-2026",
+    "time": "17:30",
+    "stream_url": "o2",
+    "home": {
+     "hokejcz_id": 823,
+     "onlajny_id": 159,
+     "name": "HC Litvínov",
+     "short_name": "Litvínov",
+     "shortcut": "LIT"
+    },
+    "visitor": {
+     "hokejcz_id": 1711,
+     "onlajny_id": 8120,
+     "name": "Mountfield HK, a.s.",
+     "short_name": "Mountfield",
+     "shortcut": "MHK"
+    },
+    "score_home": 0,
+    "score_visitor": 0,
+    "score_periods": [
+     "0:0",
+     "0:0",
+     "0:0"
+    ],
+    "match_actual_time_alias": "0",
+    "match_actual_time_name": "před zápasem",
+    "match_status": "před zápasem"
+   }
+  ]
+ }
+}

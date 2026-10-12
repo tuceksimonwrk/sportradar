@@ -1,0 +1,224 @@
+{
+ "101": {
+  "league_name": "Tipsport extraliga",
+  "matches": [
+   {
+    "hokejcz_id": 2928321,
+    "onlajny_id": 532979,
+    "date": "11-10-2026",
+    "time": "15:00",
+    "stream_url": "md",
+    "home": {
+     "hokejcz_id": 8,
+     "onlajny_id": 156,
+     "name": "HC Sparta Praha",
+     "short_name": "Sparta",
+     "shortcut": "SPA"
+    },
+    "visitor": {
+     "hokejcz_id": 7,
+     "onlajny_id": 168,
+     "name": "HC VÍTKOVICE RIDERA",
+     "short_name": "Vítkovice",
+     "shortcut": "VIT"
+    },
+    "score_home": 3,
+    "score_visitor": 0,
+    "score_periods": [
+     "2:0",
+     "0:0",
+     "1:0"
+    ],
+    "match_actual_time_alias": "K",
+    "match_actual_time_name": "konec zápasu",
+    "match_status": "po zápase"
+   },
+   {
+    "hokejcz_id": 2928319,
+    "onlajny_id": 532978,
+    "date": "11-10-2026",
+    "time": "16:00",
+    "stream_url": "md",
+    "home": {
+     "hokejcz_id": 89,
+     "onlajny_id": 158,
+     "name": "BK Mladá Boleslav",
+     "short_name": "Mladá Boleslav",
+     "shortcut": "MBL"
+    },
+    "visitor": {
+     "hokejcz_id": 823,
+     "onlajny_id": 159,
+     "name": "HC Litvínov",
+     "short_name": "Litvínov",
+     "shortcut": "LIT"
+    },
+    "score_home": 2,
+    "score_visitor": 1,
+    "score_periods": [
+     "1:0",
+     "1:1",
+     "0:0"
+    ],
+    "match_actual_time_alias": "K",
+    "match_actual_time_name": "konec zápasu",
+    "match_status": "po zápase"
+   },
+   {
+    "hokejcz_id": 2928320,
+    "onlajny_id": 532982,
+    "date": "11-10-2026",
+    "time": "17:00",
+    "stream_url": "md",
+    "home": {
+     "hokejcz_id": 1721,
+     "onlajny_id": 164,
+     "name": "BANES Motor České Budějovice",
+     "short_name": "Č. Budějovice",
+     "shortcut": "CEB"
+    },
+    "visitor": {
+     "hokejcz_id": 18,
+     "onlajny_id": 157,
+     "name": "Bílí Tygři Liberec",
+     "short_name": "Liberec",
+     "shortcut": "LIB"
+    },
+    "score_home": 4,
+    "score_visitor": 3,
+    "score_periods": [
+     "2:2",
+     "1:0",
+     "1:1"
+    ],
+    "match_actual_time_alias": "K",
+    "match_actual_time_name": "konec zápasu",
+    "match_status": "po zápase"
+   },
+   {
+    "hokejcz_id": 2928322,
+    "onlajny_id": 532983,
+    "date": "11-10-2026",
+    "time": "17:00",
+    "stream_url": "md",
+    "home": {
+     "hokejcz_id": 1711,
+     "onlajny_id": 8120,
+     "name": "Mountfield HK, a.s.",
+     "short_name": "Mountfield",
+     "shortcut": "MHK"
+    },
+    "visitor": {
+     "hokejcz_id": 24,
+     "onlajny_id": 174,
+     "name": "HC Olomouc",
+     "short_name": "Olomouc",
+     "shortcut": "OLO"
+    },
+    "score_home": 3,
+    "score_visitor": 1,
+    "score_periods": [
+     "1:0",
+     "0:0",
+     "2:1"
+    ],
+    "match_actual_time_alias": "K",
+    "match_actual_time_name": "konec zápasu",
+    "match_status": "po zápase"
+   },
+   {
+    "hokejcz_id": 2928323,
+    "onlajny_id": 532980,
+    "date": "11-10-2026",
+    "time": "17:00",
+    "stream_url": "ct",
+    "home": {
+     "hokejcz_id": 5,
+     "onlajny_id": 161,
+     "name": "HC Energie Karlovy Vary",
+     "short_name": "K. Vary",
+     "shortcut": "KVA"
+    },
+    "visitor": {
+     "hokejcz_id": 828,
+     "onlajny_id": 162,
+     "name": "Rytíři Kladno",
+     "short_name": "Kladno",
+     "shortcut": "KLA"
+    },
+    "score_home": 3,
+    "score_visitor": 1,
+    "score_periods": [
+     "1:0",
+     "1:0",
+     "1:1"
+    ],
+    "match_actual_time_alias": "K",
+    "match_actual_time_name": "konec zápasu",
+    "match_status": "po zápase"
+   },
+   {
+    "hokejcz_id": 2928324,
+    "onlajny_id": 532984,
+    "date": "11-10-2026",
+    "time": "17:00",
+    "stream_url": "md",
+    "home": {
+     "hokejcz_id": 22,
+     "onlajny_id": 163,
+     "name": "HC KOMETA BRNO",
+     "short_name": "Kometa",
+     "shortcut": "KOM"
+    },
+    "visitor": {
+     "hokejcz_id": 917,
+     "onlajny_id": 166,
+     "name": "HC ŠKODA PLZEŇ",
+     "short_name": "Plzeň",
+     "shortcut": "PLZ"
+    },
+    "score_home": 1,
+    "score_visitor": 2,
+    "score_periods": [
+     "1:0",
+     "0:0",
+     "0:1"
+    ],
+    "match_actual_time_alias": "KP",
+    "match_actual_time_name": "konec po prodloužení",
+    "match_status": "po zápase"
+   },
+   {
+    "hokejcz_id": 2928318,
+    "onlajny_id": 532981,
+    "date": "11-10-2026",
+    "time": "18:30",
+    "stream_url": "md",
+    "home": {
+     "hokejcz_id": 12,
+     "onlajny_id": 160,
+     "name": "HC DYNAMO PARDUBICE",
+     "short_name": "Pardubice",
+     "shortcut": "PCE"
+    },
+    "visitor": {
+     "hokejcz_id": 11,
+     "onlajny_id": 165,
+     "name": "HC Oceláři Třinec",
+     "short_name": "Třinec",
+     "shortcut": "TRI"
+    },
+    "score_home": 5,
+    "score_visitor": 4,
+    "score_periods": [
+     "2:0",
+     "0:2",
+     "2:2"
+    ],
+    "match_actual_time_alias": "KP",
+    "match_actual_time_name": "konec po prodloužení",
+    "match_status": "po zápase"
+   }
+  ]
+ }
+}
