@@ -48,3 +48,5 @@ export interface StandingsTable {
   updatedAt?: string;           // ISO: kdy se tabulka naposledy úspěšně stáhla (přenesené tabulky si starou hodnotu drží)
 }
 export interface StandingsFile { generatedAt: string; tables: StandingsTable[] }
+
+export * from './calendar';
