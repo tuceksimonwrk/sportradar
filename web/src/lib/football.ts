@@ -50,3 +50,8 @@ export function blockOpen(o: { searching: boolean; favCount: number; compact: bo
   if (o.override !== undefined) return o.override;
   return o.favCount > 0 || !o.compact;
 }
+
+/** '1 klub', '2 kluby', '5 klubů'. */
+export function clubsLabel(n: number): string {
+  return `${n} ${n === 1 ? 'klub' : n >= 2 && n <= 4 ? 'kluby' : 'klubů'}`;
+}

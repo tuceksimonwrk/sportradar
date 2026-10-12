@@ -57,3 +57,32 @@
 .seg__opt:hover { background: var(--card); }
 .seg__opt:focus-within { outline: 3px solid var(--focus); outline-offset: 1px; }
 .seg__opt--on, .seg__opt--on:hover { background: var(--ink); color: var(--chalk); }
+
+/* ---------- Fotbal: soutěže v Oblíbených ---------- */
+.fhint {
+  display: flex; align-items: flex-start; gap: 6px; margin: -2px 0 8px 32px;
+  color: var(--muted); font-size: .84rem; line-height: 1.35;
+}
+.fhint svg { flex: none; margin-top: 1px; color: var(--amber-ink); }
+.comp { border-top: 1px solid var(--line); }
+.comp__toggle {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 4px 10px;
+  width: 100%; min-height: 52px; padding: 8px 0; border: 0; background: none; color: inherit; text-align: left; cursor: pointer;
+}
+.comp__toggle:disabled { cursor: default; }
+.comp__name { min-width: 0; font: 700 1.12rem/1.1 var(--display); letter-spacing: .03em; text-transform: uppercase; overflow-wrap: anywhere; }
+.comp__meta { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: .82rem; white-space: nowrap; }
+.comp__badge {
+  display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px;
+  background: var(--sport); color: #fff; font-weight: 800; font-size: .78rem;
+}
+.comp__chev { color: var(--muted); transition: transform .2s var(--ease-out); }
+.comp--open .comp__chev { transform: rotate(180deg); }
+.comp__toggle:disabled .comp__chev { opacity: .35; }
+.comp .row--league { border-top: 0; min-height: 40px; padding-top: 0; font-weight: 600; }
+.comp__clubs { padding-left: 2px; }
+.comp__clubs .row:first-of-type { border-top: 1px solid var(--line); }
+.comp__sub { margin: 8px 0 2px; color: var(--muted); font-size: .76rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.comp__none { margin: 6px 0 10px; }
+@media (max-width: 419px) { .comp__count { display: none; } }
+@media (prefers-color-scheme: dark) { .comp__badge { color: var(--board); } }

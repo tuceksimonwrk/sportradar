@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Team } from '@sportradar/shared';
-import { blockOpen, footballBlocks, matchesQuery, normalizeQuery } from './football';
+import { blockOpen, clubsLabel, footballBlocks, matchesQuery, normalizeQuery } from './football';
 
 const team = (id: string, name: string, league?: string): Team => ({ id: `football:${id}`, sport: 'football', name, ...(league && { league }) });
 const teams: Team[] = [
@@ -72,5 +72,11 @@ describe('blockOpen', () => {
     expect(blockOpen({ searching: false, favCount: 1, compact: true })).toBe(true);
     expect(blockOpen({ searching: false, favCount: 0, compact: true })).toBe(false);
     expect(blockOpen({ searching: false, favCount: 0, compact: false })).toBe(true);
+  });
+});
+
+describe('clubsLabel', () => {
+  it('české tvary', () => {
+    expect([0, 1, 2, 4, 5, 20, 36].map(clubsLabel)).toEqual(['0 klubů', '1 klub', '2 kluby', '4 kluby', '5 klubů', '20 klubů', '36 klubů']);
   });
 });
