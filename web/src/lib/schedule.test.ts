@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import type { Match } from '@sportradar/shared';
-import { chunkMatches, competitionForSport, groupByDay, isFavorite, selectMatches, selectResults } from './schedule';
+import { ALL_FILTER, type Match, type MatchFilter } from '@sportradar/shared';
+import { chunkMatches, groupByDay, isFavorite, selectMatches, selectResults } from './schedule';
 
+const G = (group: MatchFilter['group'], competition = 'all'): MatchFilter => ({ group, competition });
 const m = (id: string, sport: Match['sport'], startsAt: string, teams: string[] = []): Match =>
   ({ id, sport, competition: 'c', startsAt, title: id, teams, broadcasters: [] });
 
@@ -31,20 +32,20 @@ describe('isFavorite', () => {
 describe('selectMatches', () => {
   it('živý zápas zůstává i po 3 h okně (nejdéle 4 h od začátku)', () => {
     const list = [m('a', 'nba', '2026-10-12T08:30:00Z'), m('b', 'nba', '2026-10-12T07:30:00Z'), m('c', 'nba', '2026-10-12T08:45:00Z')];
-    const r = selectMatches(list, new Set(), now, 'all', 'all', { showAll: true, liveIds: new Set(['a', 'b']) });
+    const r = selectMatches(list, new Set(), now, ALL_FILTER, { showAll: true, liveIds: new Set(['a', 'b']) });
     expect(r.map((x) => x.id)).toEqual(['a']);
-    expect(selectMatches(list, new Set(), now, 'all', 'all', { showAll: true }).map((x) => x.id)).toEqual([]);
+    expect(selectMatches(list, new Set(), now, ALL_FILTER, { showAll: true }).map((x) => x.id)).toEqual([]);
   });
   it('windowMs rozšíří okno (pro výběr kandidátů živého skóre)', () => {
     const list = [m('a', 'nba', '2026-10-12T08:30:00Z'), m('b', 'nba', '2026-10-12T07:30:00Z')];
-    expect(selectMatches(list, new Set(), now, 'all', 'all', { showAll: true, windowMs: 4 * 3600_000 }).map((x) => x.id)).toEqual(['a']);
+    expect(selectMatches(list, new Set(), now, ALL_FILTER, { showAll: true, windowMs: 4 * 3600_000 }).map((x) => x.id)).toEqual(['a']);
   });
   it('jen oblíbené, bez zápasů starších než 3 h, seřazené', () => {
     const r = selectMatches(all, new Set(['nhl:PIT', 'cz-hockey:PCE', 'f1']), now);
     expect(r.map((x) => x.id)).toEqual(['live', 'pce', 'f1']);
   });
   it('filtr podle sportu', () => {
-    const r = selectMatches(all, new Set(['nhl:PIT', 'f1']), now, 'f1');
+    const r = selectMatches(all, new Set(['nhl:PIT', 'f1']), now, G('f1'));
     expect(r.map((x) => x.id)).toEqual(['f1']);
   });
   it('prázdné oblíbené → prázdný výsledek', () => {
@@ -77,7 +78,7 @@ describe('selectResults', () => {
     expect(selectResults(list, favs, now).map((x) => x.id)).toEqual(['r-new', 'r-mid', 'r-f1', 'r-edge']);
   });
   it('filtr podle sportu', () => {
-    expect(selectResults(list, favs, now, 'cz-hockey').map((x) => x.id)).toEqual(['r-mid']);
+    expect(selectResults(list, favs, now, G('hockey', 'cz-hockey')).map((x) => x.id)).toEqual(['r-mid']);
   });
   it('prázdné oblíbené → nic', () => {
     expect(selectResults(list, new Set(), now)).toEqual([]);
@@ -90,13 +91,13 @@ describe('selectResults', () => {
 
 describe('showAll', () => {
   it('Program: showAll ignoruje oblíbené, ale drží okno, výsledky a filtr sportu', () => {
-    expect(selectMatches(all, new Set(), now, 'all', 'all', { showAll: true }).map((x) => x.id)).toEqual(['live', 'pce', 'other', 'f1']);
-    expect(selectMatches(all, new Set(['f1']), now, 'cz-hockey', 'all', { showAll: true }).map((x) => x.id)).toEqual(['pce', 'other']);
+    expect(selectMatches(all, new Set(), now, ALL_FILTER, { showAll: true }).map((x) => x.id)).toEqual(['live', 'pce', 'other', 'f1']);
+    expect(selectMatches(all, new Set(['f1']), now, G('hockey', 'cz-hockey'), { showAll: true }).map((x) => x.id)).toEqual(['pce', 'other']);
     expect(selectMatches(all, new Set(['f1']), now).map((x) => x.id)).toEqual(['f1']);
   });
   it('Výsledky: showAll vrátí i výsledky neoblíbených', () => {
     const list = [r('a', 'nhl', '2026-10-11T10:00:00Z', ['nhl:BOS']), r('b', 'f1', '2026-10-10T10:00:00Z')];
-    expect(selectResults(list, new Set(), now, 'all', 'all', { showAll: true }).map((x) => x.id)).toEqual(['a', 'b']);
+    expect(selectResults(list, new Set(), now, ALL_FILTER, { showAll: true }).map((x) => x.id)).toEqual(['a', 'b']);
     expect(selectResults(list, new Set(), now).map((x) => x.id)).toEqual([]);
   });
 });
@@ -143,22 +144,28 @@ describe('filtr soutěže (fotbal)', () => {
   ];
   const favs = new Set(['football', 'nhl:PIT']);
   it('Program: jen vybraná soutěž, když je zvolený fotbal', () => {
-    expect(selectMatches(list, favs, now, 'football', 'eng.1').map((x) => x.id)).toEqual(['pl']);
-    expect(selectMatches(list, favs, now, 'football', 'uefa.champions').map((x) => x.id)).toEqual(['cl']);
-    expect(selectMatches(list, favs, now, 'football', 'all').map((x) => x.id)).toEqual(['pl', 'cl', 'cz']);
+    expect(selectMatches(list, favs, now, G('football', 'eng.1')).map((x) => x.id)).toEqual(['pl']);
+    expect(selectMatches(list, favs, now, G('football', 'uefa.champions')).map((x) => x.id)).toEqual(['cl']);
+    expect(selectMatches(list, favs, now, G('football', 'all')).map((x) => x.id)).toEqual(['pl', 'cl', 'cz']);
   });
   it('Výsledky: jen vybraná soutěž', () => {
-    expect(selectResults(list, favs, now, 'football', 'cze.1').map((x) => x.id)).toEqual(['cz-r']);
-    expect(selectResults(list, favs, now, 'football').map((x) => x.id)).toEqual(['pl-r', 'cz-r']);
+    expect(selectResults(list, favs, now, G('football', 'cze.1')).map((x) => x.id)).toEqual(['cz-r']);
+    expect(selectResults(list, favs, now, G('football')).map((x) => x.id)).toEqual(['pl-r', 'cz-r']);
   });
-  it('mimo fotbal se soutěž ignoruje', () => {
-    expect(selectMatches(list, favs, now, 'all', 'eng.1').map((x) => x.id)).toEqual(['pl', 'pit', 'cl', 'cz']);
-    expect(selectMatches(list, favs, now, 'nhl', 'eng.1').map((x) => x.id)).toEqual(['pit']);
+  it('soutěž cizí skupiny se ignoruje', () => {
+    expect(selectMatches(list, favs, now, G('all', 'eng.1')).map((x) => x.id)).toEqual(['pl', 'pit', 'cl', 'cz']);
+    expect(selectMatches(list, favs, now, G('hockey', 'eng.1')).map((x) => x.id)).toEqual(['pit']);
   });
-  it('competitionForSport: soutěž zůstává jen u fotbalu', () => {
-    expect(competitionForSport('football', 'eng.1')).toBe('eng.1');
-    expect(competitionForSport('nhl', 'eng.1')).toBe('all');
-    expect(competitionForSport('all', 'cze.1')).toBe('all');
-    expect(competitionForSport('football', 'xyz.9')).toBe('all'); // neznámá soutěž
+  it('hokej/basketbal: soutěž = interní sport; Vše ve skupině', () => {
+    const l = [m('n', 'nhl', '2026-10-13T23:00:00Z'), m('e', 'cz-hockey', '2026-10-13T18:00:00Z'), m('b', 'nba', '2026-10-13T20:00:00Z'), m('l', 'cz-basket', '2026-10-13T19:00:00Z')];
+    const all = new Set(['nhl', 'cz-hockey', 'nba', 'cz-basket']);
+    const ids = (f: MatchFilter) => selectMatches(l, all, now, f).map((x) => x.id);
+    expect(ids(G('hockey'))).toEqual(['e', 'n']);
+    expect(ids(G('hockey', 'nhl'))).toEqual(['n']);
+    expect(ids(G('hockey', 'cz-hockey'))).toEqual(['e']);
+    expect(ids(G('basketball'))).toEqual(['l', 'b']);
+    expect(ids(G('basketball', 'cz-basket'))).toEqual(['l']);
+    expect(ids(G('basketball', 'nhl'))).toEqual(['l', 'b']); // cizí soutěž se ignoruje
   });
+
 });

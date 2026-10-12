@@ -1,7 +1,8 @@
-import type { Sport, StandingsFile } from '@sportradar/shared';
+import { filterSport, type GroupId, type StandingsFile } from '@sportradar/shared';
 import { ListOrdered, TriangleAlert } from 'lucide-react';
-import { oldestUpdatedAt, showTableSelector, tablesForSport } from '../lib/standings';
+import { oldestUpdatedAt, tablesForStandingsFilter, type StandingsFilter } from '../lib/standings';
 import { isStale } from '../lib/time';
+import { CompetitionChips } from './CompetitionChips';
 import { artFor } from './SportArt';
 import { SportChips } from './SportChips';
 import { StandingsTable } from './StandingsTable';
@@ -9,26 +10,24 @@ import { EmptyState, PageHead } from './ui';
 
 interface Props {
   standings: StandingsFile | null;   // null = soubor se nepodařilo načíst
-  sport: Sport;
-  onSport: (s: Sport) => void;
-  tableId?: string;                  // vybraná tabulka (jen u sportů s výběrem tabulky)
-  onTable: (id: string) => void;
+  filter: StandingsFilter;           // sport + soutěž (F1 bez soutěže)
+  onGroup: (g: GroupId) => void;
+  onCompetition: (c: string) => void;
   favs: string[];
   now: Date;
 }
 
-export function StandingsView({ standings, sport, onSport, tableId, onTable, favs, now }: Props) {
-  const tables = tablesForSport(standings, sport);
-  const selector = showTableSelector(tables);
-  const shown = selector ? tables.filter((t) => t.id === tableId).slice(0, 1) : tables;
-  if (selector && shown.length === 0) shown.push(tables[0]);
-  const updated = standings ? oldestUpdatedAt(shown, standings.generatedAt ?? "") : "";
+export function StandingsView({ standings, filter, onGroup, onCompetition, favs, now }: Props) {
+  const sport = filterSport(filter);
+  const tables = tablesForStandingsFilter(standings, filter);
+  const updated = standings ? oldestUpdatedAt(tables, standings.generatedAt ?? "") : "";
   const stale = standings ? isStale(updated, now) : false;
   let start = 0;
   return (
     <>
       <PageHead icon={<ListOrdered size={22} strokeWidth={1.75} />} title="Tabulky" subtitle="Aktuální pořadí v soutěžích" sport={sport} />
-      <SportChips sport={sport} onSport={(s) => s !== 'all' && onSport(s)} withAll={false} />
+      <SportChips group={filter.group} onGroup={(g) => g !== 'all' && onGroup(g)} withAll={false} />
+      <CompetitionChips group={filter.group} competition={filter.competition} onCompetition={onCompetition} withAll={false} />
       {!standings && (
         <EmptyState art={artFor(sport)} icon={<TriangleAlert size={26} strokeWidth={1.75} />}
           title="Tabulku se nepodařilo načíst" text="Zkus to prosím za chvíli znovu."
@@ -36,21 +35,13 @@ export function StandingsView({ standings, sport, onSport, tableId, onTable, fav
       )}
       {standings && tables.length === 0 && (
         <EmptyState art={artFor(sport)} icon={<ListOrdered size={26} strokeWidth={1.75} />}
-          title="Pro tento sport zatím není tabulka" text="Sezóna možná ještě nezačala." />
+          title="Pro tento výběr zatím není tabulka" text="Sezóna možná ještě nezačala." />
       )}
       {standings && tables.length > 0 && stale && (
         <div className="banner banner--warn"><TriangleAlert size={18} aria-hidden="true" />Tabulky nemusí být aktuální.</div>
       )}
-      {selector && (
-        <div className="chips chips--sub" role="group" aria-label="Výběr tabulky" data-sport={sport}>
-          {tables.map((t) => (
-            <button key={t.id} type="button" className={`chip chip--sub${t.id === shown[0].id ? ' chip--on' : ''}`}
-              aria-pressed={t.id === shown[0].id} onClick={() => onTable(t.id)}>{t.title}</button>
-          ))}
-        </div>
-      )}
-      {shown.map((t) => {
-        const el = <StandingsTable key={t.id} table={t} sport={sport} favs={favs} startIndex={start} />;
+      {tables.map((t) => {
+        const el = <StandingsTable key={t.id} table={t} sport={t.sport} favs={favs} startIndex={start} />;
         start += t.rows.length;
         return el;
       })}

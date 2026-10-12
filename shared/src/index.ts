@@ -82,6 +82,7 @@ export interface StandingsTable {
 }
 export interface StandingsFile { generatedAt: string; tables: StandingsTable[] }
 
+export * from './groups';
 export * from './calendar';
 export * from './detail';
 export * from './live-feed';

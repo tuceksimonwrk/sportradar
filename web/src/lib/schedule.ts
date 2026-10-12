@@ -1,4 +1,4 @@
-import { competitionById, leagueFavoriteId, type Match, type Sport } from '@sportradar/shared';
+import { ALL_FILTER, leagueFavoriteId, matchPassesFilter, type Match, type MatchFilter } from '@sportradar/shared';
 import { LIVE_AFTER_MS } from './live';
 import { dayKey } from './time';
 
@@ -10,37 +10,25 @@ export function isFavorite(m: Match, favs: ReadonlySet<string>): boolean {
     || (!!m.competitionId && favs.has(leagueFavoriteId(m.competitionId)));
 }
 
-/** Soutěž ve filtru dává smysl jen u fotbalu a jen známá; jinak 'all'. */
-export function competitionForSport(sport: Sport | 'all', competition: string): string {
-  return sport === 'football' && competitionById(competition) ? competition : 'all';
-}
-
-/** Filtr sportu a (u fotbalu) soutěže podle `match.competitionId`. */
-function inView(m: Match, sport: Sport | 'all', competition: string): boolean {
-  if (sport !== 'all' && m.sport !== sport) return false;
-  const comp = competitionForSport(sport, competition);
-  return comp === 'all' || m.competitionId === comp;
-}
-
 export interface SelectOptions {
   showAll?: boolean;
   windowMs?: number;               // jak dlouho po začátku zápas ještě bereme jako probíhající (výchozí 3 h)
   liveIds?: ReadonlySet<string>;   // zápasy živě hlášené zdrojem: zůstávají viditelné až do LIVE_AFTER_MS
 }
 
-export function selectMatches(matches: Match[], favs: ReadonlySet<string>, now: Date, sport: Sport | 'all' = 'all', competition = 'all', opts: SelectOptions = {}): Match[] {
+export function selectMatches(matches: Match[], favs: ReadonlySet<string>, now: Date, filter: MatchFilter = ALL_FILTER, opts: SelectOptions = {}): Match[] {
   const cutoff = now.getTime() - (opts.windowMs ?? ONGOING_WINDOW_MS);
   const liveCutoff = now.getTime() - Math.max(opts.windowMs ?? 0, LIVE_AFTER_MS);
   return matches
-    .filter((m) => Date.parse(m.startsAt) >= (opts.liveIds?.has(m.id) ? liveCutoff : cutoff) && inView(m, sport, competition) && (opts.showAll || isFavorite(m, favs)) && !m.result)
+    .filter((m) => Date.parse(m.startsAt) >= (opts.liveIds?.has(m.id) ? liveCutoff : cutoff) && matchPassesFilter(m, filter) && (opts.showAll || isFavorite(m, favs)) && !m.result)
     .sort((a, b) => a.startsAt.localeCompare(b.startsAt) || a.id.localeCompare(b.id));
 }
 
 /** Odehrané zápasy oblíbených za posledních 14 dní, nejnovější první. */
-export function selectResults(matches: Match[], favs: ReadonlySet<string>, now: Date, sport: Sport | 'all' = 'all', competition = 'all', opts: SelectOptions = {}): Match[] {
+export function selectResults(matches: Match[], favs: ReadonlySet<string>, now: Date, filter: MatchFilter = ALL_FILTER, opts: SelectOptions = {}): Match[] {
   const cutoff = now.getTime() - RESULTS_WINDOW_MS;
   return matches
-    .filter((m) => m.result && Date.parse(m.startsAt) >= cutoff && inView(m, sport, competition) && (opts.showAll || isFavorite(m, favs)))
+    .filter((m) => m.result && Date.parse(m.startsAt) >= cutoff && matchPassesFilter(m, filter) && (opts.showAll || isFavorite(m, favs)))
     .sort((a, b) => b.startsAt.localeCompare(a.startsAt) || a.id.localeCompare(b.id));
 }
 

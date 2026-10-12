@@ -1,16 +1,18 @@
-import { COMPETITIONS } from '@sportradar/shared';
+import { competitionsOfGroup, type GroupId } from '@sportradar/shared';
 
-const FOOTBALL = COMPETITIONS.filter((c) => c.sport === 'football');
-
-/** Druhá řada čipů pod „Fotbal“: Vše + soutěže (filtr podle `match.competitionId`). */
-export function CompetitionChips({ competition, onCompetition }: { competition: string; onCompetition: (c: string) => void }) {
-  const items = [{ id: 'all', name: 'Všechny soutěže', title: undefined as string | undefined }, ...FOOTBALL.map((c) => ({ id: c.id, name: c.name, title: `${c.name} (${c.country})` }))];
+/** Druhá řada čipů pod vybraným sportem: soutěže skupiny (u hokeje a basketbalu interní sporty, u fotbalu ligy). Bez soutěží (Vše, F1) se nevykreslí. */
+export function CompetitionChips({ group, competition, onCompetition, withAll = true }: {
+  group: GroupId | 'all'; competition: string; onCompetition: (c: string) => void; withAll?: boolean;
+}) {
+  const comps = group === 'all' ? [] : competitionsOfGroup(group);
+  if (comps.length === 0) return null;
+  const items = [...(withAll ? [{ id: 'all', label: 'Vše', title: undefined as string | undefined, sport: undefined }] : []), ...comps];
   return (
-    <div className="chips chips--sub" role="group" aria-label="Filtr fotbalových soutěží" data-sport="football">
+    <div className="chips chips--sub" role="group" aria-label="Soutěž">
       {items.map((c) => (
-        <button key={c.id} type="button" className={`chip chip--sub${competition === c.id ? ' chip--on' : ''}`}
+        <button key={c.id} type="button" data-sport={c.sport} className={`chip chip--sub${competition === c.id ? ' chip--on' : ''}`}
           aria-pressed={competition === c.id} title={c.title} onClick={() => onCompetition(c.id)}>
-          {c.name}
+          {c.label}
         </button>
       ))}
     </div>
