@@ -191,6 +191,7 @@ a.badge:hover { background: var(--ink); color: var(--chalk); }
 
 @media (min-width: 560px) {
   .card { grid-template-columns: 92px 1fr; }
+  .card--hero { grid-template-columns: 1fr; }
   .card__time strong { font-size: 2.3rem; }
   .card--hero .card__time strong { font-size: 5rem; }
   .card--hero .card__title { font-size: 2.3rem; }
