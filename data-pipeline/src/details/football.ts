@@ -111,7 +111,10 @@ export interface FootballDetailInput { match: Match; summary: any; standings: St
 
 export function parseFootballDetail({ match, summary, standings, now }: FootballDetailInput): MatchDetail {
   const sides = sidesOf(match);
-  const home = espnIdOf(match.teams[0]); const away = espnIdOf(match.teams[1]);
+  // české kluby mají id z chanceliga.cz → ESPN id strany ze summary (domácí/hosté)
+  const header: any[] = summary?.header?.competitions?.[0]?.competitors ?? [];
+  const side = (i: number, ha: string) => espnIdOf(match.teams[i]) ?? (header.find((c) => c?.homeAway === ha)?.id ?? header.find((c) => c?.homeAway === ha)?.team?.id)?.toString();
+  const home = side(0, 'home'); const away = side(1, 'away');
   const stats = [...tableBlock(match, standings), ...lastFive(summary, home, away), ...headToHead(summary, home, away)];
   const rosters: any[] = Array.isArray(summary?.rosters) ? summary.rosters : [];
   const rosterOf = (id?: string, side?: string) => rosters.find((r) => String(r?.team?.id) === id) ?? rosters.find((r) => r?.homeAway === side);

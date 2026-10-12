@@ -1,0 +1,195 @@
+{
+ "events": [
+  {
+   "id": "401915436",
+   "date": "2026-10-13T16:45Z",
+   "name": "Slavia Prague at Sabah FK",
+   "shortName": "SLP @ SAB",
+   "status": {
+    "type": {
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "shortDetail": "Scheduled"
+    }
+   },
+   "competitions": [
+    {
+     "venue": {
+      "id": "6477",
+      "fullName": "Baku Olympic Stadium",
+      "address": {
+       "city": "Baku",
+       "country": "Azerbaijan"
+      }
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "0",
+       "team": {
+        "id": "21922",
+        "abbreviation": "SAB",
+        "displayName": "Sabah FK",
+        "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/21922.png"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "0",
+       "team": {
+        "id": "494",
+        "abbreviation": "SLP",
+        "displayName": "Slavia Prague",
+        "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/494.png"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "753131",
+   "date": "2025-07-22T17:00Z",
+   "name": "Servette at Viktoria Plzen",
+   "shortName": "SER @ PLZ",
+   "status": {
+    "type": {
+     "name": "STATUS_FULL_TIME",
+     "state": "post",
+     "completed": true,
+     "shortDetail": "FT"
+    }
+   },
+   "competitions": [
+    {
+     "venue": {
+      "id": "4593",
+      "fullName": "Doosan Arena",
+      "address": {
+       "city": "Plzen",
+       "country": "Czechia"
+      }
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "0",
+       "team": {
+        "id": "11706",
+        "abbreviation": "PLZ",
+        "displayName": "Viktoria Plzen",
+        "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/11706.png"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "1",
+       "team": {
+        "id": "20032",
+        "abbreviation": "SER",
+        "displayName": "Servette",
+        "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/20032.png"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401898023",
+   "date": "2026-08-04T18:00Z",
+   "name": "Lyon at Sparta Prague",
+   "shortName": "LYON @ SPP",
+   "status": {
+    "type": {
+     "name": "STATUS_FULL_TIME",
+     "state": "post",
+     "completed": true,
+     "shortDetail": "FT"
+    }
+   },
+   "competitions": [
+    {
+     "venue": {
+      "id": "10944",
+      "fullName": "Generali Arena",
+      "address": {
+       "city": "Prague",
+       "country": "Czechia"
+      }
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "2",
+       "team": {
+        "id": "433",
+        "abbreviation": "SPP",
+        "displayName": "Sparta Prague",
+        "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/433.png"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "1",
+       "team": {
+        "id": "167",
+        "abbreviation": "LYON",
+        "displayName": "Lyon",
+        "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/167.png"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401877809",
+   "date": "2026-07-09T17:00Z",
+   "name": "St. Joseph's at Bohemians",
+   "shortName": "STJ @ BOH",
+   "status": {
+    "type": {
+     "name": "STATUS_FULL_TIME",
+     "state": "post",
+     "completed": true,
+     "shortDetail": "FT"
+    }
+   },
+   "competitions": [
+    {
+     "venue": {
+      "id": "1234",
+      "fullName": "Dalymount Park",
+      "address": {
+       "city": "Dublin"
+      }
+     },
+     "competitors": [
+      {
+       "homeAway": "home",
+       "score": "2",
+       "team": {
+        "id": "615",
+        "abbreviation": "BOH",
+        "displayName": "Bohemians",
+        "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/615.png"
+       }
+      },
+      {
+       "homeAway": "away",
+       "score": "0",
+       "team": {
+        "id": "18751",
+        "abbreviation": "STJ",
+        "displayName": "St. Joseph's",
+        "logo": ""
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

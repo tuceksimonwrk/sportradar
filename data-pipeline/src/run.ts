@@ -3,6 +3,7 @@ import { isMatchDetail, type MatchDetail, type MatchesFile, type Sport, type Sta
 import { applyBroadcasters, parseBroadcasters } from './broadcasters';
 import { isSuspiciousEmpty, mergeDatasets, mergeStandings, resolveStandingsTeamIds, upcomingCount, type Dataset, type SportOutcome } from './merge';
 import { buildCalendarFiles } from './calendar';
+import { unifyFootballClubs } from './clubs';
 import { applyVenues, parseVenues } from './venues';
 import type { Adapter } from './types';
 import { f1Adapter } from './adapters/f1';
@@ -58,12 +59,17 @@ async function main() {
     }
   }));
 
-  const merged = mergeDatasets(prev, outcomes, now);
+  const mergedRaw = mergeDatasets(prev, outcomes, now);
   // týmy z tohoto běhu + z minula (klub, který zrovna nehraje v načteném okně, jinak zůstal bez teamId)
-  const knownTeams = [...new Map([...prev.teams, ...merged.teams].map((t) => [t.id, t])).values()];
-  const resolved = resolveStandingsTeamIds(mergeStandings(prevStandings, outcomes, now), knownTeams);
-  const tables = resolved.tables;
+  const knownRaw = [...new Map([...prev.teams, ...mergedRaw.teams].map((t) => [t.id, t])).values()];
+  const resolved = resolveStandingsTeamIds(mergeStandings(prevStandings, outcomes, now), knownRaw);
   for (const [sport, u] of Object.entries(resolved.unresolved)) console.log(`::warning::${sport}: ${u.missing} z ${u.total} řádků tabulky bez teamId`);
+  // jedna identita českého klubu (chanceliga.cz) i v Lize mistrů (ESPN) – nad sloučenými daty, tedy i nad převzatými z minula
+  const uni = unifyFootballClubs({ matches: mergedRaw.matches, teams: knownRaw }, resolved.tables);
+  const merged = { matches: uni.matches, teams: unifyFootballClubs({ matches: [], teams: mergedRaw.teams }, []).teams };
+  const knownTeams = uni.teams;
+  const tables = uni.tables;
+  if (uni.unified.length) console.log(`[ok]   football: sjednocené kluby: ${uni.unified.map((u) => `${u.espnName} (${u.from}) → ${u.name} (${u.to})`).join(', ')}`);
   let matches = merged.matches;
   try {
     const cfg = parseBroadcasters(await readFile(new URL('../broadcasters.yml', import.meta.url), 'utf8'));

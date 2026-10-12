@@ -55,6 +55,18 @@ describe('parseFootballDetail – před zveřejněním sestav', () => {
   });
 });
 
+describe('parseFootballDetail – český klub s id z chanceliga.cz (sjednocená identita)', () => {
+  it('ESPN id strany se dohledá ze summary podle domácí/hosté; teamId v sestavě zůstává české', () => {
+    const czHome: Match = { ...covNew, teams: ['football:cz_sk-slavia-praha', 'football:361'] };
+    const d = parseFootballDetail({ match: czHome, summary: pre, standings: [], now });
+    expect(r(d, 'Posledních 5 zápasů', 'Forma')).toMatchObject({ home: 'P P P P V' });
+    expect(blk(d, 'Vzájemné zápasy')!.rows[0]).toMatchObject({ home: 0, away: 4 });
+    const l = parseFootballDetail({ match: { ...livMci, teams: ['football:cz_sk-slavia-praha', 'football:382'] }, summary: lineups, standings: [], now });
+    expect(l.lineups!.home.teamId).toBe('football:cz_sk-slavia-praha');
+    expect(l.lineups!.home.groups[0].players).toHaveLength(11);
+  });
+});
+
 describe('parseFootballDetail – potvrzené sestavy', () => {
   const d = parseFootballDetail({ match: livMci, summary: lineups, standings: [], now });
   it('základní sestava s rozestavením + střídající', () => {
