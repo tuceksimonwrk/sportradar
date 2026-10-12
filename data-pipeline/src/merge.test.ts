@@ -80,6 +80,28 @@ describe('mergeDatasets – výsledky', () => {
   });
 });
 
+describe('mergeDatasets – fotbal: náhrada za selhanou soutěž', () => {
+  const fb = (id: string, comp: string, startsAt = '2026-10-15T00:00:00.000Z', result?: Match['result']): Match =>
+    ({ ...m(id, 'football', startsAt), competitionId: comp, ...(result && { result }) });
+  const team = (id: string, league?: string): Team => ({ id, sport: 'football', name: id, ...(league && { league }) });
+  const prevFb = {
+    matches: [fb('football:pl-old', 'eng.1'), fb('football:cz-old', 'cze.1'), fb('football:cz-res', 'cze.1', '2026-10-10T00:00:00.000Z', { home: 1, away: 1 }), fb('football:ucl-old', 'uefa.champions')],
+    teams: [team('football:1', 'eng.1'), team('football:cz_a', 'cze.1'), team('football:9', 'uefa.champions'), team('football:x')],
+  };
+  it('selhaná soutěž si ponechá předchozí zápasy a týmy; úspěšné se nahradí čerstvými', () => {
+    const r = mergeDatasets(prevFb, { football: {
+      matches: [fb('football:pl-new', 'eng.1'), fb('football:ucl-new', 'uefa.champions')], teams: [team('football:1', 'eng.1'), team('football:9', 'uefa.champions')],
+      failedCompetitions: ['cze.1'],
+    } }, now);
+    expect(r.matches.map((x) => x.id).sort()).toEqual(['football:cz-old', 'football:cz-res', 'football:pl-new', 'football:ucl-new']);
+    expect(r.teams.map((x) => x.id).sort()).toEqual(['football:1', 'football:9', 'football:cz_a']);
+  });
+  it('bez failedCompetitions se staré nadcházející zápasy nepřenesou', () => {
+    const r = mergeDatasets(prevFb, { football: { matches: [fb('football:pl-new', 'eng.1')], teams: [] } }, now);
+    expect(r.matches.map((x) => x.id).sort()).toEqual(['football:cz-res', 'football:pl-new']);
+  });
+});
+
 describe('upcomingCount', () => {
   it('výsledky se nepočítají', () => {
     expect(upcomingCount([res('a', 'nhl', '2026-10-11T00:00:00.000Z'), m('b', 'nhl', '2026-10-15T00:00:00.000Z')])).toBe(1);

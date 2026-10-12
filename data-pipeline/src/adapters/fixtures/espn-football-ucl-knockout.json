@@ -1,0 +1,148 @@
+{
+ "events": [
+  {
+   "id": "401858765",
+   "date": "2026-02-25T20:00Z",
+   "name": "Galatasaray at Juventus",
+   "shortName": "GAL @ JUV",
+   "season": {
+    "year": 2025,
+    "type": 13681,
+    "slug": "knockout-round-playoffs"
+   },
+   "status": {
+    "type": {
+     "name": "STATUS_FINAL_AET",
+     "state": "post",
+     "completed": true,
+     "description": "Final Score - After Extra Time",
+     "detail": "AET",
+     "shortDetail": "AET"
+    }
+   },
+   "competitions": [
+    {
+     "id": "401858765",
+     "venue": {
+      "id": "4600",
+      "fullName": "Allianz Stadium",
+      "address": {
+       "city": "Torino",
+       "country": "Italy"
+      }
+     },
+     "notes": [
+      {
+       "text": "2nd Leg - Galatasaray advance 7-5 on aggregate",
+       "headline": "2nd Leg - Galatasaray advance 7-5 on aggregate",
+       "type": "event"
+      }
+     ],
+     "competitors": [
+      {
+       "id": "111",
+       "homeAway": "home",
+       "winner": false,
+       "score": "3",
+       "form": "DWWLD",
+       "team": {
+        "id": "111",
+        "abbreviation": "JUV",
+        "displayName": "Juventus",
+        "shortDisplayName": "Juventus",
+        "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/111.png"
+       }
+      },
+      {
+       "id": "432",
+       "homeAway": "away",
+       "winner": true,
+       "score": "2",
+       "form": "DLWLW",
+       "team": {
+        "id": "432",
+        "abbreviation": "GAL",
+        "displayName": "Galatasaray",
+        "shortDisplayName": "Galatasaray",
+        "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/432.png"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "401862897",
+   "date": "2026-05-30T16:00Z",
+   "name": "Arsenal at Paris Saint-Germain",
+   "shortName": "ARS @ PSG",
+   "season": {
+    "year": 2025,
+    "type": 13677,
+    "slug": "final"
+   },
+   "status": {
+    "type": {
+     "name": "STATUS_FINAL_PEN",
+     "state": "post",
+     "completed": true,
+     "description": "Final Score - After Penalties",
+     "detail": "FT-Pens",
+     "shortDetail": "FT-Pens"
+    }
+   },
+   "competitions": [
+    {
+     "id": "401862897",
+     "venue": {
+      "id": "8121",
+      "fullName": "Puskás Aréna",
+      "address": {
+       "city": "Budapest",
+       "country": "Hungary"
+      }
+     },
+     "notes": [
+      {
+       "text": "Paris Saint-Germain win 4-3 on penalties",
+       "headline": "Paris Saint-Germain win 4-3 on penalties",
+       "type": "event"
+      }
+     ],
+     "competitors": [
+      {
+       "id": "160",
+       "homeAway": "home",
+       "winner": true,
+       "score": "1",
+       "shootoutScore": 4,
+       "form": "DWWWL",
+       "team": {
+        "id": "160",
+        "abbreviation": "PSG",
+        "displayName": "Paris Saint-Germain",
+        "shortDisplayName": "PSG",
+        "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/160.png"
+       }
+      },
+      {
+       "id": "359",
+       "homeAway": "away",
+       "winner": false,
+       "score": "1",
+       "shootoutScore": 3,
+       "form": "DLWWW",
+       "team": {
+        "id": "359",
+        "abbreviation": "ARS",
+        "displayName": "Arsenal",
+        "shortDisplayName": "Arsenal",
+        "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/359.png"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

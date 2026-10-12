@@ -10,11 +10,12 @@ import { nhlAdapter } from './adapters/nhl';
 import { nbaAdapter } from './adapters/nba';
 import { elhAdapter } from './adapters/elh';
 import { nblAdapter } from './adapters/nbl';
+import { footballAdapter } from './adapters/football';
 import { buildDetailIndex, createFetcher, generateDetails, selectDetailMatches, staleDetailFiles } from './details';
 import { getJson, getText } from './util';
 
 const OUT = new URL('../../web/public/data/', import.meta.url);
-const adapters: Adapter[] = [f1Adapter, nhlAdapter, nbaAdapter, elhAdapter, nblAdapter];
+const adapters: Adapter[] = [f1Adapter, nhlAdapter, nbaAdapter, elhAdapter, nblAdapter, footballAdapter];
 
 async function readPrev<T>(name: string): Promise<T | null> {
   try { return JSON.parse(await readFile(new URL(name, OUT), 'utf8')) as T; } catch { /* zkusíme URL */ }
@@ -42,6 +43,9 @@ async function main() {
       console.log(`[ok]   ${a.sport}: ${upcoming} zápasů, ${r.matches.length - upcoming} výsledků, ${r.teams.length} týmů`);
       if (r.standings?.length) console.log(`[ok]   ${a.sport}: ${r.standings.length} tabulek`);
       else if (r.standings) console.log(`[ok]   ${a.sport}: tabulka zatím prázdná`);
+      for (const l of r.log ?? []) console.log(`[ok]   ${a.sport}: ${l}`);
+      for (const w of r.warnings ?? []) console.log(`::warning::${a.sport}: ${w}`);
+      for (const c of r.failedCompetitions ?? []) failed.push(`${a.sport}-${c}`);
       if (r.standingsError) { failed.push(`${a.sport}-tabulka`); console.log(`::warning::${a.sport}: tabulka selhala: ${r.standingsError}`); }
       if (upcoming === 0) {
         if (isSuspiciousEmpty(prev, a.sport, now)) { failed.push(a.sport); console.log(`::warning::${a.sport}: 0 zápasů, ponechávám stará data`); }

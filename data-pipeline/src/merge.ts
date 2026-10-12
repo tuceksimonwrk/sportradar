@@ -33,6 +33,12 @@ export function mergeDatasets(prev: Dataset, outcomes: Partial<Record<Sport, Spo
       }
       const prevLogo = new Map(prev.teams.filter((p) => p.sport === sport && p.logo).map((p) => [p.id, p.logo!]));
       for (const x of fresh.teams) teams.set(x.id, !x.logo && prevLogo.has(x.id) ? { ...x, logo: prevLogo.get(x.id)! } : x);
+      // částečné selhání (fotbal: jeden zdroj/soutěž): zápasy a týmy selhané soutěže zůstanou z minula
+      const failedComps = new Set(fresh.failedCompetitions ?? []);
+      if (failedComps.size) {
+        for (const x of prevMatches) if (x.competitionId && failedComps.has(x.competitionId) && !matches.has(x.id)) matches.set(x.id, x);
+        for (const x of prev.teams) if (x.sport === sport && x.league && failedComps.has(x.league) && !teams.has(x.id)) teams.set(x.id, x);
+      }
     } else {
       // chyba / žádné nadcházející zápasy: ponecháme staré, jen případné nové výsledky přidáme
       for (const x of prevMatches) matches.set(x.id, x);
