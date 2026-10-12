@@ -13,5 +13,22 @@ bySport:
     - { name: TV Tipsport, url: "https://www.tvtipsport.cz", checked: "2026-10-12", source: "https://www.mediaguru.cz/hokejova-tipsport-liga-startuje-prinesou-ji-oneplay-ct-i-tipsport-tv" }
   cz-basket:
     - { name: Prima Sport, url: "https://www.iprima.cz", checked: "2026-10-12", source: "https://cnn.iprima.cz/zacina-nova-era-ceske-basketbalove-elity-maxa-nbl-prinasi-obri-zmeny-523173" }
+  football: []   # fotbal se přiřazuje podle soutěže (byCompetition)
+# Fotbal podle Match.competitionId (sezóna 2026/27). Neověřené soutěže zůstávají prázdné.
+byCompetition:
+  eng.1:
+    - { name: Canal+ Sport, url: "https://www.canalplus.cz", checked: "2026-10-12", source: "https://www.lupa.cz/clanky/jarni-fotbal-na-obrazovce-pruvodce-soutezemi-kanaly-a-tarify/" }
+  esp.1:
+    - { name: Nova Sport, url: "https://tn.nova.cz/sport", checked: "2026-10-12", source: "https://www.mediaguru.cz/oneplay-nasadi-oddil-b-ci-love-island-oneplay-sport-potahne-liga-mistru-i-domaci-souteze" }
+  ita.1:
+    - { name: "Sport1 / Sport2", url: "https://www.sport1tv.cz", checked: "2026-10-12", source: "https://www.sportcal.com/?p=114455" }
+  ger.1:
+    - { name: Nova Sport, url: "https://tn.nova.cz/sport", checked: "2026-10-12", source: "https://www.mediaguru.cz/oneplay-nasadi-oddil-b-ci-love-island-oneplay-sport-potahne-liga-mistru-i-domaci-souteze" }
+  fra.1:
+    - { name: Nova Sport, url: "https://tn.nova.cz/sport", checked: "2026-10-12", source: "https://www.mediaguru.cz/oneplay-nasadi-oddil-b-ci-love-island-oneplay-sport-potahne-liga-mistru-i-domaci-souteze" }
+  uefa.champions:
+    - { name: "Nova Sport (Oneplay)", url: "https://tn.nova.cz/sport", checked: "2026-10-12", source: "https://www.mediaguru.cz/oneplay-nasadi-oddil-b-ci-love-island-oneplay-sport-potahne-liga-mistru-i-domaci-souteze" }
+  cze.1:
+    - { name: Oneplay Sport, url: "https://www.oneplay.cz", checked: "2026-10-12", source: "https://www.mediaguru.cz/oneplay-sport-investoval-do-noveho-studia-rozsiri-vysilani-chance-ligy" }
 # Výjimky pro konkrétní zápas: "id zápasu": [ { name, url, checked, source } ]
 byMatch: {}

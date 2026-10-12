@@ -28,3 +28,20 @@ teams:
   "cz-basket:sk-slavia-praha-era-nbk": { name: "Sportovní hala Královka", city: "Praha", checked: "2026-10-12", source: "https://www.flashscore.com.tr/takim/slavia-prague-era-nbk/hOKbcTyq/" }
   "cz-basket:usk-praha": { name: "Hala Folimanka", city: "Praha", checked: "2026-10-12", source: "https://www.uskpraha.cz" }
   "cz-basket:sluneta-usti-nad-labem": { name: "Sportcenter Sluneta", city: "Ústí nad Labem", checked: "2026-10-12", source: "https://www.flashscore.com.tr/takim/usti-nad-labem/2cjn4a8A/haberler/" }
+  # Chance Liga 2026/27 (oficiální přehled stadionů ligy)
+  "football:cz_1-fc-slovacko": { name: "Městský fotbalový stadion Miroslava Valenty", city: "Uherské Hradiště", checked: "2026-10-12", source: "https://www.chanceliga.cz/stadiony" }
+  "football:cz_ac-sparta-praha": { name: "epet ARENA", city: "Praha", checked: "2026-10-12", source: "https://www.chanceliga.cz/stadiony" }
+  "football:cz_bohemians-praha-1905": { name: "Ďolíček", city: "Praha", checked: "2026-10-12", source: "https://www.chanceliga.cz/stadiony" }
+  "football:cz_fc-banik-ostrava": { name: "Městský stadion Ostrava", city: "Ostrava", checked: "2026-10-12", source: "https://www.chanceliga.cz/stadiony" }
+  "football:cz_fc-hradec-kralove": { name: "FINEP Arena", city: "Hradec Králové", checked: "2026-10-12", source: "https://www.chanceliga.cz/stadiony" }
+  "football:cz_fc-slovan-liberec": { name: "Stadión U Nisy", city: "Liberec", checked: "2026-10-12", source: "https://www.chanceliga.cz/stadiony" }
+  "football:cz_fc-viktoria-plzen": { name: "Doosan Aréna", city: "Plzeň", checked: "2026-10-12", source: "https://www.chanceliga.cz/stadiony" }
+  "football:cz_fc-zbrojovka-brno": { name: "ShipEx Aréna", city: "Brno", checked: "2026-10-12", source: "https://www.chanceliga.cz/stadiony" }
+  "football:cz_fc-zlin": { name: "Letná", city: "Zlín", checked: "2026-10-12", source: "https://www.chanceliga.cz/stadiony" }
+  "football:cz_fk-jablonec": { name: "Stadion Střelnice", city: "Jablonec nad Nisou", checked: "2026-10-12", source: "https://www.chanceliga.cz/stadiony" }
+  "football:cz_fk-mlada-boleslav": { name: "Městský stadion", city: "Mladá Boleslav", checked: "2026-10-12", source: "https://www.chanceliga.cz/stadiony" }
+  "football:cz_fk-pardubice": { name: "Stadion Arnošta Košťála", city: "Pardubice", checked: "2026-10-12", source: "https://www.chanceliga.cz/stadiony" }
+  "football:cz_fk-teplice": { name: "AGC Aréna Na Stínadlech", city: "Teplice", checked: "2026-10-12", source: "https://www.chanceliga.cz/stadiony" }
+  "football:cz_sk-artis-brno": { name: "ShipEx Aréna", city: "Brno", checked: "2026-10-12", source: "https://www.chanceliga.cz/stadiony" }
+  "football:cz_sk-sigma-olomouc": { name: "Andrův stadión", city: "Olomouc", checked: "2026-10-12", source: "https://www.chanceliga.cz/stadiony" }
+  "football:cz_sk-slavia-praha": { name: "Fortuna Arena", city: "Praha", checked: "2026-10-12", source: "https://www.chanceliga.cz/stadiony" }
