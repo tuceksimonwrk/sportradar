@@ -47,10 +47,23 @@ describe('mergeDatasets – výsledky', () => {
     const r = mergeDatasets(p, { nhl: { matches: [res('nhl:1', 'nhl', '2026-10-10T00:00:00.000Z', 5, 4), up('nhl:u')], teams: [] } }, now);
     expect(r.matches.find((x) => x.id === 'nhl:1')!.result).toEqual({ home: 5, away: 4 });
   });
-  it('nepřenáší výsledky jiného sportu ani staré než 14 dní', () => {
+  it('sport bez čerstvých dat si ponechá předchozí zápasy; staré výsledky nhl se nepřenesou', () => {
     const p = { matches: [res('f1:r', 'f1', '2026-10-10T00:00:00.000Z'), res('nhl:old', 'nhl', '2026-09-20T00:00:00.000Z')], teams: [] };
     const r = mergeDatasets(p, { nhl: { matches: [up('nhl:u')], teams: [] } }, now);
     expect(r.matches.map((x) => x.id)).toEqual(['f1:r', 'nhl:u']); // f1 nebylo čerstvé → zůstává z prev
+  });
+  it('čerstvý zápas bez výsledku nepřepíše výsledek z minula (a čerstvý výsledek vyhraje)', () => {
+    const p = { matches: [res('f1:r', 'f1', '2026-10-10T00:00:00.000Z', 7, 7), res('f1:s', 'f1', '2026-10-10T00:00:00.000Z', 7, 7)], teams: [] };
+    const fresh = [m('f1:r', 'f1', '2026-10-10T00:00:00.000Z'), res('f1:s', 'f1', '2026-10-10T00:00:00.000Z', 1, 2), m('f1:u', 'f1', '2026-10-15T00:00:00.000Z')];
+    const r = mergeDatasets(p, { f1: { matches: fresh, teams: [] } }, now);
+    expect(r.matches.find((x) => x.id === 'f1:r')!.result).toEqual({ home: 7, away: 7 });
+    expect(r.matches.find((x) => x.id === 'f1:s')!.result).toEqual({ home: 1, away: 2 });
+  });
+  it('výsledek starší než 14 dní se na čerstvý zápas bez výsledku nepřenese', () => {
+    const p = { matches: [res('f1:r', 'f1', '2026-09-20T00:00:00.000Z')], teams: [] };
+    const fresh = [m('f1:r', 'f1', '2026-09-20T00:00:00.000Z'), m('f1:u', 'f1', '2026-10-15T00:00:00.000Z')];
+    const r = mergeDatasets(p, { f1: { matches: fresh, teams: [] } }, now);
+    expect(r.matches.map((x) => x.id)).toEqual(['f1:u']);
   });
   it('retence: výsledek 13 d zůstává, 15 d zmizí; bez výsledku platí 6 h', () => {
     const p = { matches: [

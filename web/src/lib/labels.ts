@@ -31,5 +31,6 @@ export function scoreParts(result: MatchResult): ScoreParts | null {
 export function scoreLabel(result: MatchResult): string | null {
   const s = scoreParts(result);
   if (!s) return null;
-  return `${result.homeName?.trim() || 'Domácí'} ${s.home}, ${result.awayName?.trim() || 'hosté'} ${s.away}`;
+  const win = (side: 'home' | 'away') => (s.winner === side ? ' (vítěz)' : '');
+  return `${result.homeName?.trim() || 'Domácí'}${win('home')} ${s.home}, ${result.awayName?.trim() || 'hosté'}${win('away')} ${s.away}`;
 }

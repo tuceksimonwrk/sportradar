@@ -76,8 +76,16 @@ describe('nhlAdapter.fetch', () => {
     expect(urls).toContain('https://api-web.nhle.com/v1/schedule/2026-09-28');
     expect(urls.filter((u) => u.includes('2026-09-21'))).toHaveLength(0);
   });
-  it('selhání týdne dozadu shodí fetch', async () => {
-    const get = async (url: string) => { if (url.includes('2026-10-05')) throw new Error('boom'); return { previousStartDate: '2026-10-05', gameWeek: [] }; };
-    await expect(nhlAdapter.fetch(now, get as any)).rejects.toThrow();
+  it('selhání týdne dozadu se ignoruje, dopředu shodí fetch', async () => {
+    const week = { gameWeek: [{ games: [{ id: 1, gameType: 2, startTimeUTC: '2026-10-14T23:00:00Z', gameState: 'FUT', homeTeam: team('WSH', 'Washington', 'Capitals'), awayTeam: team('SEA', 'Seattle', 'Kraken') }] }] };
+    const get = async (url: string) => { if (url.includes('2026-10-05')) throw new Error('boom'); return { ...week, previousStartDate: '2026-10-05' }; };
+    const r = await nhlAdapter.fetch(now, get as any);
+    expect(r.matches.map((m) => m.id)).toContain('nhl:1');
+    const bad = async (url: string) => { if (url.endsWith('/now')) throw new Error('boom'); return week; };
+    await expect(nhlAdapter.fetch(now, bad as any)).rejects.toThrow();
+  });
+  it('vadné startTimeUTC u přeskočeného stavu nepadne', () => {
+    const g = { id: 9, gameType: 2, startTimeUTC: 'nonsense', gameState: 'PPD', homeTeam: team('PIT', 'Pittsburgh', 'Penguins'), awayTeam: team('NYR', 'New York', 'Rangers') };
+    expect(parseNhl({ gameWeek: [{ games: [g] }] }, now).matches).toEqual([]);
   });
 });

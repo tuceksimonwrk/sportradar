@@ -27,9 +27,11 @@ export function parseNhl(json: unknown, now: Date): AdapterResult {
   for (const day of week.gameWeek ?? []) {
     for (const g of day.games ?? []) {
       addTeam(g.homeTeam); addTeam(g.awayTeam);
+      const finished = FINISHED.has(g.gameState);
+      if (!finished && !ACTIVE.has(g.gameState)) continue;
       const startsAt = new Date(g.startTimeUTC).toISOString();
       const venue = venueOf(g);
-      if (FINISHED.has(g.gameState)) {
+      if (finished) {
         const [hs, as] = [g.homeTeam.score, g.awayTeam.score];
         if (typeof hs !== 'number' || typeof as !== 'number' || !Number.isFinite(hs) || !Number.isFinite(as)) continue;
         if (Date.parse(startsAt) < now.getTime() - RESULT_WINDOW_MS) continue;
@@ -44,7 +46,6 @@ export function parseNhl(json: unknown, now: Date): AdapterResult {
         });
         continue;
       }
-      if (!ACTIVE.has(g.gameState)) continue;
       matches.push({
         id: `nhl:${g.id}`, sport: 'nhl', competition: competition(g.gameType),
         startsAt,
@@ -72,7 +73,8 @@ export const nhlAdapter = {
       url = week(json.nextStartDate);
     }
     for (let i = 0; i < 2 && prevDate; i++) {
-      const json = (await get(week(prevDate))) as NhlWeek;
+      let json: NhlWeek;
+      try { json = (await get(week(prevDate))) as NhlWeek; } catch { break; } // minulé týdny jsou nepovinné
       parts.push(parseNhl(json, now));
       prevDate = json.previousStartDate;
     }

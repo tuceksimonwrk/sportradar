@@ -46,8 +46,12 @@ describe('parseNbl', () => {
     expect(parseNbl(live, new Date('2026-10-12T12:59:00Z')).matches).toEqual([]);
     expect(parseNbl(live, new Date('2026-10-12T13:00:00Z')).matches).toHaveLength(1);
   });
-  it('starší než 14 dní se přeskočí; skóre se dvěma čísly je nutné', () => {
-    const old = `<table><tbody>${row('41', '2026-09-20-12-00', 'A', 'B', '<a><div>10</div>8</a>')}${row('42', '2026-10-10-12-00', 'C', 'D', '<a><div>10</div></a>')}</tbody></table>`;
+  it('starší než 14 dní se přeskočí', () => {
+    const old = `<table><tbody>${row('41', '2026-09-20-12-00', 'A', 'B', '<a><div>10</div>8</a>')}</tbody></table>`;
     expect(parseNbl(old, now).matches).toEqual([]);
+  });
+  it('skóre s jediným číslem se přeskočí', () => {
+    const one = `<table><tbody>${row('42', '2026-10-10-12-00', 'C', 'D', '<a><div>10</div></a>')}</tbody></table>`;
+    expect(parseNbl(one, now).matches).toEqual([]);
   });
 });

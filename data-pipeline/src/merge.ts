@@ -23,8 +23,13 @@ export function mergeDatasets(prev: Dataset, outcomes: Partial<Record<Sport, Spo
     const prevMatches = prev.matches.filter((x) => x.sport === sport);
     if (fresh) {
       // výsledky jsou po skončení neměnné → přenášíme je z minula (čerstvá data vyhrávají při stejném id)
-      for (const x of prevMatches) if (x.result && Date.parse(x.startsAt) >= resultCutoff) matches.set(x.id, x);
-      for (const x of fresh.matches) matches.set(x.id, x);
+      const kept = new Map<string, Match>();
+      for (const x of prevMatches) if (x.result && Date.parse(x.startsAt) >= resultCutoff) kept.set(x.id, x);
+      for (const x of kept.values()) matches.set(x.id, x);
+      for (const x of fresh.matches) {
+        const old = kept.get(x.id);
+        matches.set(x.id, !x.result && old?.result ? { ...x, result: old.result } : x); // čerstvý bez výsledku nesmí výsledek smazat
+      }
       for (const x of fresh.teams) teams.set(x.id, x);
     } else {
       // chyba / žádné nadcházející zápasy: ponecháme staré, jen případné nové výsledky přidáme

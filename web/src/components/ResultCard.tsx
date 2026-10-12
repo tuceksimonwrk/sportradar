@@ -12,7 +12,7 @@ export function ResultCard({ match }: { match: Match }) {
   return (
     <article className="card card--result" data-sport={match.sport}>
       {score ? (
-        <div className="result__teams" role="group" aria-label={scoreLabel(result) ?? undefined}>
+        <div className="result__teams" role="img" aria-label={scoreLabel(result) ?? undefined}>
           <span className={`result__name result__name--home${score.winner === 'home' ? ' is-winner' : ''}`} aria-hidden="true">
             {result.homeName ?? 'Domácí'}
           </span>

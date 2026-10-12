@@ -38,8 +38,10 @@ describe('scoreParts', () => {
 
 describe('scoreLabel', () => {
   it('čitelný text pro čtečky', () => {
-    expect(scoreLabel({ home: 3, away: 1, homeName: 'Sparta', awayName: 'Liberec' })).toBe('Sparta 3, Liberec 1');
-    expect(scoreLabel({ home: 3, away: 1 })).toBe('Domácí 3, hosté 1');
+    expect(scoreLabel({ home: 3, away: 1, homeName: 'Sparta', awayName: 'Liberec' })).toBe('Sparta (vítěz) 3, Liberec 1');
+    expect(scoreLabel({ home: 1, away: 3, homeName: 'Sparta', awayName: 'Liberec' })).toBe('Sparta 1, Liberec (vítěz) 3');
+    expect(scoreLabel({ home: 2, away: 2, homeName: 'Sparta', awayName: 'Liberec' })).toBe('Sparta 2, Liberec 2');
+    expect(scoreLabel({ home: 3, away: 1 })).toBe('Domácí (vítěz) 3, hosté 1');
     expect(scoreLabel({ podium: [] })).toBeNull();
   });
 });

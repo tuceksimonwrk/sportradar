@@ -37,7 +37,7 @@ describe('parseNba', () => {
 
 describe('parseNba – výsledky', () => {
   const ev = (id: string, date: string, state: string, score?: [unknown, unknown], shortDetail = 'Final') => ({
-    id, date, status: { type: { state, shortDetail } }, season: { type: 2 },
+    id, date, status: { type: { state, shortDetail, completed: true } }, season: { type: 2 },
     competitions: [comp(['BOS', 'Boston Celtics'], ['NYK', 'New York Knicks'], undefined, score)],
   });
   it('post se skóre → result (skóre je string)', () => {
@@ -47,6 +47,19 @@ describe('parseNba – výsledky', () => {
   it('prodloužení → note', () => {
     const r = parseNba({ events: [ev('9', '2026-10-21T23:00Z', 'post', [110, 104], 'Final/OT')] }, now0);
     expect(r.matches[0].result?.note).toBe('po prodloužení');
+  });
+  it('post bez dokončení (odložený) se skórem 0 není výsledek ani nadcházející', () => {
+    const e = { ...ev('5', '2026-10-21T23:00Z', 'post', ['0', '0']), status: { type: { state: 'post', name: 'STATUS_POSTPONED', completed: false } } };
+    expect(parseNba({ events: [e] }, now0).matches).toEqual([]);
+  });
+  it('dokončení: completed nebo STATUS_FINAL', () => {
+    const a = { ...ev('6', '2026-10-21T23:00Z', 'post', [1, 2]), status: { type: { state: 'post', completed: true } } };
+    const b = { ...ev('7', '2026-10-21T23:00Z', 'post', [1, 2]), status: { type: { state: 'post', name: 'STATUS_FINAL' } } };
+    expect(parseNba({ events: [a, b] }, now0).matches).toHaveLength(2);
+  });
+  it('resultsOnly vynechá nadcházející/rozehrané', () => {
+    const r = parseNba(json, now0, { resultsOnly: true });
+    expect(r.matches).toEqual([]);
   });
   it('bez/neplatné skóre a starší než 14 dní se přeskočí', () => {
     const r = parseNba({ events: [ev('1', '2026-10-21T23:00Z', 'post'), ev('2', '2026-10-21T23:00Z', 'post', ['x', '3']), ev('3', '2026-10-01T23:00Z', 'post', [1, 2])] }, now0);
@@ -83,9 +96,15 @@ describe('nbaAdapter.fetch', () => {
     const r = await nbaAdapter.fetch(now, (async () => json) as any);
     expect(r.matches.length).toBeGreaterThan(0);
   });
+  it('minulý rozsah dodá jen výsledky (stará nadcházející data se nepřidají)', async () => {
+    const past = new Set(nbaPastRange(now));
+    const get = async (url: string) => (past.has(/dates=([0-9]+)/.exec(url)![1]) ? json : { events: [] });
+    const r = await nbaAdapter.fetch(now, get as any);
+    expect(r.matches).toEqual([]);
+  });
   it('selhání minulého dne se ignoruje, výsledky se přidají', async () => {
     const past = new Set(nbaPastRange(now));
-    const done = { events: [{ id: '77', date: '2026-10-10T23:00Z', status: { type: { state: 'post', shortDetail: 'Final' } }, season: { type: 2 }, competitions: [comp(['BOS', 'Boston Celtics'], ['NYK', 'New York Knicks'], undefined, [100, 90])] }] };
+    const done = { events: [{ id: '77', date: '2026-10-10T23:00Z', status: { type: { state: 'post', completed: true, shortDetail: 'Final' } }, season: { type: 2 }, competitions: [comp(['BOS', 'Boston Celtics'], ['NYK', 'New York Knicks'], undefined, [100, 90])] }] };
     let n = 0;
     const get = async (url: string) => {
       const d = /dates=([0-9]+)/.exec(url)![1];

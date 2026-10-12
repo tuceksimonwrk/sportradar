@@ -4,7 +4,7 @@ import { combine, getJson } from '../util';
 
 interface EspnTeam { abbreviation: string; displayName: string }
 interface EspnEvent {
-  id: string; date: string; status?: { type?: { state?: string; shortDetail?: string } }; season?: { type?: number };
+  id: string; date: string; status?: { type?: { state?: string; name?: string; completed?: boolean; shortDetail?: string } }; season?: { type?: number };
   competitions?: { venue?: { fullName?: string; address?: { city?: string } }; competitors?: { homeAway: string; team: EspnTeam; score?: unknown }[] }[];
 }
 
@@ -15,7 +15,7 @@ const score = (v: unknown): number | null => {
   return Number.isFinite(n) ? n : null;
 };
 
-export function parseNba(json: unknown, now: Date): AdapterResult {
+export function parseNba(json: unknown, now: Date, opts: { resultsOnly?: boolean } = {}): AdapterResult {
   const events = ((json as any)?.events ?? []) as EspnEvent[];
   const matches: Match[] = [];
   const teams = new Map<string, Team>();
@@ -29,7 +29,9 @@ export function parseNba(json: unknown, now: Date): AdapterResult {
     for (const t of [home, away]) teams.set(`nba:${t.abbreviation}`, { id: `nba:${t.abbreviation}`, sport: 'nba', name: t.displayName });
     const state = e.status?.type?.state;
     const isPost = state === 'post';
+    if (isPost && !(e.status?.type?.completed === true || e.status?.type?.name === 'STATUS_FINAL')) continue; // odložený/zrušený
     if (state !== 'pre' && state !== 'in' && !isPost) continue;
+    if (opts.resultsOnly && !isPost) continue;
     const v = e.competitions?.[0]?.venue;
     const vName = v?.fullName?.trim();
     const venue: Venue | undefined = vName ? (v?.address?.city ? { name: vName, city: v.address.city } : { name: vName }) : undefined;
@@ -78,6 +80,6 @@ export const nbaAdapter = {
     const bad = settled.filter((s) => s.status === 'rejected');
     if (bad.length > 0) throw new Error(`NBA: selhalo ${bad.length} z ${settled.length} dnů (${(bad[0] as PromiseRejectedResult).reason?.message ?? bad[0]})`);
     const past = pastSettled.filter((s): s is PromiseFulfilledResult<unknown> => s.status === 'fulfilled');
-    return combine([...settled, ...past].map((s) => parseNba((s as PromiseFulfilledResult<unknown>).value, now)));
+    return combine([...settled, ...past].map((s, i) => parseNba((s as PromiseFulfilledResult<unknown>).value, now, { resultsOnly: i >= settled.length })));
   },
 } satisfies Adapter;
