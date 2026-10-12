@@ -1,12 +1,13 @@
 import type { Sport } from '@sportradar/shared';
 
-/** Původní liniová grafika hřišť (kluziště, palubovka, okruh, radar). Barva = currentColor, průhlednost řídí CSS. */
-export type ArtKind = 'rink' | 'court' | 'track' | 'radar';
+/** Původní liniová grafika hřišť (kluziště, palubovka, okruh, hřiště, radar). Barva = currentColor, průhlednost řídí CSS. */
+export type ArtKind = 'rink' | 'court' | 'track' | 'pitch' | 'radar';
 
 export function artFor(sport: Sport | 'all'): ArtKind {
   if (sport === 'f1') return 'track';
   if (sport === 'nhl' || sport === 'cz-hockey') return 'rink';
   if (sport === 'nba' || sport === 'cz-basket') return 'court';
+  if (sport === 'football') return 'pitch';
   return 'radar';
 }
 
@@ -71,6 +72,26 @@ function Track() {
   );
 }
 
+/** Fotbalové hřiště shora: pruhy trávníku, středový kruh, pokutová a brankové území, oblouky, rohy. */
+function Pitch() {
+  return (
+    <>
+      <g stroke="none" fill="currentColor" opacity=".07">
+        {[0, 2, 4, 6].map((k) => <rect key={k} x={4 + k * 49} y="4" width="49" height="212" />)}
+      </g>
+      <rect x="4" y="4" width="392" height="212" rx="2" />
+      <path d="M200 4v212" />
+      <circle cx="200" cy="110" r="30" />
+      <circle cx="200" cy="110" r="2.5" fill="currentColor" />
+      <path d="M4 50h64v120H4M4 84h22v52H4M396 50h-64v120h64M396 84h-22v52h22" />
+      <circle cx="46" cy="110" r="2.5" fill="currentColor" />
+      <circle cx="354" cy="110" r="2.5" fill="currentColor" />
+      <path d="M68 89.6a30 30 0 0 1 0 40.8M332 89.6a30 30 0 0 0 0 40.8" />
+      <path d="M4 12a8 8 0 0 0 8-8M388 4a8 8 0 0 0 8 8M4 208a8 8 0 0 1 8 8M396 208a8 8 0 0 0-8 8" />
+    </>
+  );
+}
+
 function Radar({ centered }: { centered?: boolean }) {
   // střed vpravo (do pruhu stránky), nebo uprostřed (prázdné stavy)
   return (
@@ -84,7 +105,7 @@ function Radar({ centered }: { centered?: boolean }) {
   );
 }
 
-const VIEWBOX: Record<ArtKind, string> = { rink: '0 0 400 180', court: '0 0 400 220', track: '0 0 400 220', radar: '0 0 400 220' };
+const VIEWBOX: Record<ArtKind, string> = { rink: '0 0 400 180', court: '0 0 400 220', track: '0 0 400 220', pitch: '0 0 400 220', radar: '0 0 400 220' };
 
 export function SportArt({ kind, className, centered }: { kind: ArtKind; className?: string; centered?: boolean }) {
   return (
@@ -94,7 +115,7 @@ export function SportArt({ kind, className, centered }: { kind: ArtKind; classNa
       fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
       aria-hidden="true" focusable="false"
     >
-      {kind === 'rink' ? <Rink /> : kind === 'court' ? <Court /> : kind === 'track' ? <Track /> : <Radar centered={centered} />}
+      {kind === 'rink' ? <Rink /> : kind === 'court' ? <Court /> : kind === 'track' ? <Track /> : kind === 'pitch' ? <Pitch /> : <Radar centered={centered} />}
     </svg>
   );
 }

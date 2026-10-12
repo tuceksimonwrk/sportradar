@@ -27,6 +27,7 @@
   --nba: #f57c00;
   --cz-hockey: #7c4ddb;
   --cz-basket: #12a150;
+  --football: #b5179e;        /* purpurová: odlišná od F1 červené, fialové extraligy i modré NHL; 5.9:1 na bílé */
 
   --display: 'Barlow Condensed', 'Arial Narrow', system-ui, sans-serif;
   --text: 'Barlow', system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -52,6 +53,7 @@
     --shadow: 0 0 0;
     --nhl: #4aa3f2;
     --cz-hockey: #a07dff;
+    --football: #f062d8;      /* 6.2:1 na kartě */
   }
 }
 
@@ -60,3 +62,4 @@
 [data-sport='nba'] { --sport: var(--nba); }
 [data-sport='cz-hockey'] { --sport: var(--cz-hockey); }
 [data-sport='cz-basket'] { --sport: var(--cz-basket); }
+[data-sport='football'] { --sport: var(--football); }

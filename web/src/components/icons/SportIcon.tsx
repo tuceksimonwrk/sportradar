@@ -33,6 +33,14 @@ function Paths({ sport }: { sport: Props['sport'] }) {
           <path d="M18.4 5.7c-1.9 1.6-3.1 3.8-3.1 6.3s1.2 4.7 3.1 6.3" />
         </>
       );
+    case 'football': // míč: pětiúhelník uprostřed, švy k obvodu
+      return (
+        <>
+          <circle cx="12" cy="12" r="9" />
+          <path d="m12 8.4 3.4 2.5-1.3 4H9.9l-1.3-4Z" />
+          <path d="M12 8.4V3M15.4 10.9l5.2-1.7M14.1 14.9l3.2 4.4M9.9 14.9l-3.2 4.4M8.6 10.9 3.4 9.2" />
+        </>
+      );
     default: // vše: radar
       return (
         <>
