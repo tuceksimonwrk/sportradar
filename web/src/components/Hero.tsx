@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Match } from '@sportradar/shared';
 import { competitionLine } from '../lib/labels';
+import { formatLiveClock } from '../lib/live';
 import { matchSides, splitSession } from '../lib/sides';
 import { countdownParts, dayKey, dayLabel, formatCountdown, formatTime } from '../lib/time';
 import { SportArt, artFor } from './SportArt';
@@ -8,6 +9,7 @@ import { CalendarButton } from './CalendarButton';
 import { DetailButton } from './DetailButton';
 import { SportEmblem, TeamCrest } from './TeamCrest';
 import { useTeams } from './TeamsContext';
+import { LiveBadge, LiveHint, ScoreNum, scoreAnnouncement, useLiveState, useNotStarted } from './LiveParts';
 import { SportIcon } from './icons/SportIcon';
 import { Broadcasters, VenueLine } from './ui';
 
@@ -25,10 +27,23 @@ export function Hero({ match, now }: { match: Match; now: Date }) {
   const sides = match.sport === 'f1' ? null : matchSides(match, teams);
   const cd = countdownParts(match.startsAt, now);
   const time = formatTime(match.startsAt);
+  const { live: liveRaw, hint } = useLiveState(match);
+  const notStarted = useNotStarted(match, now);
+  const live = liveRaw && sides ? liveRaw : undefined;
+  const [announce, setAnnounce] = useState('');
+  const [seen, setSeen] = useState('');
+  const liveKey = live ? `${live.phase}|${live.home}|${live.away}` : '';
+  if (liveKey !== seen) { // oznámení čtečkám jen při změně skóre, ne při prvním zobrazení
+    setSeen(liveKey);
+    if (live && seen && sides) setAnnounce(scoreAnnouncement(live, sides[0].name, sides[1].name));
+  }
+  const wide = !!live && ((live.home ?? 0) >= 100 || (live.away ?? 0) >= 100);
   const led = (
-    <span className="led" aria-hidden="true">
-      <span className="led__ghost">88:88</span>
-      <span className="led__on" onAnimationEnd={() => setPower(false)}>{time}</span>
+    <span className={`led${live ? ' led--score' : ''}${wide ? ' led--wide' : ''}`} aria-hidden="true">
+      <span className="led__ghost">{wide ? '888:888' : '88:88'}</span>
+      <span className="led__on" onAnimationEnd={() => setPower(false)}>
+        {live ? <><ScoreNum value={live.home} />:<ScoreNum value={live.away} /></> : time}
+      </span>
     </span>
   );
 
@@ -70,9 +85,17 @@ export function Hero({ match, now }: { match: Match; now: Date }) {
           <CalendarButton match={match} />
         </span>
       </div>
-      <h3 className="sr-only">{match.title}, {dayLabel(dayKey(match.startsAt), now)} {time}</h3>
+      <h3 className="sr-only">{match.title}, {dayLabel(dayKey(match.startsAt), now)} {time}{live && live.home !== undefined && live.away !== undefined ? `, ${live.phase === 'live' ? 'živě' : 'konec'} ${live.home}:${live.away}` : ''}</h3>
+      <p className="sr-only" role="status" aria-live="polite">{announce}</p>
       <div aria-hidden="true">{stage}</div>
-      {cd.live ? (
+      {live ? (
+        <div className="hero__live">
+          <LiveBadge live={live} />
+          <span className="hero__clock">{live.phase === 'live' ? formatLiveClock(live) : live.detail}</span>
+        </div>
+      ) : notStarted ? (
+        <div className="hero__live"><span>Zápas ještě nezačal</span></div>
+      ) : cd.live ? (
         <div className="hero__live"><span className="livebadge">Živě</span><span>Zápas právě probíhá</span></div>
       ) : (
         <div className="countdown">
@@ -86,6 +109,7 @@ export function Hero({ match, now }: { match: Match; now: Date }) {
         </div>
       )}
       <div className="hero__info">
+        {hint && <LiveHint />}
         <VenueLine venue={match.venue} />
         <Broadcasters list={match.broadcasters} />
       </div>

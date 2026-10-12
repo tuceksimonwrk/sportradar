@@ -20,6 +20,9 @@ import { useData } from './useData';
 import { useDetailIndex } from './useDetail';
 import { DetailContext, type DetailInfo } from './components/DetailContext';
 import { MatchDetailPanel } from './components/MatchDetailPanel';
+import { LiveContext } from './components/LiveContext';
+import { LIVE_AFTER_MS } from './lib/live';
+import { useLiveScores } from './useLiveScores';
 
 const storage = (): Storage | undefined => { try { return window.localStorage; } catch { return undefined; } };
 
@@ -76,9 +79,16 @@ export default function App() {
   const favSet = useMemo(() => new Set(favs), [favs]);
   const showAll = favs.length === 0 || allToggled; // bez oblíbených se ukazuje vše
   const viewKey = `${sport}|${competition}|${showAll}`; // změna filtru vrací seznamy na první dávku
-  const selected = useMemo(
-    () => (data.status === 'ready' ? selectMatches(data.matches.matches, favSet, now, sport, competition, { showAll }) : []),
+  // kandidáti živého skóre: zobrazené zápasy včetně těch, které už přešly 3h okno „probíhá“
+  const livePool = useMemo(
+    () => (data.status === 'ready' ? selectMatches(data.matches.matches, favSet, now, sport, competition, { showAll, windowMs: LIVE_AFTER_MS }) : []),
     [data, favSet, now, sport, competition, showAll],
+  );
+  const live = useLiveScores(livePool, now);
+  const liveIds = useMemo(() => new Set([...live.states.values()].filter((s) => s.phase === 'live').map((s) => s.matchId)), [live.states]);
+  const selected = useMemo(
+    () => (data.status === 'ready' ? selectMatches(data.matches.matches, favSet, now, sport, competition, { showAll, liveIds }) : []),
+    [data, favSet, now, sport, competition, showAll, liveIds],
   );
 
   const calendarMatches = useMemo(
@@ -109,6 +119,7 @@ export default function App() {
     <TeamsContext.Provider value={teamsInfo}>
     <ReminderContext.Provider value={reminderInfo}>
     <DetailContext.Provider value={detailInfo}>
+    <LiveContext.Provider value={live}>
       <div className="backdrop" aria-hidden="true"><SportArt kind="radar" /></div>
       <Header tab={tab} onTab={goTab} favCount={favs.length} />
       <main className="app" id="obsah">
@@ -156,10 +167,12 @@ export default function App() {
             Data: NHL, ESPN, Jolpica, hokej.cz, nbl.basketball, chanceliga.cz
             {data.status === 'ready' && <> · aktualizováno {updatedLabel(data.matches.generatedAt, now)}</>}
           </p>
+          <p className="foot__fine">Živé skóre: NBA a fotbal (ESPN). Ostatní soutěže ho zatím nemají.</p>
           <p className="foot__fine">Neoficiální fanouškovská stránka. Loga a názvy patří jejich vlastníkům.</p>
         </div>
       </footer>
       {detailMatch && <MatchDetailPanel match={detailMatch} now={now} onClose={closeDetail} />}
+    </LiveContext.Provider>
     </DetailContext.Provider>
     </ReminderContext.Provider>
     </TeamsContext.Provider>

@@ -20,7 +20,7 @@
 .sk { animation: shimmer 1.4s linear infinite; }
 
 @media (prefers-reduced-motion: reduce) {
-  .enter, .logomark__sweep, .hero--power .led__on, .sk, .live::before, .livebadge::before, .dsheet, .dsheet__panel { animation: none; }
+  .enter, .logomark__sweep, .hero--power .led__on, .sk, .live::before, .livebadge::before, .flash, .dsheet, .dsheet__panel { animation: none; }
   .tabs__ind, .tab, .brand, .top, .btn, .calbtn, .seg__opt, .chip, .match, .result, .st tbody tr, .dtabs__tab, .dhead__close, .dstat__bar, .drank__bar, .comp__chev { transition: none; }
   .match:hover, .match:focus-within, .result:hover, .btn:hover:not(:disabled) { transform: none; }
 }

@@ -1,0 +1,41 @@
+/* ---------- Živé skóre (NBA, fotbal): štítek, skóre, hodiny, nedostupný zdroj ---------- */
+.livebadge--sm { gap: 5px; padding: 3px 7px; font-size: .74rem; letter-spacing: .1em; }
+.livebadge--sm::before { width: 6px; height: 6px; }
+
+.endbadge {
+  display: inline-flex; align-items: center; padding: 5px 11px; border-radius: 6px;
+  background: var(--soft); color: var(--ink);
+  font: 800 .95rem/1 var(--display); letter-spacing: .12em; text-transform: uppercase;
+}
+.endbadge--sm { padding: 3px 7px; font-size: .74rem; letter-spacing: .1em; align-self: flex-start; }
+.hero .endbadge { background: rgb(255 255 255 / .16); color: #fff; }
+
+/* karta: skóre vpravo u týmu, hodiny pod týmy */
+.match__score {
+  flex: none; margin-left: auto; min-width: 2ch; text-align: right;
+  font: 800 1.7rem/1 var(--display); font-variant-numeric: tabular-nums;
+}
+.match__clock {
+  margin: 0 0 4px; color: var(--live); font-size: .92rem; font-weight: 700; font-variant-numeric: tabular-nums;
+}
+.livehint { display: inline-flex; align-items: center; gap: 5px; margin-top: 4px; color: var(--muted); font-size: .8rem; }
+.hero .livehint { display: flex; color: rgb(255 255 255 / .7); }
+
+/* tabule: živé skóre místo času; pod ním štítek a hodiny */
+.hero__clock { font: 700 1.3rem/1 var(--display); letter-spacing: .05em; font-variant-numeric: tabular-nums; }
+.led--score { font-size: 2.7rem; }
+.led--wide { font-size: 2.25rem; }
+
+/* blik změněného čísla */
+@keyframes score-flash {
+  0% { background-color: rgb(255 194 26 / .95); color: #0d1a14; text-shadow: none; transform: scale(1.22); }
+  100% { background-color: rgb(255 194 26 / 0); transform: scale(1); }
+}
+.flash { display: inline-block; border-radius: 5px; animation: score-flash 1.5s var(--ease-out); }
+
+@media (min-width: 560px) {
+  .match__score { font-size: 2rem; }
+  .led--score { font-size: 4rem; }
+  .led--wide { font-size: 3.4rem; }
+  .hero__clock { font-size: 1.5rem; }
+}
