@@ -31,3 +31,12 @@ export function isStale(generatedAt: string, now: Date): boolean {
   if (Number.isNaN(t)) return true;
   return now.getTime() - t > 6 * 3600_000;
 }
+
+export interface CountdownParts { live: boolean; days: number; hours: number; minutes: number }
+
+/** Odpočet rozložený na dlaždice (dny / hodiny / minuty); po začátku `live`. Stejné zaokrouhlení jako formatCountdown. */
+export function countdownParts(iso: string, now: Date): CountdownParts {
+  const min = Math.floor((Date.parse(iso) - now.getTime()) / 60000);
+  if (!(min > 0)) return { live: true, days: 0, hours: 0, minutes: 0 };
+  return { live: false, days: Math.floor(min / 1440), hours: Math.floor(min / 60) % 24, minutes: min % 60 };
+}

@@ -10,12 +10,12 @@ export function competitionLine(sport: Sport, competition: string): string {
   return `${label} · ${c}`;
 }
 
-/** „📍 název, město“ (nebo jen název); bez venue / s prázdným názvem null. */
+/** „název, město“ (nebo jen název); bez venue / s prázdným názvem null. Ikonu přidává komponenta. */
 export function venueLine(venue?: Venue): string | null {
   const name = venue?.name?.trim();
   if (!name) return null;
   const city = venue?.city?.trim();
-  return city ? `📍 ${name}, ${city}` : `📍 ${name}`;
+  return city ? `${name}, ${city}` : name;
 }
 
 export interface ScoreParts { home: number; away: number; winner: 'home' | 'away' | 'draw' }

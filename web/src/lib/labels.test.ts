@@ -17,8 +17,8 @@ describe('competitionLine', () => {
 });
 
 describe('venueLine', () => {
-  it('název a město', () => { expect(venueLine({ name: 'O2 arena', city: 'Praha' })).toBe('📍 O2 arena, Praha'); });
-  it('jen název', () => { expect(venueLine({ name: 'Kia Center' })).toBe('📍 Kia Center'); });
+  it('název a město', () => { expect(venueLine({ name: 'O2 arena', city: 'Praha' })).toBe('O2 arena, Praha'); });
+  it('jen název', () => { expect(venueLine({ name: 'Kia Center' })).toBe('Kia Center'); });
   it('bez venue je null', () => { expect(venueLine(undefined)).toBeNull(); });
   it('prázdný název je null', () => { expect(venueLine({ name: '  ', city: 'Praha' })).toBeNull(); });
 });
