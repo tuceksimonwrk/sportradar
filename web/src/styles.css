@@ -196,3 +196,23 @@ a.badge:hover { background: var(--ink); color: var(--chalk); }
   .card--hero .card__time strong { font-size: 5rem; }
   .card--hero .card__title { font-size: 2.3rem; }
 }
+
+/* ---------- Výsledky (až za media query, ať ji nepřebije; .card.card--result má vyšší specificitu) ---------- */
+.card.card--result { grid-template-columns: minmax(0, 1fr); gap: 4px; padding-right: 16px; }
+.result__teams { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 12px; }
+.result__name { font-size: 1.02rem; line-height: 1.2; overflow-wrap: anywhere; }
+.result__name--home { text-align: right; }
+.result__name--away { text-align: left; }
+.result__name.is-winner { font-weight: 800; }
+.result__score {
+  font: 800 2.2rem/1 var(--display); letter-spacing: .02em; white-space: nowrap;
+  font-variant-numeric: tabular-nums; text-align: center;
+}
+.result__note { color: var(--muted); font-size: .85rem; text-align: center; }
+.podium { margin: 4px 0 0; padding-left: 1.6em; font-weight: 600; }
+.card--result .card__meta { margin-top: 0; }
+@media (min-width: 560px) {
+  .card.card--result { grid-template-columns: minmax(0, 1fr); }
+  .result__score { font-size: 2.6rem; }
+  .result__name { font-size: 1.12rem; }
+}

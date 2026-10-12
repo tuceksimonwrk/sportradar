@@ -1,8 +1,8 @@
 import type { Match, Sport } from '@sportradar/shared';
-import { SPORTS, SPORT_LABELS } from '@sportradar/shared';
 import { groupByDay } from '../lib/schedule';
 import { dayLabel } from '../lib/time';
 import { MatchCard } from './MatchCard';
+import { SportChips } from './SportChips';
 
 interface Props {
   matches: Match[];            // už vyfiltrované (oblíbené + sport)
@@ -26,13 +26,7 @@ export function ProgramView({ matches, now, sport, onSport, hasFavorites, onGoFa
   const groups = groupByDay(rest);
   return (
     <>
-      <div className="chips" role="tablist">
-        {(['all', ...SPORTS] as const).map((s) => (
-          <button key={s} data-sport={s} className={`chip${sport === s ? ' chip--on' : ''}`} onClick={() => onSport(s)}>
-            {s === 'all' ? 'Vše' : SPORT_LABELS[s]}
-          </button>
-        ))}
-      </div>
+      <SportChips sport={sport} onSport={onSport} />
       {matches.length === 0 && <p className="muted pad">Žádné nadcházející zápasy pro tento výběr.</p>}
       {next && (
         <section>

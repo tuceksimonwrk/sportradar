@@ -2,8 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import type { Sport } from '@sportradar/shared';
 import { FavoritesView } from './components/FavoritesView';
 import { ProgramView } from './components/ProgramView';
+import { ResultsView } from './components/ResultsView';
 import { decodeShare, encodeShare, loadFavorites, saveFavorites } from './lib/favorites';
-import { selectMatches } from './lib/schedule';
+import { selectMatches, selectResults } from './lib/schedule';
 import { isStale } from './lib/time';
 import { useData } from './useData';
 
@@ -19,7 +20,7 @@ export default function App() {
   const data = useData();
   const now = useNow(60_000);
   const [favs, setFavs] = useState<string[]>(() => loadFavorites(storage()));
-  const [tab, setTab] = useState<'program' | 'favs'>(() => (loadFavorites(storage()).length ? 'program' : 'favs'));
+  const [tab, setTab] = useState<'program' | 'results' | 'favs'>(() => (loadFavorites(storage()).length ? 'program' : 'favs'));
   const [sport, setSport] = useState<Sport | 'all'>('all');
   const [shareMsg, setShareMsg] = useState('');
   const [incoming, setIncoming] = useState<string[] | null>(() => {
@@ -48,12 +49,18 @@ export default function App() {
     [data, favSet, now, sport],
   );
 
+  const results = useMemo(
+    () => (data.status === 'ready' ? selectResults(data.matches.matches, favSet, now, sport) : []),
+    [data, favSet, now, sport],
+  );
+
   return (
     <div className="app">
       <header className="top">
         <h1>Sportradar</h1>
         <nav className="tabs">
           <button className={tab === 'program' ? 'on' : ''} onClick={() => setTab('program')}>Program</button>
+          <button className={tab === 'results' ? 'on' : ''} onClick={() => setTab('results')}>Výsledky</button>
           <button className={tab === 'favs' ? 'on' : ''} onClick={() => setTab('favs')}>Oblíbené ({favs.length})</button>
         </nav>
       </header>
@@ -73,10 +80,13 @@ export default function App() {
             {isStale(data.matches.generatedAt, now) && (
               <div className="banner banner--warn">Data nemusí být aktuální (poslední aktualizace {new Date(data.matches.generatedAt).toLocaleString('cs-CZ')}).</div>
             )}
-            {tab === 'program'
-              ? <ProgramView matches={selected} now={now} sport={sport} onSport={setSport}
-                  hasFavorites={favs.length > 0} onGoFavorites={() => setTab('favs')} />
-              : <FavoritesView teams={data.teams.teams} favs={favs} onToggle={toggle} onShare={share} shareMsg={shareMsg} />}
+            {tab === 'program' ? (
+              <ProgramView matches={selected} now={now} sport={sport} onSport={setSport}
+                hasFavorites={favs.length > 0} onGoFavorites={() => setTab('favs')} />
+            ) : tab === 'results' ? (
+              <ResultsView matches={results} now={now} sport={sport} onSport={setSport}
+                hasFavorites={favs.length > 0} onGoFavorites={() => setTab('favs')} />
+            ) : <FavoritesView teams={data.teams.teams} favs={favs} onToggle={toggle} onShare={share} shareMsg={shareMsg} />}
           </>
         )}
       </main>
