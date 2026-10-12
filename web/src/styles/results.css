@@ -8,7 +8,7 @@
 .result__side { display: flex; flex-direction: column; align-items: center; gap: 7px; min-width: 0; text-align: center; }
 .result__side--home { grid-area: home; }
 .result__side--away { grid-area: away; }
-.result__name { font-size: .95rem; font-weight: 600; line-height: 1.2; overflow-wrap: anywhere; }
+.result__name { max-width: 100%; font-size: .95rem; font-weight: 600; line-height: 1.2; overflow-wrap: break-word; }
 .result__board:has(.is-winner) .result__side:not(.is-winner) .result__name { color: var(--muted); }
 .is-winner .result__name { font-weight: 800; }
 .result__trophy { display: inline-block; margin-left: 4px; vertical-align: -1px; color: var(--amber-ink); }

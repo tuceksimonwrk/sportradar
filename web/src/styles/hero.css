@@ -40,7 +40,7 @@
 .hero__side--away { grid-area: away; }
 .hero__center { grid-area: center; align-self: start; display: grid; place-items: center; height: 76px; }
 .hero__crest { box-shadow: 0 0 0 3px rgb(255 255 255 / .08), 0 10px 26px -8px color-mix(in srgb, var(--sport) 75%, transparent); }
-.hero__name { font: 700 1.08rem/1.1 var(--display); letter-spacing: .02em; overflow-wrap: anywhere; }
+.hero__name { max-width: 100%; font: 700 1.08rem/1.1 var(--display); letter-spacing: .02em; overflow-wrap: break-word; }
 
 /* F1 / bez soupeřů: znak, název akce, čas */
 .hero__solo {
