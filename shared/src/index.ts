@@ -31,7 +31,7 @@ export interface Match {
   result?: MatchResult;  // výsledek odehraného zápasu (volitelné)
 }
 
-export interface Team { id: string; sport: Sport; name: string }
+export interface Team { id: string; sport: Sport; name: string; logo?: string }  // logo = absolutní https URL oficiálního loga (hotlink)
 export interface MatchesFile { generatedAt: string; matches: Match[] }
 export interface TeamsFile { teams: Team[] }
 

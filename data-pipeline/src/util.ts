@@ -34,12 +34,29 @@ export function pragueToUtcIso(y: number, mo: number, d: number, h: number, mi: 
   return new Date(ts).toISOString();
 }
 
+/** Absolutní https URL loga, jinak undefined (odmítá http:, javascript:, data:, relativní bez base, > 300 znaků). */
+export function safeLogoUrl(url: unknown, base?: string): string | undefined {
+  if (typeof url !== 'string') return undefined;
+  const raw = url.trim();
+  if (!raw || raw.startsWith('//')) return undefined;
+  try {
+    const u = base ? new URL(raw, base) : new URL(raw);
+    if (u.protocol !== 'https:') return undefined;
+    const out = /^https:/i.test(raw) ? raw : u.href;
+    return out.length > 300 ? undefined : out;
+  } catch { return undefined; }
+}
+
 export function combine(results: AdapterResult[]): AdapterResult {
   const matches = new Map<string, AdapterResult['matches'][number]>();
   const teams = new Map<string, AdapterResult['teams'][number]>();
   for (const r of results) {
     for (const m of r.matches) if (!matches.has(m.id)) matches.set(m.id, m);
-    for (const t of r.teams) if (!teams.has(t.id)) teams.set(t.id, t);
+    for (const t of r.teams) {
+      const old = teams.get(t.id);
+      if (!old) teams.set(t.id, t);
+      else if (!old.logo && t.logo) teams.set(t.id, { ...old, logo: t.logo });
+    }
   }
   return { matches: [...matches.values()], teams: [...teams.values()] };
 }

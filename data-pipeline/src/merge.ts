@@ -31,7 +31,8 @@ export function mergeDatasets(prev: Dataset, outcomes: Partial<Record<Sport, Spo
         const old = kept.get(x.id);
         matches.set(x.id, !x.result && old?.result ? { ...x, result: old.result } : x); // čerstvý bez výsledku nesmí výsledek smazat
       }
-      for (const x of fresh.teams) teams.set(x.id, x);
+      const prevLogo = new Map(prev.teams.filter((p) => p.sport === sport && p.logo).map((p) => [p.id, p.logo!]));
+      for (const x of fresh.teams) teams.set(x.id, !x.logo && prevLogo.has(x.id) ? { ...x, logo: prevLogo.get(x.id)! } : x);
     } else {
       // chyba / žádné nadcházející zápasy: ponecháme staré, jen případné nové výsledky přidáme
       for (const x of prevMatches) matches.set(x.id, x);

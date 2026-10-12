@@ -153,3 +153,19 @@ describe('resolveStandingsTeamIds', () => {
     expect(unresolved).toEqual({});
   });
 });
+
+describe('mergeDatasets – loga týmů', () => {
+  const withLogo = (id: string, logo?: string): Team => ({ id, sport: 'nhl', name: id, ...(logo && { logo }) });
+  const up = (id: string) => m(id, 'nhl', '2026-10-14T00:00:00.000Z');
+  it('čerstvý tým bez loga zdědí logo z minula', () => {
+    const p = { matches: [], teams: [withLogo('nhl:A', 'https://a.cz/a.svg')] };
+    const r = mergeDatasets(p, { nhl: { matches: [up('nhl:1')], teams: [withLogo('nhl:A')] } }, now);
+    expect(r.teams[0].logo).toBe('https://a.cz/a.svg');
+  });
+  it('čerstvé logo vyhrává; nový tým bez minulého loga zůstane bez něj', () => {
+    const p = { matches: [], teams: [withLogo('nhl:A', 'https://a.cz/old.svg')] };
+    const r = mergeDatasets(p, { nhl: { matches: [up('nhl:1')], teams: [withLogo('nhl:A', 'https://a.cz/new.svg'), withLogo('nhl:B')] } }, now);
+    expect(r.teams.find((x) => x.id === 'nhl:A')!.logo).toBe('https://a.cz/new.svg');
+    expect(r.teams.find((x) => x.id === 'nhl:B')).not.toHaveProperty('logo');
+  });
+});
