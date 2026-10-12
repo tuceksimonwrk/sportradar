@@ -80,7 +80,7 @@ button, input { font: inherit; color: inherit; }
 }
 .tabs { display: flex; gap: 4px; padding: 4px; border-radius: 12px; background: rgba(255, 255, 255, .12); }
 .tabs button {
-  flex: 1; padding: 9px 10px; border: 0; border-radius: 9px; cursor: pointer;
+  flex: 1; min-width: 0; padding: 9px 4px; border: 0; border-radius: 9px; cursor: pointer; font-size: .92rem;
   background: transparent; color: var(--board-ink); font-weight: 600;
 }
 .tabs button.on { background: var(--amber); color: #0d1a14; }
@@ -215,4 +215,28 @@ a.badge:hover { background: var(--ink); color: var(--chalk); }
   .card.card--result { grid-template-columns: minmax(0, 1fr); }
   .result__score { font-size: 2.6rem; }
   .result__name { font-size: 1.12rem; }
+}
+
+/* ---------- Tabulky (za media query výše, ať ji nepřebije) ---------- */
+.st { width: 100%; table-layout: fixed; border-collapse: collapse; margin: 0 0 6px; font-variant-numeric: tabular-nums; }
+.st caption { caption-side: top; text-align: left; }
+.st th, .st td { padding: 7px 0; border-top: 1px solid var(--line); font-size: .92rem; }
+.st thead th { border-top: 0; padding: 0 0 6px; color: var(--muted); font-size: .78rem; font-weight: 600; text-align: right; }
+.st thead th.st__name { text-align: left; }
+.st thead th.st__pos { text-align: center; }
+.st abbr { text-decoration: none; cursor: help; }
+.st .st__pos { text-align: center; font: 700 1.1rem/1 var(--display); color: var(--muted); }
+.st .st__num { text-align: right; padding-left: 4px; }
+.st td.st__pts { font-weight: 800; }
+.st .st__name { padding-left: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.st .st__sub { display: block; overflow: hidden; text-overflow: ellipsis; color: var(--muted); font-size: .78rem; font-weight: 400; }
+.st tr.is-fav td { background: color-mix(in srgb, var(--sport, var(--ink)) 16%, transparent); }
+.st tr.is-fav td.st__name { font-weight: 800; }
+.st tr.is-fav td:first-child { box-shadow: inset 4px 0 0 var(--sport, var(--ink)); }
+@media (min-width: 560px) {
+  .st th, .st td { padding: 9px 0; font-size: 1rem; }
+  .st thead th { font-size: .85rem; }
+  .st .st__name { padding-left: 12px; }
+  .st .st__num { padding-left: 8px; }
+  .tabs button { padding: 9px 10px; font-size: 1rem; }
 }

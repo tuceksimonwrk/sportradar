@@ -1,0 +1,42 @@
+import { describe, expect, it } from 'vitest';
+import type { StandingRow, StandingsFile, StandingsTable } from '@sportradar/shared';
+import { defaultStandingsSport, isFavoriteRow, tablesForSport } from './standings';
+
+describe('defaultStandingsSport', () => {
+  it('bez oblíbených nhl', () => { expect(defaultStandingsSport([])).toBe('nhl'); });
+  it('první sport v pořadí SPORTS s oblíbeným (id sportu i id týmu)', () => {
+    expect(defaultStandingsSport(['cz-basket:bk-opava', 'cz-hockey:PCE'])).toBe('cz-hockey');
+    expect(defaultStandingsSport(['nba:LAL', 'nhl:PIT'])).toBe('nhl');
+    expect(defaultStandingsSport(['cz-basket:x', 'f1'])).toBe('f1');
+    expect(defaultStandingsSport(['nba'])).toBe('nba');
+  });
+  it('neznámé prefixy se ignorují', () => {
+    expect(defaultStandingsSport(['foo:bar', 'bar', ''])).toBe('nhl');
+    expect(defaultStandingsSport(['foo:bar', 'cz-basket:x'])).toBe('cz-basket');
+  });
+});
+
+describe('isFavoriteRow', () => {
+  const row = (teamId?: string): StandingRow => ({ pos: 1, name: 'x', ...(teamId && { teamId }), values: {} });
+  it('zvýrazní řádek jen podle teamId', () => {
+    expect(isFavoriteRow(row('nhl:PIT'), 'nhl', ['nhl:PIT'])).toBe(true);
+    expect(isFavoriteRow(row('nhl:PIT'), 'nhl', ['nhl:WSH'])).toBe(false);
+  });
+  it('oblíbený celý sport nezvýrazňuje nic; řádek bez teamId nikdy', () => {
+    expect(isFavoriteRow(row('nhl:PIT'), 'nhl', ['nhl'])).toBe(false);
+    expect(isFavoriteRow(row(), 'nhl', ['nhl', 'nhl:PIT'])).toBe(false);
+  });
+  it('F1 se nikdy nezvýrazňuje', () => {
+    expect(isFavoriteRow(row('f1:x'), 'f1', ['f1', 'f1:x'])).toBe(false);
+  });
+});
+
+describe('tablesForSport', () => {
+  const t = (id: string, sport: StandingsTable['sport']): StandingsTable => ({ id, sport, title: id, columns: [], rows: [] });
+  const file: StandingsFile = { generatedAt: 'x', tables: [t('nhl-east', 'nhl'), t('nba-east', 'nba'), t('nhl-west', 'nhl')] };
+  it('vrátí tabulky sportu v původním pořadí', () => {
+    expect(tablesForSport(file, 'nhl').map((x) => x.id)).toEqual(['nhl-east', 'nhl-west']);
+    expect(tablesForSport(file, 'f1')).toEqual([]);
+  });
+  it('chybějící soubor → []', () => { expect(tablesForSport(null, 'nhl')).toEqual([]); });
+});
