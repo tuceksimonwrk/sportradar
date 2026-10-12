@@ -3,3 +3,4 @@ dist
 web/public/data
 *.log
 .superpowers
+.playwright-mcp
